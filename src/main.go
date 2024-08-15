@@ -2,10 +2,10 @@ package main
 
 import (
 	assets "gravtest"
-	"log"
 
 	"fmt"
 	"io/fs"
+	"log"
 	"net/http"
 	"os"
 
@@ -63,7 +63,13 @@ func app() {
 }
 
 func main() {
-	var command = &cobra.Command{}
+	var command = &cobra.Command{
+		// default action
+		Run: func(cmd *cobra.Command, args []string) {
+			go server()
+			app()
+		},
+	}
 
 	command.AddCommand(&cobra.Command{
 		Use:   "server",
