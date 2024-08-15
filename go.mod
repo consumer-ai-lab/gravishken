@@ -4,7 +4,7 @@ go 1.22.5
 
 require (
 	github.com/spf13/cobra v1.8.1
-	github.com/thrombe/webview_go v0.0.0-20240815150641-28df007e0706
+	github.com/thrombe/webview_go v0.0.0-20240815142551-817262a41b45
 )
 
 require (

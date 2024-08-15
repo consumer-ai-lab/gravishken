@@ -96,7 +96,7 @@
           windows-pkgs.buildPackages.pkg-config
           windows-pkgs.openssl
           windows-pkgs.windows.mingw_w64_pthreads
-          # windows-pkgs.windows.pthreads
+          windows-pkgs.windows.pthreads
           winlibs
           mcfgthread
         ];
@@ -132,7 +132,7 @@
           # export CC="${pkgs.zig}/bin/zig cc -target x86_64-windows-gnu"
           # export LD="${pkgs.zig}/bin/zig ld -target x86_64-windows-gnu"
 
-          go build -ldflags "$VARS -H windowsgui" ./src/main.go
+          go build -ldflags "$VARS -H windowsgui" -o build/gravtest.exe ./src/main.go
         '')
         (pkgs.writeShellScriptBin "run" ''
           #!/usr/bin/env bash
@@ -140,8 +140,8 @@
 
           export VARS="-X main.build_mode=$BUILD_MODE"
 
-          go build -ldflags "$VARS" ./src/main.go
-          ./main $@
+          go build -ldflags "$VARS" -o build/gravtest ./src/main.go
+          ./build/gravtest $@
         '')
       ];
 

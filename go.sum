@@ -10,5 +10,9 @@ github.com/thrombe/webview_go v0.0.0-20240815142551-817262a41b45 h1:QMcjBnKts7vz
 github.com/thrombe/webview_go v0.0.0-20240815142551-817262a41b45/go.mod h1:t0Ga8R22pGEfl6Msnqsj2j9oaDfAPIImJ13LqDscP1E=
 github.com/thrombe/webview_go v0.0.0-20240815150641-28df007e0706 h1:xYFYQvU23k9TYkFav4NsTeArsaGUuOh70O3ttQqn6S8=
 github.com/thrombe/webview_go v0.0.0-20240815150641-28df007e0706/go.mod h1:t0Ga8R22pGEfl6Msnqsj2j9oaDfAPIImJ13LqDscP1E=
+github.com/thrombe/webview_go v0.0.0-20240815165259-63d44495335b h1:yLcd7psZrBp7GhJOt6Y/DmUGuP6BFKLwetC7NpuXBdU=
+github.com/thrombe/webview_go v0.0.0-20240815165259-63d44495335b/go.mod h1:t0Ga8R22pGEfl6Msnqsj2j9oaDfAPIImJ13LqDscP1E=
+github.com/thrombe/webview_go v0.0.0-20240815170316-426999dec3e9 h1:q4KnrI4jLL0sN+IDghE2kk24OE+/5iL4D89EBiJBI0A=
+github.com/thrombe/webview_go v0.0.0-20240815170316-426999dec3e9/go.mod h1:t0Ga8R22pGEfl6Msnqsj2j9oaDfAPIImJ13LqDscP1E=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
