@@ -37,11 +37,11 @@ func server() {
 	mux := http.NewServeMux()
 
 	if build_mode == "PROD" {
-		build, _ := fs.Sub(assets.Assets, "build")
+		build, _ := fs.Sub(assets.Assets, "dist")
 		fileServer := http.FileServer(http.FS(build))
 		mux.Handle("/", fileServer)
 	} else if build_mode == "DEV" {
-		build := http.Dir("build")
+		build := http.Dir("dist")
 		fileServer := http.FileServer(build)
 		mux.Handle("/", fileServer)
 	} else {
