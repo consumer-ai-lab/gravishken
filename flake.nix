@@ -41,15 +41,22 @@
       ];
 
       env-packages = pkgs:
-        (with pkgs;
-          [
-            go
+        (with pkgs; [
+          pkg-config
 
-            nodePackages_latest.typescript-language-server
-            tailwindcss-language-server
-          ])
-          ++ (custom-commands pkgs);
+          go
+          # go-tools
+          gopls
+          bun
 
+          nodePackages_latest.typescript-language-server
+          tailwindcss-language-server
+
+          webkitgtk
+          # gtk3
+          # glib-networking
+        ])
+        ++ (custom-commands pkgs);
       # stdenv = pkgs.clangStdenv;
       # stdenv = pkgs.gccStdenv;
     in {
@@ -62,12 +69,19 @@
             # inherit stdenv;
           } {
             nativeBuildInputs = (env-packages pkgs) ++ [fhs];
-            inputsFrom = [ ];
+            inputsFrom = [];
             shellHook = ''
               export PROJECT_ROOT="$(pwd)"
 
               export BUILD_MODE="DEV"
               # export BUILD_MODE="PROD"
+
+              # - [Workaround for blank window with WebKit/DMA-BUF/NVIDIA/X11 by SteffenL · Pull Request #1060 · webview/webview · GitHub](https://github.com/webview/webview/pull/1060)
+              # export WEBKIT_DISABLE_COMPOSITING_MODE=1
+              export WEBKIT_DISABLE_DMABUF_RENDERER=1
+
+              # makes the scale "normal"
+              export GDK_BACKEND=x11
             '';
           };
       };
