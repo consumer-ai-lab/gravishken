@@ -30,6 +30,7 @@ void createThread(int* arg) {
 import "C"
 
 var build_mode string
+var port string
 
 func server() {
 	fmt.Println("Starting server...")
@@ -57,7 +58,8 @@ func app() {
 
 	w.SetTitle("GravTest")
 
-	w.Navigate("http://localhost:6200/")
+	url := fmt.Sprintf("http://localhost:%s/", port)
+	w.Navigate(url)
 
 	w.Run()
 }

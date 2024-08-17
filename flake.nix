@@ -125,12 +125,13 @@
           cd $PROJECT_ROOT
 
           export BUILD_MODE="PROD"
-          export VARS="-X main.build_mode=$BUILD_MODE"
+          export SERVER_PORT=6200
+          export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$SERVER_PORT"
           export GOOS=windows
           export GOARCH=amd64
           export CGO_ENABLED=1
-          # export CC="${pkgs.zig}/bin/zig cc -target x86_64-windows-gnu"
-          # export LD="${pkgs.zig}/bin/zig ld -target x86_64-windows-gnu"
+          # export CC="{pkgs.zig}/bin/zig cc -target x86_64-windows-gnu"
+          # export LD="{pkgs.zig}/bin/zig ld -target x86_64-windows-gnu"
 
           go build -ldflags "$VARS -H windowsgui" -o build/gravtest.exe ./src/main.go
         '')
@@ -138,6 +139,8 @@
           #!/usr/bin/env bash
           cd $PROJECT_ROOT
 
+          export SERVER_PORT=6200
+          export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$SERVER_PORT"
           export VARS="-X main.build_mode=$BUILD_MODE"
 
           go build -ldflags "$VARS" -o build/gravtest ./src/main.go
