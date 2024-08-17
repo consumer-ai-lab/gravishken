@@ -128,6 +128,7 @@
         (pkgs.writeShellScriptBin "build-windows" ''
           #!/usr/bin/env bash
           cd $PROJECT_ROOT/application
+          set -e
 
           export BUILD_MODE="PROD"
           export SERVER_PORT=6200
@@ -143,6 +144,7 @@
         (pkgs.writeShellScriptBin "run" ''
           #!/usr/bin/env bash
           cd $PROJECT_ROOT/application
+          set -e
 
           export BUILD_MODE="DEV"
           export SERVER_PORT=6200
