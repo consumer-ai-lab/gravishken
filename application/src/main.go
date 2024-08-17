@@ -1,6 +1,8 @@
 package main
 
 import (
+	types "common"
+
 	"fmt"
 	"os"
 
@@ -28,6 +30,9 @@ var build_mode string
 var port string
 
 func app() {
+	_ = &types.TypeLmao{
+		Something: "somge",
+	}
 	w := webview.New(true)
 	defer w.Destroy()
 
