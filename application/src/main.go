@@ -45,6 +45,10 @@ func app() {
 }
 
 func main() {
+	if build_mode == "DEV" {
+		types.DumpTypes()
+	}
+
 	var command = &cobra.Command{
 		// default action
 		Run: func(cmd *cobra.Command, args []string) {
