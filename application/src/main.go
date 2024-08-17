@@ -1,16 +1,13 @@
 package main
 
 import (
-	assets "gravtest"
+	types "common"
 
 	"fmt"
-	"io/fs"
-	"log"
-	"net/http"
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/thrombe/webview_go"
+	webview "github.com/thrombe/webview_go"
 )
 
 /*
@@ -32,31 +29,14 @@ import "C"
 var build_mode string
 var port string
 
-func server() {
-	fmt.Println("Starting server...")
-
-	mux := http.NewServeMux()
-
-	if build_mode == "PROD" {
-		build, _ := fs.Sub(assets.Assets, "dist")
-		fileServer := http.FileServer(http.FS(build))
-		mux.Handle("/", fileServer)
-	} else if build_mode == "DEV" {
-		build := http.Dir("dist")
-		fileServer := http.FileServer(build)
-		mux.Handle("/", fileServer)
-	} else {
-		panic("invalid BUILD_MODE")
-	}
-
-	log.Fatal(http.ListenAndServe("localhost:6200", mux))
-}
-
 func app() {
+	_ = &types.TypeLmao{
+		Something: "somge",
+	}
 	w := webview.New(true)
 	defer w.Destroy()
 
-	w.SetTitle("GravTest")
+	w.SetTitle("gravishken")
 
 	url := fmt.Sprintf("http://localhost:%s/", port)
 	w.Navigate(url)
@@ -65,6 +45,10 @@ func app() {
 }
 
 func main() {
+	if build_mode == "DEV" {
+		types.DumpTypes()
+	}
+
 	var command = &cobra.Command{
 		// default action
 		Run: func(cmd *cobra.Command, args []string) {

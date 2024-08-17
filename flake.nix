@@ -20,6 +20,11 @@
               inherit system;
             };
           })
+          # (final: prev: {
+          #   webkitgtk = prev.webkitgtk.overrideAttrs (oldAttrs: {
+          #     buildInputs = oldAttrs.buildInputs ++ [ prev.glib-networking ];
+          #   });
+          # })
         ];
       };
 
@@ -123,6 +128,7 @@
         (pkgs.writeShellScriptBin "build-windows" ''
           #!/usr/bin/env bash
           cd $PROJECT_ROOT/application
+          set -e
 
           export BUILD_MODE="PROD"
           export SERVER_PORT=6200
@@ -133,17 +139,18 @@
           # export CC="{pkgs.zig}/bin/zig cc -target x86_64-windows-gnu"
           # export LD="{pkgs.zig}/bin/zig ld -target x86_64-windows-gnu"
 
-          go build -ldflags "$VARS -H windowsgui" -o build/gravtest.exe ./src/main.go
+          go build -ldflags "$VARS -H windowsgui" -o build/gravtest.exe ./src/.
         '')
         (pkgs.writeShellScriptBin "run" ''
           #!/usr/bin/env bash
           cd $PROJECT_ROOT/application
+          set -e
 
+          export BUILD_MODE="DEV"
           export SERVER_PORT=6200
           export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$SERVER_PORT"
-          export VARS="-X main.build_mode=$BUILD_MODE"
 
-          go build -ldflags "$VARS" -o build/gravtest ./src/main.go
+          go build -ldflags "$VARS" -o build/gravtest ./src/.
           ./build/gravtest $@
         '')
       ];
