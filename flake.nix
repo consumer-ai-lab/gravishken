@@ -20,6 +20,11 @@
               inherit system;
             };
           })
+          # (final: prev: {
+          #   webkitgtk = prev.webkitgtk.overrideAttrs (oldAttrs: {
+          #     buildInputs = oldAttrs.buildInputs ++ [ prev.glib-networking ];
+          #   });
+          # })
         ];
       };
 
@@ -139,9 +144,9 @@
           #!/usr/bin/env bash
           cd $PROJECT_ROOT/application
 
+          export BUILD_MODE="DEV"
           export SERVER_PORT=6200
           export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$SERVER_PORT"
-          export VARS="-X main.build_mode=$BUILD_MODE"
 
           go build -ldflags "$VARS" -o build/gravtest ./src/main.go
           ./build/gravtest $@
