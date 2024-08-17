@@ -122,7 +122,7 @@
         # - [MAYBE: WebView2Loader.dll](https://github.com/webview/webview?tab=readme-ov-file#ms-webview2-loader)
         (pkgs.writeShellScriptBin "build-windows" ''
           #!/usr/bin/env bash
-          cd $PROJECT_ROOT
+          cd $PROJECT_ROOT/application
 
           export BUILD_MODE="PROD"
           export SERVER_PORT=6200
@@ -137,7 +137,7 @@
         '')
         (pkgs.writeShellScriptBin "run" ''
           #!/usr/bin/env bash
-          cd $PROJECT_ROOT
+          cd $PROJECT_ROOT/application
 
           export SERVER_PORT=6200
           export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$SERVER_PORT"
@@ -183,10 +183,7 @@
             nativeBuildInputs = (env-packages pkgs) ++ [fhs];
             inputsFrom = [];
             shellHook = ''
-              export PROJECT_ROOT="$(pwd)"
-
-              export BUILD_MODE="DEV"
-              # export BUILD_MODE="PROD"
+              export PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 
               # - [Workaround for blank window with WebKit/DMA-BUF/NVIDIA/X11 by SteffenL · Pull Request #1060 · webview/webview · GitHub](https://github.com/webview/webview/pull/1060)
               # export WEBKIT_DISABLE_COMPOSITING_MODE=1
