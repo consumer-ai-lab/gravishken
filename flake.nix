@@ -138,7 +138,7 @@
           # export CC="{pkgs.zig}/bin/zig cc -target x86_64-windows-gnu"
           # export LD="{pkgs.zig}/bin/zig ld -target x86_64-windows-gnu"
 
-          go build -ldflags "$VARS -H windowsgui" -o build/gravtest.exe ./src/main.go
+          go build -ldflags "$VARS -H windowsgui" -o build/gravtest.exe ./src/.
         '')
         (pkgs.writeShellScriptBin "run" ''
           #!/usr/bin/env bash
@@ -148,7 +148,7 @@
           export SERVER_PORT=6200
           export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$SERVER_PORT"
 
-          go build -ldflags "$VARS" -o build/gravtest ./src/main.go
+          go build -ldflags "$VARS" -o build/gravtest ./src/.
           ./build/gravtest $@
         '')
       ];
