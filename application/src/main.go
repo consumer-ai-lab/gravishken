@@ -2,6 +2,7 @@ package main
 
 import (
 	types "common"
+	"path/filepath"
 
 	"fmt"
 	"os"
@@ -46,7 +47,12 @@ func app() {
 
 func main() {
 	if build_mode == "DEV" {
-		types.DumpTypes()
+		root, ok := os.LookupEnv("PROJECT_ROOT")
+		if !ok {
+			panic("'PROJECT_ROOT' not set")
+		}
+		ts_dir := filepath.Join(root, "common", "ts")
+		types.DumpTypes(ts_dir)
 	}
 
 	var command = &cobra.Command{
