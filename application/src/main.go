@@ -30,6 +30,18 @@ import "C"
 var build_mode string
 var port string
 
+type Error struct {
+	message string
+}
+
+func NewError(msg string) Error {
+	return Error{message: msg}
+}
+
+func (self *Error) Error() string {
+	return fmt.Sprintf("Error: %s", self.message)
+}
+
 func app() {
 	_ = &types.TypeLmao{
 		Something: "somge",
@@ -43,6 +55,7 @@ func app() {
 	w.Navigate(url)
 
 	w.Run()
+	w.Destroy()
 }
 
 func main() {
@@ -76,6 +89,13 @@ func main() {
 		Run: func(cmd *cobra.Command, args []string) {
 			go server()
 			app()
+		},
+	})
+	command.AddCommand(&cobra.Command{
+		Use:   "test",
+		Short: "testing command",
+		Run: func(cmd *cobra.Command, args []string) {
+			test()
 		},
 	})
 

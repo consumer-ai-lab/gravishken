@@ -70,7 +70,7 @@ func server() {
 	mux.HandleFunc("/ws", serveWs)
 
 	if build_mode == "PROD" {
-		build, _ := fs.Sub(assets.Assets, "dist")
+		build, _ := fs.Sub(assets.Dist, "dist")
 		fileServer := http.FileServer(http.FS(build))
 		mux.Handle("/", fileServer)
 	} else if build_mode == "DEV" {
