@@ -43,9 +43,6 @@ func (self *Error) Error() string {
 }
 
 func app() {
-	_ = &types.TypeLmao{
-		Something: "somge",
-	}
 	w := webview.New(true)
 	defer w.Destroy()
 
@@ -95,8 +92,9 @@ func main() {
 		Use:   "test",
 		Short: "testing command",
 		Run: func(cmd *cobra.Command, args []string) {
-			go app()
-			test()
+			// go app()
+			// test()
+			types.Test()
 		},
 	})
 
