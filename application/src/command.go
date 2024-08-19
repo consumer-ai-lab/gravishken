@@ -88,7 +88,7 @@ func (self *Runner) startExplorer() error {
 		return nil
 	}
 
-	command := exec.Command("start", self.paths.explorer)
+	command := exec.Command(self.paths.cmd, "/C", "start", self.paths.explorer)
 	err := command.Run()
 	if err != nil {
 		log.Println(err)
@@ -125,7 +125,8 @@ func (self *Runner) open(file string) error {
 }
 
 func (self *Runner) newTemplate(name string, dest string) error {
-	path := filepath.Join("templates", name)
+	// NOTE: non os specific path separaters
+	path := fmt.Sprintf("templates/%s", name)
 	contents, err := assets.Templates.ReadFile(path)
 	if err != nil {
 		return err
