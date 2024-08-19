@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"time"
 )
 
 const kill = "TASKKILL.exe"
@@ -15,6 +16,7 @@ const cmd = "cmd.exe"
 const word = "WINWORD.exe"
 const excel = "EXCEL.exe"
 const powerpoint = "POWERPNT.exe"
+const notepad = "NOTEPAD.exe"
 
 const windows = "windows"
 
@@ -34,6 +36,7 @@ type Runner struct {
 		cmd        string
 		word       string
 		excel      string
+		notepad    string
 		powerpoint string
 	}
 }
@@ -62,6 +65,11 @@ func newRunner() (*Runner, error) {
 	if err != nil {
 		return nil, err
 	}
+	runner.paths.notepad, err = exec.LookPath(notepad)
+	log.Println(runner.paths.notepad)
+	if err != nil {
+		return nil, err
+	}
 	// runner.paths.word, err = exec.LookPath(word)
 	// log.Println(runner.paths.word)
 	// if err != nil {
@@ -85,17 +93,17 @@ func (self *Runner) killExplorer() error {
 	return self.kill(explorer)
 }
 
-func (self *Runner) startExplorer() error {
+func (self *Runner) startExplorer() {
 	if runtime.GOOS != windows {
-		return nil
+		return
 	}
 
+	// OOF: running explorer.exe always seems to return 1 :/
 	command := exec.Command(self.paths.cmd, "/C", "start", self.paths.explorer)
 	err := command.Run()
 	if err != nil {
 		log.Println(err)
 	}
-	return err
 }
 
 func (self *Runner) kill(name string) error {
@@ -113,14 +121,16 @@ func (self *Runner) kill(name string) error {
 	return err
 }
 
-func (self *Runner) open(file string) error {
+func (self *Runner) open(exe string, file string) error {
 	if runtime.GOOS != "windows" {
 		return nil
 	}
 
-	cmd := exec.Command(self.paths.explorer, file)
+	// cmd := exec.Command(self.paths.explorer, file)
+	// cmd := exec.Command(self.paths.cmd, "/C", "start", file)
+	cmd := exec.Command(exe, file)
 	out, err := cmd.CombinedOutput()
-	log.Printf("open output: %s\n", string(out))
+	log.Printf("%s\n", string(out))
 	log.Println(err)
 	if err != nil {
 		log.Println(err)
@@ -161,13 +171,10 @@ func (self *Runner) run(name string, args ...string) error {
 func (self *Runner) maybe(err error) {
 	if err != nil {
 		log.Println(err)
+		if self != nil {
+			self.startExplorer()
+		}
 		panic(err)
-	}
-	if self != nil {
-		// err = self.startExplorer()
-		// if err != nil {
-		// 	log.Println(err)
-		// }
 	}
 }
 
@@ -175,8 +182,8 @@ func test() {
 	runner, err := newRunner()
 	runner.maybe(err)
 
-	// err = runner.killExplorer()
-	// runner.maybe(err)
+	err = runner.killExplorer()
+	runner.maybe(err)
 
 	file, err := os.CreateTemp("", tmp_txt)
 	runner.maybe(err)
@@ -187,17 +194,20 @@ func test() {
 	err = runner.newTemplate(template_txt, dest)
 	runner.maybe(err)
 
-	err = runner.open(dest)
-	runner.maybe(err)
+	go (func() {
+		err = runner.open(runner.paths.notepad, dest)
+		runner.maybe(err)
+	})()
 
-	// err = runner.kill(runner.paths.word)
-	// runner.maybe(err)
+	time.Sleep(2000 * time.Millisecond)
+
+	err = runner.kill(notepad)
+	runner.maybe(err)
 
 	err = os.Remove(dest)
 	runner.maybe(err)
 
-	err = runner.startExplorer()
-	runner.maybe(err)
+	runner.startExplorer()
 }
 func asyncTest() {
 	path, err := exec.LookPath("")
