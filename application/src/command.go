@@ -80,7 +80,7 @@ func newRunner() (*Runner, error) {
 }
 
 func (self *Runner) killExplorer() error {
-	return self.kill(self.paths.explorer)
+	return self.kill(explorer)
 }
 
 func (self *Runner) startExplorer() error {
@@ -101,8 +101,10 @@ func (self *Runner) kill(name string) error {
 		return nil
 	}
 
-	command := exec.Command(self.paths.cmd, "/c", self.paths.kill, "/F", "/IM", name)
-	err := command.Run()
+	// command := exec.Command(self.paths.cmd, "/C", self.paths.kill, "/F", "/IM", name)
+	command := exec.Command(self.paths.kill, "/F", "/IM", name)
+	out, err := command.CombinedOutput()
+	log.Printf("%s\n", string(out))
 	if err != nil {
 		log.Println(err)
 	}
