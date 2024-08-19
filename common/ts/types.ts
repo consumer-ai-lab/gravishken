@@ -7,6 +7,10 @@ export enum Varient {
     Err = 2,
     Unknown = 3,
 }
+export interface Message {
+    Type: Varient;
+    Val: string;
+}
 export interface TVar1 {
     Field1: number;
     Field2: boolean;

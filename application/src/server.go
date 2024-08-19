@@ -51,6 +51,9 @@ func handleMessages(ws *websocket.Conn) {
 }
 
 func serveWs(w http.ResponseWriter, r *http.Request) {
+	if build_mode == "DEV" {
+		r.Header.Del("origin")
+	}
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)

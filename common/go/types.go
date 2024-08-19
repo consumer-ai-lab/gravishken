@@ -89,6 +89,7 @@ func DumpTypes(dir string) {
 	converter := typescriptify.New().
 		WithInterface(true).
 		WithBackupDir("").
+		Add(Message{}).
 		Add(TVar1{}).
 		Add(TVar2{}).
 		Add(TErr{}).
