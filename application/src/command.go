@@ -1,11 +1,11 @@
 package main
 
 import (
+	"fmt"
 	assets "gravtest"
 	"log"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"runtime"
 )
 
@@ -21,9 +21,11 @@ const windows = "windows"
 const template_docx = "template.docx"
 const template_xlsx = "template.xlsx"
 const template_pptx = "template.pptx"
+const template_txt = "template.txt"
 const tmp_docx = "tmp_*.docx"
 const tmp_xlsx = "tmp_*.xlsx"
 const tmp_pptx = "tmp_*.pptx"
+const tmp_txt = "tmp_*.txt"
 
 type Runner struct {
 	paths struct {
@@ -60,21 +62,21 @@ func newRunner() (*Runner, error) {
 	if err != nil {
 		return nil, err
 	}
-	runner.paths.word, err = exec.LookPath(word)
-	log.Println(runner.paths.word)
-	if err != nil {
-		return nil, err
-	}
-	runner.paths.excel, err = exec.LookPath(excel)
-	log.Println(runner.paths.excel)
-	if err != nil {
-		return nil, err
-	}
-	runner.paths.powerpoint, err = exec.LookPath(powerpoint)
-	log.Println(runner.paths.powerpoint)
-	if err != nil {
-		return nil, err
-	}
+	// runner.paths.word, err = exec.LookPath(word)
+	// log.Println(runner.paths.word)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// runner.paths.excel, err = exec.LookPath(excel)
+	// log.Println(runner.paths.excel)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// runner.paths.powerpoint, err = exec.LookPath(powerpoint)
+	// log.Println(runner.paths.powerpoint)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return runner, nil
 }
@@ -117,7 +119,9 @@ func (self *Runner) open(file string) error {
 	}
 
 	cmd := exec.Command(self.paths.explorer, file)
-	err := cmd.Run()
+	out, err := cmd.CombinedOutput()
+	log.Printf("open output: %s\n", string(out))
+	log.Println(err)
 	if err != nil {
 		log.Println(err)
 	}
@@ -160,10 +164,10 @@ func (self *Runner) maybe(err error) {
 		panic(err)
 	}
 	if self != nil {
-		err = self.startExplorer()
-		if err != nil {
-			log.Println(err)
-		}
+		// err = self.startExplorer()
+		// if err != nil {
+		// 	log.Println(err)
+		// }
 	}
 }
 
@@ -171,23 +175,23 @@ func test() {
 	runner, err := newRunner()
 	runner.maybe(err)
 
-	err = runner.killExplorer()
-	runner.maybe(err)
+	// err = runner.killExplorer()
+	// runner.maybe(err)
 
-	file, err := os.CreateTemp("", tmp_docx)
+	file, err := os.CreateTemp("", tmp_txt)
 	runner.maybe(err)
 	file.Close()
 
 	dest := file.Name()
 	log.Println(dest)
-	err = runner.newTemplate(template_docx, dest)
+	err = runner.newTemplate(template_txt, dest)
 	runner.maybe(err)
 
 	err = runner.open(dest)
 	runner.maybe(err)
 
-	err = runner.kill(runner.paths.word)
-	runner.maybe(err)
+	// err = runner.kill(runner.paths.word)
+	// runner.maybe(err)
 
 	err = os.Remove(dest)
 	runner.maybe(err)
