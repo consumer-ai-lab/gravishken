@@ -170,6 +170,15 @@
           webkitgtk
           # gtk3
           # glib-networking
+
+          libpng
+          xclip
+          libxkbcommon
+          xorg.libXtst
+          xorg.libX11
+          xorg.libxcb
+          xorg.xkbutils
+          xorg.xcbutil
         ])
         ++ (custom-commands pkgs);
       # stdenv = pkgs.clangStdenv;

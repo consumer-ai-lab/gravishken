@@ -95,6 +95,7 @@ func main() {
 		Use:   "test",
 		Short: "testing command",
 		Run: func(cmd *cobra.Command, args []string) {
+			go app()
 			test()
 		},
 	})

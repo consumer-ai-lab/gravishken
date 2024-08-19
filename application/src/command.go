@@ -8,6 +8,8 @@ import (
 	"os/exec"
 	"runtime"
 	"time"
+
+	"github.com/go-vgo/robotgo"
 )
 
 const kill = "TASKKILL.exe"
@@ -155,6 +157,11 @@ func (self *Runner) newTemplate(name string, dest string) error {
 	return err
 }
 
+func (self *Runner) fullscreenForegroundWindow() {
+	pid := robotgo.GetPid()
+	robotgo.MaxWindow(pid)
+}
+
 func (self *Runner) run(name string, args ...string) error {
 	if runtime.GOOS != "windows" {
 		return nil
@@ -179,6 +186,11 @@ func (self *Runner) maybe(err error) {
 }
 
 func test() {
+	pids, _ := robotgo.Pids()
+	for _, p := range pids {
+		log.Println(p)
+	}
+
 	runner, err := newRunner()
 	runner.maybe(err)
 
@@ -194,12 +206,17 @@ func test() {
 	err = runner.newTemplate(template_txt, dest)
 	runner.maybe(err)
 
+	time.Sleep(2000 * time.Millisecond)
+
+	disableTitlebar()
+	runner.fullscreenForegroundWindow()
+	gadsgadd()
+
 	go (func() {
-		err = runner.open(runner.paths.notepad, dest)
-		runner.maybe(err)
+		_ = runner.open(runner.paths.notepad, dest)
 	})()
 
-	time.Sleep(2000 * time.Millisecond)
+	time.Sleep(3000 * time.Millisecond)
 
 	err = runner.kill(notepad)
 	runner.maybe(err)
