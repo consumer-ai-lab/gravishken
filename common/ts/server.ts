@@ -1,4 +1,4 @@
-import * as types from "$common/types.ts"
+import * as types from "@common/types.ts"
 
 export function exhausted(d: never) {
     console.log(d)
