@@ -148,7 +148,7 @@
           cd $PROJECT_ROOT/application
           export BUILD_MODE="PROD"
           export APP_PORT=6200
-          export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$SERVER_PORT"
+          export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT"
           export GOOS=windows
           export GOARCH=amd64
           export CGO_ENABLED=1
@@ -187,6 +187,7 @@
 
           export BUILD_MODE="DEV"
           export APP_PORT=6200
+          export SERVER_PORT=6201
           export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT"
 
           go build -ldflags "$VARS" -o build/gravtest ./src/.
