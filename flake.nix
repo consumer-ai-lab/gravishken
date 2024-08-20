@@ -138,7 +138,7 @@
 
           go
           # go-tools
-          gopls
+          unstable.gopls
           bun
 
           nodePackages_latest.typescript-language-server
