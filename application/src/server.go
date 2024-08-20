@@ -1,8 +1,8 @@
 package main
 
 import (
+	assets "app"
 	types "common"
-	assets "gravtest"
 
 	"fmt"
 	"io/fs"

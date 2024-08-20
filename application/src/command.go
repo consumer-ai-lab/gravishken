@@ -1,8 +1,8 @@
 package main
 
 import (
+	assets "app"
 	"fmt"
-	assets "gravtest"
 	"log"
 	"os"
 	"os/exec"
@@ -208,9 +208,9 @@ func test() {
 
 	time.Sleep(2000 * time.Millisecond)
 
-	disableTitlebar()
+	// disableTitlebar()
 	runner.fullscreenForegroundWindow()
-	gadsgadd()
+	// gadsgadd()
 
 	go (func() {
 	})()
