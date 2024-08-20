@@ -1,11 +1,11 @@
 package main
 
 import (
+	"backend/helper"
+	"backend/models"
+	"backend/mongodb"
 	"context"
 	"fmt"
-	"gravtest/helper"
-	"gravtest/models"
-	"gravtest/mongodb"
 	"log"
 	"os"
 
@@ -57,7 +57,7 @@ func main() {
 
 	// err = helper.AdminLogout(ADMIN_COLLECTION, &adminRequest)
 	helper.ChangePassword(ADMIN_COLLECTION, &models.AdminChangePassword{
-		Username:   "testing",
+		Username:    "testing",
 		NewPassword: "testing_new1",
 	})
 

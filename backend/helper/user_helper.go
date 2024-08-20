@@ -1,14 +1,14 @@
 package helper
 
 import (
+	"backend/auth"
+	"backend/types"
 	"context"
 	"errors"
 	"fmt"
-	"gravtest/auth"
-	"gravtest/types"
 	"strconv"
 
-	"gravtest/models"
+	"backend/models"
 	"strings"
 	"time"
 
@@ -16,7 +16,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
-
 
 func UpdateUserTestTime(Collection *mongo.Collection, Username string, TimeToIncrease int64) error {
 	var user models.User
@@ -29,7 +28,7 @@ func UpdateUserTestTime(Collection *mongo.Collection, Username string, TimeToInc
 
 	userTest := user.Tests
 	prevTimeElapsedUser := userTest.ElapsedTime
-	userTest.ElapsedTime = prevTimeElapsedUser - 60* TimeToIncrease
+	userTest.ElapsedTime = prevTimeElapsedUser - 60*TimeToIncrease
 
 	if userTest.ElapsedTime < 0 {
 		userTest.ElapsedTime = 0
@@ -46,7 +45,6 @@ func UpdateUserTestTime(Collection *mongo.Collection, Username string, TimeToInc
 	return nil
 }
 
-
 func UpdateBatchTestTime(Collection *mongo.Collection, Usernames []string, TimeToIncrease int64) error {
 	for _, username := range Usernames {
 		err := UpdateUserTestTime(Collection, username, TimeToIncrease)
@@ -57,7 +55,6 @@ func UpdateBatchTestTime(Collection *mongo.Collection, Usernames []string, TimeT
 
 	return nil
 }
-
 
 func UpdateUserDate(Collection *mongo.Collection, Model *models.UserUpdateRequest) error {
 	valid_request, err := auth.ValidRequestVerifier(Collection, Model.Token, Model.ApiKey)
@@ -161,16 +158,16 @@ func UpdateUserDate(Collection *mongo.Collection, Model *models.UserUpdateReques
 
 		var usernames []string
 		for _, user := range user {
-			usernames = append(usernames, user.(*models.User).Username)	
+			usernames = append(usernames, user.(*models.User).Username)
 		}
 
-		err = UpdateBatchTestTime(Collection, usernames, timeToIncrease.Unix()) 
+		err = UpdateBatchTestTime(Collection, usernames, timeToIncrease.Unix())
 
 		if err != nil {
 			return err
 		}
 
-		fmt.Printf("Batch id: %s, Time to increase: %d\n", batchID, timeToIncrease.Unix())	
+		fmt.Printf("Batch id: %s, Time to increase: %d\n", batchID, timeToIncrease.Unix())
 	default:
 		return errors.New("invalid property")
 	}
@@ -178,9 +175,8 @@ func UpdateUserDate(Collection *mongo.Collection, Model *models.UserUpdateReques
 	return nil
 }
 
-
-func GetBatchDataForFrontend(Collection *mongo.Collection, BatchID string) ([][]string, error){
-	var result [][] string
+func GetBatchDataForFrontend(Collection *mongo.Collection, BatchID string) ([][]string, error) {
+	var result [][]string
 	user, err := GetModelByBatchId(Collection, BatchID, &models.User{})
 	if err != nil {
 		return nil, err
@@ -194,12 +190,12 @@ func GetBatchDataForFrontend(Collection *mongo.Collection, BatchID string) ([][]
 			userArr = append(userArr, user.(*models.User).Tests.MergedFileID)
 			userArr = append(userArr, "Present")
 			userArr = append(userArr, user.(*models.User).Tests.SubmissionFolderID)
-		} else{
+		} else {
 			userArr = append(userArr, user.(*models.User).Username)
 			userArr = append(userArr, user.(*models.User).Tests.MergedFileID)
 			userArr = append(userArr, "Absent")
 			userArr = append(userArr, user.(*models.User).Tests.SubmissionFolderID)
-		} 
+		}
 
 		result = append(result, userArr)
 	}
@@ -207,9 +203,8 @@ func GetBatchDataForFrontend(Collection *mongo.Collection, BatchID string) ([][]
 	return result, nil
 }
 
-
 // incomplete
-func UserLogin(Collection *mongo.Collection, userRequest *models.UserLoginRequest) error{
+func UserLogin(Collection *mongo.Collection, userRequest *models.UserLoginRequest) error {
 	user, err := auth.FindUserByUsername(Collection, userRequest.Username)
 	if err != nil {
 		return err
@@ -225,23 +220,23 @@ func UserLogin(Collection *mongo.Collection, userRequest *models.UserLoginReques
 		return err
 	}
 
-	if batch_data == nil{
+	if batch_data == nil {
 		return errors.New("batch not found")
 	}
 
 	// Generate JWT token
-    token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-        "username": user.Username,
-        "exp":      time.Now().Add(48 * time.Hour).Unix(),
-    })
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"username": user.Username,
+		"exp":      time.Now().Add(48 * time.Hour).Unix(),
+	})
 
 	tokenString, err := token.SignedString([]byte("token"))
-    if err != nil {
-        return err
-    }
+	if err != nil {
+		return err
+	}
 
 	user.Token = tokenString
-	user.Password = userRequest.TestPassword  // I am still confused are there 2 passwords or only one password
+	user.Password = userRequest.TestPassword // I am still confused are there 2 passwords or only one password
 
 	err = Update_Model_By_ID(Collection, user.ID.Hex(), user)
 	if err != nil {
@@ -251,13 +246,13 @@ func UserLogin(Collection *mongo.Collection, userRequest *models.UserLoginReques
 	return nil
 }
 
-type RequestData struct{
-	from int
-	to int
+type RequestData struct {
+	from             int
+	to               int
 	resultDownloaded bool
 }
 
-func SetUserResultToDownloaded(Collection *mongo.Collection ,request *RequestData) error {
+func SetUserResultToDownloaded(Collection *mongo.Collection, request *RequestData) error {
 	user, err := Get_All_Models(Collection, &models.User{})
 	if err != nil {
 		return err
@@ -273,8 +268,8 @@ func SetUserResultToDownloaded(Collection *mongo.Collection ,request *RequestDat
 		}
 	}
 
-	for _, filtered_user := range filered_users{
-		if !filtered_user.(*models.User).Tests.SubmissionReceived{
+	for _, filtered_user := range filered_users {
+		if !filtered_user.(*models.User).Tests.SubmissionReceived {
 			continue
 		}
 
