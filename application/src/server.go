@@ -3,6 +3,7 @@ package main
 import (
 	assets "app"
 	types "common"
+	"context"
 
 	"fmt"
 	"io/fs"
@@ -18,56 +19,68 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func handleClient(ws *websocket.Conn) {
-	defer ws.Close()
+func (self App) serve() {
+	fmt.Println("Starting server...")
 
-	pingTick := time.NewTicker(time.Millisecond * 1000)
-	defer pingTick.Stop()
+	// TODO: this ctx is currently useless
+	ctx, close := context.WithCancel(context.Background())
+	defer close()
 
-	for {
-		select {
-		case <-pingTick.C:
-			// ws.SetWriteDeadline(time.Now().Add(time.Second * 2))
-			err := ws.WriteJSON("string json sheesh")
+	handleClient := func(ws *websocket.Conn) {
+		defer ws.Close()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case msg, ok := <-self.send:
+				if !ok {
+					return
+				}
+				log.Println(msg)
+				ws.SetWriteDeadline(time.Now().Add(time.Second * 5))
+				err := ws.WriteJSON(msg)
+				if err != nil {
+					log.Println(err)
+					return
+				}
+			}
+		}
+	}
+
+	handleMessages := func(ws *websocket.Conn) {
+		defer ws.Close()
+
+		for {
+			var msg types.Message
+			err := ws.ReadJSON(&msg)
 			if err != nil {
 				log.Println(err)
 				return
 			}
+			self.recv <- msg
 		}
 	}
-}
 
-func handleMessages(ws *websocket.Conn) {
-	defer ws.Close()
+	var upgrader = websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+	}
 
-	for {
-		var msg types.Message
-		err := ws.ReadJSON(&msg)
+	serveWs := func(w http.ResponseWriter, r *http.Request) {
+		if build_mode == "DEV" {
+			r.Header.Del("origin")
+		}
+		ws, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
 			log.Println(err)
 			return
 		}
-		log.Println(msg)
-	}
-}
 
-func serveWs(w http.ResponseWriter, r *http.Request) {
-	if build_mode == "DEV" {
-		r.Header.Del("origin")
+		log.Println("new conn")
+		go handleClient(ws)
+		handleMessages(ws)
 	}
-	ws, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	log.Println("new conn")
-	go handleClient(ws)
-	handleMessages(ws)
-}
-
-func server() {
-	fmt.Println("Starting server...")
 
 	mux := http.NewServeMux()
 
@@ -89,5 +102,6 @@ func server() {
 		panic("invalid BUILD_MODE")
 	}
 
-	log.Fatal(http.ListenAndServe(fmt.Sprintf("localhost:%s", port), mux))
+	err := http.ListenAndServe(fmt.Sprintf("localhost:%s", port), mux)
+	log.Fatal(err)
 }
