@@ -122,76 +122,9 @@
         '';
       };
       custom-commands = pkgs: [
-        (pkgs.writeShellScriptBin "web-build" ''
+        (pkgs.writeShellScriptBin "run" ''
           #!/usr/bin/env bash
-          set -e
-          cd $PROJECT_ROOT/frontend
-
-          export BUILD_MODE="PROD"
-          export APP_PORT=6200
-
-          bun run build
-          if [[ -d ../application/dist ]]; then
-            rm -rf ../application/dist
-          fi
-          cp -r ./dist ../application/.
-        '')
-        # - [webview/webview](https://github.com/webview/webview?tab=readme-ov-file#windows)
-        #   - NOTE: install WebView2 runtime for < Windows 11
-        # - [MAYBE: WebView2Loader.dll](https://github.com/webview/webview?tab=readme-ov-file#ms-webview2-loader)
-        (pkgs.writeShellScriptBin "build-windows-app" ''
-          #!/usr/bin/env bash
-          set -e
-
-          web-build
-          
-          cd $PROJECT_ROOT/application
-          export BUILD_MODE="PROD"
-          export APP_PORT=6200
-          export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT"
-          export GOOS=windows
-          export GOARCH=amd64
-          export CGO_ENABLED=1
-          # export CC="{pkgs.zig}/bin/zig cc -target x86_64-windows-gnu"
-          # export LD="{pkgs.zig}/bin/zig ld -target x86_64-windows-gnu"
-
-          go build -ldflags "$VARS -H windowsgui" -o build/gravtest.exe ./src/.
-        '')
-
-        (pkgs.writeShellScriptBin "server-run" ''
-          #!/usr/bin/env bash
-          set -e
-          cd $PROJECT_ROOT/backend
-          source ./.env
-
-          export BUILD_MODE="DEV"
-          export SERVER_PORT=6201
-
-          go run .
-        '')
-        (pkgs.writeShellScriptBin "web-dev" ''
-          #!/usr/bin/env bash
-          set -e
-          cd $PROJECT_ROOT/frontend
-
-          export BUILD_MODE="DEV"
-          export APP_PORT=6200
-          export SERVER_PORT=6201
-
-          bun run dev
-        '')
-        (pkgs.writeShellScriptBin "app-run" ''
-          #!/usr/bin/env bash
-          set -e
-          cd $PROJECT_ROOT/application
-
-          export BUILD_MODE="DEV"
-          export APP_PORT=6200
-          export SERVER_PORT=6201
-          export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT"
-
-          go build -ldflags "$VARS" -o build/gravtest ./src/.
-          ./build/gravtest $@
+          $PROJECT_ROOT/run.sh $@
         '')
       ];
 
