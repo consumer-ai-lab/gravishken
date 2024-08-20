@@ -122,16 +122,32 @@
         '';
       };
       custom-commands = pkgs: [
+        (pkgs.writeShellScriptBin "web-build" ''
+          #!/usr/bin/env bash
+          set -e
+          cd $PROJECT_ROOT/frontend
+
+          export BUILD_MODE="PROD"
+          export APP_PORT=6200
+
+          bun run build
+          if [[ -d ../application/dist ]]; then
+            rm -rf ../application/dist
+          fi
+          cp -r ./dist ../application/.
+        '')
         # - [webview/webview](https://github.com/webview/webview?tab=readme-ov-file#windows)
         #   - NOTE: install WebView2 runtime for < Windows 11
         # - [MAYBE: WebView2Loader.dll](https://github.com/webview/webview?tab=readme-ov-file#ms-webview2-loader)
-        (pkgs.writeShellScriptBin "build-windows" ''
+        (pkgs.writeShellScriptBin "build-windows-app" ''
           #!/usr/bin/env bash
-          cd $PROJECT_ROOT/application
           set -e
 
+          web-build
+          
+          cd $PROJECT_ROOT/application
           export BUILD_MODE="PROD"
-          export SERVER_PORT=6200
+          export APP_PORT=6200
           export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$SERVER_PORT"
           export GOOS=windows
           export GOARCH=amd64
@@ -141,14 +157,37 @@
 
           go build -ldflags "$VARS -H windowsgui" -o build/gravtest.exe ./src/.
         '')
-        (pkgs.writeShellScriptBin "run" ''
+
+        (pkgs.writeShellScriptBin "server-run" ''
           #!/usr/bin/env bash
-          cd $PROJECT_ROOT/application
           set -e
+          cd $PROJECT_ROOT/backend
+          source ./.env
 
           export BUILD_MODE="DEV"
-          export SERVER_PORT=6200
-          export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$SERVER_PORT"
+          export SERVER_PORT=6201
+
+          go run .
+        '')
+        (pkgs.writeShellScriptBin "web-dev" ''
+          #!/usr/bin/env bash
+          set -e
+          cd $PROJECT_ROOT/frontend
+
+          export BUILD_MODE="DEV"
+          export APP_PORT=6200
+          export SERVER_PORT=6201
+
+          bun run dev
+        '')
+        (pkgs.writeShellScriptBin "app-run" ''
+          #!/usr/bin/env bash
+          set -e
+          cd $PROJECT_ROOT/application
+
+          export BUILD_MODE="DEV"
+          export APP_PORT=6200
+          export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT"
 
           go build -ldflags "$VARS" -o build/gravtest ./src/.
           ./build/gravtest $@
@@ -170,6 +209,15 @@
           webkitgtk
           # gtk3
           # glib-networking
+
+          libpng
+          xclip
+          libxkbcommon
+          xorg.libXtst
+          xorg.libX11
+          xorg.libxcb
+          xorg.xkbutils
+          xorg.xcbutil
         ])
         ++ (custom-commands pkgs);
       # stdenv = pkgs.clangStdenv;

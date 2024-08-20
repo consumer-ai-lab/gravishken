@@ -2,6 +2,7 @@ package main
 
 import (
 	types "common"
+	"path/filepath"
 
 	"fmt"
 	"os"
@@ -29,11 +30,20 @@ import "C"
 var build_mode string
 var port string
 
+type Error struct {
+	message string
+}
+
+func NewError(msg string) Error {
+	return Error{message: msg}
+}
+
+func (self *Error) Error() string {
+	return fmt.Sprintf("Error: %s", self.message)
+}
+
 func app() {
-	_ = &types.TypeLmao{
-		Something: "somge",
-	}
-	w := webview.New(true)
+	w := webview.New(build_mode == "DEV")
 	defer w.Destroy()
 
 	w.SetTitle("gravishken")
@@ -42,18 +52,25 @@ func app() {
 	w.Navigate(url)
 
 	w.Run()
+	w.Destroy()
 }
 
 func main() {
 	if build_mode == "DEV" {
-		types.DumpTypes()
+		root, ok := os.LookupEnv("PROJECT_ROOT")
+		if !ok {
+			panic("'PROJECT_ROOT' not set")
+		}
+		ts_dir := filepath.Join(root, "common", "ts")
+		types.DumpTypes(ts_dir)
 	}
 
 	var command = &cobra.Command{
 		// default action
 		Run: func(cmd *cobra.Command, args []string) {
 			go server()
-			app()
+			go app()
+			test()
 		},
 	}
 
@@ -72,7 +89,18 @@ func main() {
 			app()
 		},
 	})
+	command.AddCommand(&cobra.Command{
+		Use:   "test",
+		Short: "testing command",
+		Run: func(cmd *cobra.Command, args []string) {
+			go app()
+			test()
+			// types.Test()
+		},
+	})
 
+	// - [windows app start error](https://github.com/spf13/cobra/issues/844)
+	cobra.MousetrapHelpText = ""
 	var err = command.Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %s\n", err)

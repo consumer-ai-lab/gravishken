@@ -1,13 +1,14 @@
 package main
 
 import (
-	assets "gravtest"
-	"time"
+	assets "app"
+	types "common"
 
 	"fmt"
 	"io/fs"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -40,7 +41,7 @@ func handleMessages(ws *websocket.Conn) {
 	defer ws.Close()
 
 	for {
-		var msg string
+		var msg types.Message
 		err := ws.ReadJSON(&msg)
 		if err != nil {
 			log.Println(err)
@@ -51,6 +52,9 @@ func handleMessages(ws *websocket.Conn) {
 }
 
 func serveWs(w http.ResponseWriter, r *http.Request) {
+	if build_mode == "DEV" {
+		r.Header.Del("origin")
+	}
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
@@ -70,7 +74,7 @@ func server() {
 	mux.HandleFunc("/ws", serveWs)
 
 	if build_mode == "PROD" {
-		build, _ := fs.Sub(assets.Assets, "dist")
+		build, _ := fs.Sub(assets.Dist, "dist")
 		fileServer := http.FileServer(http.FS(build))
 		mux.Handle("/", fileServer)
 	} else if build_mode == "DEV" {
