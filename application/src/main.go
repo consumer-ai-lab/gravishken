@@ -2,10 +2,10 @@ package main
 
 import (
 	types "common"
-	"path/filepath"
 
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 	webview "github.com/thrombe/webview_go"
@@ -57,7 +57,6 @@ func app() {
 	}
 
 	w.Run()
-	w.Destroy()
 }
 
 func main() {
@@ -74,11 +73,18 @@ func main() {
 		// default action
 		Run: func(cmd *cobra.Command, args []string) {
 			go server()
-			go app()
-			test()
+			app()
 		},
 	}
-
+	command.AddCommand(&cobra.Command{
+		Use:   "test",
+		Short: "testing command",
+		Run: func(cmd *cobra.Command, args []string) {
+			go app()
+			test()
+			// types.Test()
+		},
+	})
 	command.AddCommand(&cobra.Command{
 		Use:   "server",
 		Short: "start server",
@@ -92,15 +98,6 @@ func main() {
 		Run: func(cmd *cobra.Command, args []string) {
 			go server()
 			app()
-		},
-	})
-	command.AddCommand(&cobra.Command{
-		Use:   "test",
-		Short: "testing command",
-		Run: func(cmd *cobra.Command, args []string) {
-			go app()
-			test()
-			// types.Test()
 		},
 	})
 
