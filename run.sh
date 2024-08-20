@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+
 # BUILD_MODE="PROD"
 BUILD_MODE="DEV"
 
