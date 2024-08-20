@@ -35,7 +35,7 @@ build-windows-app() {
   go build -ldflags "$VARS -H windowsgui" -o build/gravtest.exe ./src/.
 }
 
-server-run() {
+server() {
   cd $PROJECT_ROOT/backend
   source ./.env
 
@@ -71,8 +71,8 @@ run() {
     "build-windows-app")
       build-windows-app
     ;;
-    "server-run")
-      server-run
+    "server")
+      server
     ;;
     "web-dev")
       web-dev

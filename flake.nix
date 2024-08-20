@@ -126,6 +126,10 @@
           #!/usr/bin/env bash
           $PROJECT_ROOT/run.sh $@
         '')
+        (pkgs.writeShellScriptBin "build-windows-app" ''
+          #!/usr/bin/env bash
+          nix develop .#windows -c run build-windows-app
+        '')
       ];
 
       env-packages = pkgs:
