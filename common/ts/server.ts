@@ -61,8 +61,15 @@ export class Server {
                 throw exhausted(msg);
         }
     }
+
+    send_message(msg: Message) {
+        msg.Val = JSON.stringify(msg.Val);
+        let json = JSON.stringify(msg);
+        this.ws.send(json);
+    }
 }
 
+// @ts-ignore
 export let server: Server = null;
 export async function init() {
     server = await Server.new();

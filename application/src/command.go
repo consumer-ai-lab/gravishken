@@ -208,14 +208,14 @@ func test() {
 
 	time.Sleep(2000 * time.Millisecond)
 
-	// disableTitlebar()
+	disableTitlebar()
 	runner.fullscreenForegroundWindow()
-	// gadsgadd()
+	gadsgadd()
 
 	go (func() {
-		_ = runner.open(runner.paths.notepad, dest)
 	})()
 
+	_ = runner.open(runner.paths.notepad, dest)
 	time.Sleep(3000 * time.Millisecond)
 
 	err = runner.kill(notepad)

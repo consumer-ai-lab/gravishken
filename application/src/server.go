@@ -1,13 +1,14 @@
 package main
 
 import (
+	types "common"
 	assets "gravtest"
-	"time"
 
 	"fmt"
 	"io/fs"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -40,7 +41,7 @@ func handleMessages(ws *websocket.Conn) {
 	defer ws.Close()
 
 	for {
-		var msg string
+		var msg types.Message
 		err := ws.ReadJSON(&msg)
 		if err != nil {
 			log.Println(err)
