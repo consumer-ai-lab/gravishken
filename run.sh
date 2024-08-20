@@ -7,6 +7,7 @@ export BUILD_MODE="DEV"
 
 export APP_PORT=6200
 export SERVER_PORT=6201
+export DEV_PORT=6202
 export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT"
 
 web-build() {

@@ -49,7 +49,7 @@ func app() {
 	w.SetTitle("gravishken")
 
 	if build_mode == "DEV" {
-		url := fmt.Sprintf("http://localhost:%s/", os.Getenv("SERVER_PORT"))
+		url := fmt.Sprintf("http://localhost:%s/", os.Getenv("DEV_PORT"))
 		w.Navigate(url)
 	} else {
 		url := fmt.Sprintf("http://localhost:%s/", port)
