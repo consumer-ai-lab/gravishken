@@ -71,6 +71,7 @@ func server() {
 
 	mux := http.NewServeMux()
 
+	// TODO: more than 1 websocket client at the same time is not supported. maybe crash / don't accept the connection
 	mux.HandleFunc("/ws", serveWs)
 
 	if build_mode == "PROD" {
@@ -88,5 +89,5 @@ func server() {
 		panic("invalid BUILD_MODE")
 	}
 
-	log.Fatal(http.ListenAndServe("localhost:6200", mux))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf("localhost:%s", port), mux))
 }
