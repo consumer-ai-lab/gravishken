@@ -1,17 +1,16 @@
 package auth
 
 import (
+	"backend/models"
 	"context"
 	"errors"
 	"fmt"
-	"gravtest/models"
 	"os"
 
 	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
-
 
 var tokenKey = []byte("token")
 
@@ -34,8 +33,6 @@ func VerifyToken(tokenString string) (*jwt.Token, jwt.MapClaims, error) {
 	return nil, nil, errors.New("invalid token")
 }
 
-
-
 func FindAdminByUsername(Collection *mongo.Collection, userName string) (*models.Admin, error) {
 
 	filter := bson.M{"userName": userName}
@@ -50,7 +47,7 @@ func FindAdminByUsername(Collection *mongo.Collection, userName string) (*models
 }
 
 func FindUserByUsername(Collection *mongo.Collection, userName string) (*models.User, error) {
-	
+
 	filter := bson.M{"username": userName}
 
 	var user models.User
@@ -98,8 +95,6 @@ func ApplicationTokenVerifier(Collection *mongo.Collection, tokenString string) 
 	return claims, nil
 }
 
-
-
 func ApiKeyVerifier(apiKey string) (bool, error) {
 	backendAPISecret := os.Getenv("BACKEND_API_SECRET")
 	if backendAPISecret == "" {
@@ -111,8 +106,6 @@ func ApiKeyVerifier(apiKey string) (bool, error) {
 
 	return apiKey == backendAPISecret, nil
 }
-
-
 
 func ValidRequestVerifier(Collection *mongo.Collection, tokenString, apiKey string) (bool, error) {
 	fmt.Println("validRequestVerifier: called")
