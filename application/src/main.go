@@ -43,7 +43,7 @@ func (self *Error) Error() string {
 }
 
 func app() {
-	w := webview.New(true)
+	w := webview.New(build_mode == "DEV")
 	defer w.Destroy()
 
 	w.SetTitle("gravishken")
@@ -69,7 +69,8 @@ func main() {
 		// default action
 		Run: func(cmd *cobra.Command, args []string) {
 			go server()
-			app()
+			go app()
+			test()
 		},
 	}
 
@@ -92,12 +93,14 @@ func main() {
 		Use:   "test",
 		Short: "testing command",
 		Run: func(cmd *cobra.Command, args []string) {
-			// go app()
-			// test()
-			types.Test()
+			go app()
+			test()
+			// types.Test()
 		},
 	})
 
+	// - [windows app start error](https://github.com/spf13/cobra/issues/844)
+	cobra.MousetrapHelpText = ""
 	var err = command.Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %s\n", err)
