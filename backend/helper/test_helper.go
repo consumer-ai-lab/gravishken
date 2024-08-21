@@ -1,7 +1,7 @@
 package helper
 
 import (
-	"backend/types"
+	"gravtest/types"
 	"context"
 
 	"go.mongodb.org/mongo-driver/bson"

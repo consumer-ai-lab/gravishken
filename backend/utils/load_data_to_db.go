@@ -1,8 +1,8 @@
 package utils
 
 import (
-	"backend/helper"
-	"backend/models"
+	"gravtest/helper"
+	"gravtest/models"
 	"strings"
 
 	"go.mongodb.org/mongo-driver/mongo"

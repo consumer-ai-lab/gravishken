@@ -1,9 +1,9 @@
 package helper
 
 import (
-	"backend/auth"
-	"backend/models"
-	"backend/types"
+	"gravtest/auth"
+	"gravtest/models"
+	"gravtest/types"
 	"context"
 	"fmt"
 	"time"
@@ -158,3 +158,10 @@ func ChangePassword(Collection *mongo.Collection, model *models.AdminChangePassw
 	return nil
 
 }
+
+
+
+
+
+
+
