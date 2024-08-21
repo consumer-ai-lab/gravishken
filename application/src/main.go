@@ -11,36 +11,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-/*
-// OOF: T_T T_T T_T this somehow fixes the compile issue on windows and i don't know why T_T T_T
-#cgo windows LDFLAGS: -static -lpthread
-
-#include <pthread.h>
-void* threadFunction(void* arg) {
-    return NULL;
-}
-void createThread(int* arg) {
-    pthread_t thread;
-    pthread_create(&thread, NULL, threadFunction, arg);
-    pthread_join(thread, NULL); // Wait for the thread to finish
-}
-*/
-import "C"
-
 var build_mode string
 var port string
-
-type Error struct {
-	message string
-}
-
-func NewError(msg string) Error {
-	return Error{message: msg}
-}
-
-func (self *Error) Error() string {
-	return fmt.Sprintf("Error: %s", self.message)
-}
 
 func main() {
 	if build_mode == "DEV" {
@@ -62,6 +34,7 @@ func main() {
 			defer app.destroy()
 			app.openWv()
 			app.prepareEnv()
+			go app.handleMessages()
 			go app.serve()
 			app.wait()
 		},
@@ -82,6 +55,7 @@ func main() {
 				log.Fatal(err)
 			}
 			defer app.destroy()
+			go app.handleMessages()
 			app.serve()
 		},
 	})

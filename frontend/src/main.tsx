@@ -9,6 +9,7 @@ import InstructionsPage from './pages/instructions';
 import LoginPage from './pages/login-page';
 import TestsPage from './pages/tests';
 import EndPage from './pages/end';
+import * as server from "@common/server.ts";
 
 const router = createBrowserRouter([
   {
@@ -29,8 +30,10 @@ const router = createBrowserRouter([
   }
 ]);
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <RouterProvider router={router} />
-  </StrictMode>,
-)
+server.init().then(() => {
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <RouterProvider router={router} />
+    </StrictMode>,
+  );
+});

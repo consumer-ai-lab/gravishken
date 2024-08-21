@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -9,20 +10,36 @@ import (
 	"github.com/tkrajina/typescriptify-golang-structs/typescriptify"
 )
 
+// this is a custom error type for use throughout the app
+type Error struct {
+	message string
+}
+
+func NewError(msg string) Error {
+	return Error{message: msg}
+}
+
+func (self Error) Error() string {
+	return fmt.Sprintf("Error: %s", self.message)
+}
+
 type Varient int
 
 const (
 	ExeNotFound Varient = iota
+	UserLogin
 	Err
 	Unknown
 )
 
-var allVarients = []Varient{ExeNotFound, Err, Unknown}
+var allVarients = []Varient{ExeNotFound, UserLogin, Err, Unknown}
 
 func (self Varient) TSName() string {
 	switch self {
 	case ExeNotFound:
 		return "ExeNotFound"
+	case UserLogin:
+		return "UserLogin"
 	case Err:
 		return "Err"
 	default:
@@ -33,6 +50,8 @@ func varientFromName(typ string) Varient {
 	switch typ {
 	case "ExeNotFound":
 		return ExeNotFound
+	case "UserLogin":
+		return UserLogin
 	case "Err":
 		return Err
 	default:
@@ -41,13 +60,19 @@ func varientFromName(typ string) Varient {
 }
 
 type Message struct {
-	Type Varient
-	Val  string
+	Typ Varient
+	Val string
 }
 
 type TExeNotFound struct {
 	Name   string
 	ErrMsg string
+}
+
+type TUserLogin struct {
+	Username string
+	Password string
+	TestCode string
 }
 
 // only for unexpected errors / for errors that we can't do much about, other than telling the user about it
@@ -63,15 +88,22 @@ func NewMessage(typ interface{}) Message {
 		panic(err)
 	}
 	return Message{
-		Type: varient,
-		Val:  string(json),
+		Typ: varient,
+		Val: string(json),
 	}
 }
 
-func Get[T any](msg Message) (T, error) {
+func Get[T any](msg Message) (*T, error) {
 	var val T
+
+	name := reflect.TypeOf(val).Name()[1:]
+	if name != msg.Typ.TSName() {
+		err_msg := fmt.Sprintf("message of type '%s' but asked to be decoded as '%s'", msg.Typ.TSName(), name)
+		return nil, NewError(err_msg)
+	}
+
 	err := json.Unmarshal([]byte(msg.Val), &val)
-	return val, err
+	return &val, err
 }
 
 // - [tkrajina/tkypescriptify-golang-structs](https://github.com/tkrajina/typescriptify-golang-structs)
@@ -81,6 +113,7 @@ func DumpTypes(dir string) {
 		WithBackupDir("").
 		Add(Message{}).
 		Add(TExeNotFound{}).
+		Add(TUserLogin{}).
 		Add(TErr{}).
 		AddEnum(allVarients)
 

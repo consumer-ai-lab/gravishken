@@ -9,6 +9,9 @@ export type Message = {
     Typ: types.Varient.ExeNotFound,
     Val: types.TExeNotFound,
 } | {
+    Typ: types.Varient.UserLogin,
+    Val: types.TUserLogin,
+} | {
     Typ: types.Varient.Err,
     Val: types.TErr,
 } | {
@@ -51,14 +54,18 @@ export class Server {
         switch (msg.Typ) {
             case types.Varient.ExeNotFound:
             case types.Varient.Err:
-            case types.Varient.Unknown:
                 break;
+            case types.Varient.Unknown:
+            case types.Varient.UserLogin: {
+                throw new Error(`message type '${msg.Typ}' can't be handled here`);
+            } break;
             default:
                 throw exhausted(msg);
         }
     }
 
     send_message(msg: Message) {
+        console.log(msg);
         msg.Val = JSON.stringify(msg.Val);
         let json = JSON.stringify(msg);
         this.ws.send(json);
