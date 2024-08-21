@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"backend/models"
+	"gravtest/models"
 	"context"
 	"errors"
 	"fmt"

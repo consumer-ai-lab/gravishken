@@ -2,7 +2,6 @@ package main
 
 import (
 	assets "app"
-	types "common"
 
 	"fmt"
 	"io/fs"
@@ -29,6 +28,7 @@ func handleClient(ws *websocket.Conn) {
 		case <-pingTick.C:
 			// ws.SetWriteDeadline(time.Now().Add(time.Second * 2))
 			err := ws.WriteJSON("string json sheesh")
+			// 
 			if err != nil {
 				log.Println(err)
 				return
@@ -41,13 +41,31 @@ func handleMessages(ws *websocket.Conn) {
 	defer ws.Close()
 
 	for {
-		var msg types.Message
+		var msg UserTest
 		err := ws.ReadJSON(&msg)
 		if err != nil {
 			log.Println(err)
 			return
 		}
 		log.Println(msg)
+		// Parse the message and add the data to the DataStore [added by kurve, just for testing]
+		user := UserTest{
+			UserID: msg.UserID,
+			TestID: msg.TestID,
+			StartTime: msg.StartTime,
+			EndTime: msg.EndTime,
+			ElapsedTime: msg.ElapsedTime,
+			SubmissionReceived: msg.SubmissionReceived,
+			ReadingElapsedTime: msg.ReadingElapsedTime,
+			ReadingSubmissionReceived: msg.ReadingSubmissionReceived,
+			SubmissionFolderID: msg.SubmissionFolderID,
+			MergedFileID: msg.MergedFileID,
+			WPM: msg.WPM,
+			WPMNormal: msg.WPMNormal,
+			ResultDownloaded: msg.ResultDownloaded,
+		}
+		AddDataToStore(user)
+		log.Println("Added data to the store:", user)
 	}
 }
 
@@ -72,6 +90,9 @@ func server() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/ws", serveWs)
+
+	// Add the new route to your server [added by kurve, just for testing]
+	mux.HandleFunc("/data", getDataFromStore)
 
 	if build_mode == "PROD" {
 		build, _ := fs.Sub(assets.Dist, "dist")

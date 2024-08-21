@@ -1,9 +1,9 @@
 package main
 
 import (
-	"backend/helper"
-	"backend/models"
-	"backend/mongodb"
+	"gravtest/helper"
+	"gravtest/models"
+	"gravtest/mongodb"
 	"context"
 	"fmt"
 	"log"

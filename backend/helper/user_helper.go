@@ -1,14 +1,14 @@
 package helper
 
 import (
-	"backend/auth"
-	"backend/types"
+	"gravtest/auth"
+	"gravtest/types"
 	"context"
 	"errors"
 	"fmt"
 	"strconv"
 
-	"backend/models"
+	"gravtest/models"
 	"strings"
 	"time"
 

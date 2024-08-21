@@ -1,7 +1,7 @@
 package types
 
 import (
-	"backend/models"
+	"gravtest/models"
 	"github.com/golang-jwt/jwt/v5"
 )
 
