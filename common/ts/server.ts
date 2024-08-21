@@ -6,11 +6,8 @@ export function exhausted(d: never) {
 }
 
 export type Message = {
-    Typ: types.Varient.Var1,
-    Val: types.TVar1,
-} | {
-    Typ: types.Varient.Var2,
-    Val: types.TVar2,
+    Typ: types.Varient.ExeNotFound,
+    Val: types.TExeNotFound,
 } | {
     Typ: types.Varient.Err,
     Val: types.TErr,
@@ -52,8 +49,7 @@ export class Server {
     async handle_message(msg: Message) {
         console.log(msg);
         switch (msg.Typ) {
-            case types.Varient.Var1:
-            case types.Varient.Var2:
+            case types.Varient.ExeNotFound:
             case types.Varient.Err:
             case types.Varient.Unknown:
                 break;
