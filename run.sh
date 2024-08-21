@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 
-PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+export PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 
-# BUILD_MODE="PROD"
-BUILD_MODE="DEV"
+# export BUILD_MODE="PROD"
+export BUILD_MODE="DEV"
 
-APP_PORT=6200
-SERVER_PORT=6201
-VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT"
+export APP_PORT=6200
+export SERVER_PORT=6201
+export DEV_PORT=6202
+export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT"
 
 web-build() {
   cd $PROJECT_ROOT/frontend
@@ -26,16 +27,16 @@ build-windows-app() {
   web-build
   
   cd $PROJECT_ROOT/application
-  BUILD_MODE="PROD"
-  VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT"
-  GOOS=windows
-  GOARCH=amd64
-  CGO_ENABLED=1
+  export BUILD_MODE="PROD"
+  export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT"
+  export GOOS=windows
+  export GOARCH=amd64
+  export CGO_ENABLED=1
 
   go build -ldflags "$VARS -H windowsgui" -o build/gravtest.exe ./src/.
 }
 
-server-run() {
+server() {
   cd $PROJECT_ROOT/backend
   source ./.env
 
@@ -71,8 +72,8 @@ run() {
     "build-windows-app")
       build-windows-app
     ;;
-    "server-run")
-      server-run
+    "server")
+      server
     ;;
     "web-dev")
       web-dev
