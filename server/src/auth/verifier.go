@@ -1,14 +1,13 @@
 package auth
 
 import (
-	"gravtest/models"
-	"context"
 	"errors"
 	"fmt"
 	"os"
+	"server/src/models/admin"
+	"server/src/models/user"
 
 	"github.com/golang-jwt/jwt/v5"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -33,40 +32,17 @@ func VerifyToken(tokenString string) (*jwt.Token, jwt.MapClaims, error) {
 	return nil, nil, errors.New("invalid token")
 }
 
-func FindAdminByUsername(Collection *mongo.Collection, userName string) (*models.Admin, error) {
-
-	filter := bson.M{"userName": userName}
-
-	var admin models.Admin
-	err := Collection.FindOne(context.TODO(), filter).Decode(&admin)
-	if err != nil {
-		return nil, err
-	}
-
-	return &admin, nil
-}
-
-func FindUserByUsername(Collection *mongo.Collection, userName string) (*models.User, error) {
-
-	filter := bson.M{"username": userName}
-
-	var user models.User
-	err := Collection.FindOne(context.TODO(), filter).Decode(&user)
-	if err != nil {
-		return nil, err
-	}
-
-	return &user, nil
-}
-
+// TokenVerifier verifies the validity of a token and checks if it is valid for a specific admin.
+// It takes the MongoDB collection for admin and a token string as input parameters.
 func TokenVerifier(Collection *mongo.Collection, tokenString string) (jwt.MapClaims, error) {
+
 	_, claims, err := VerifyToken(tokenString)
 	if err != nil {
 		return nil, err
 	}
 
 	userName := claims["userName"].(string)
-	operator, err := FindAdminByUsername(Collection, userName)
+	operator, err := admin.FindByUsername(Collection, userName)
 	if err != nil || operator == nil {
 		return nil, errors.New("operator not found")
 	}
@@ -87,7 +63,7 @@ func ApplicationTokenVerifier(Collection *mongo.Collection, tokenString string) 
 	}
 
 	userName := claims["username"].(string)
-	user, err := FindUserByUsername(Collection, userName)
+	user, err := user.FindByUsername(Collection, userName)
 	if err != nil || user == nil {
 		return nil, errors.New("user not found")
 	}
@@ -125,4 +101,14 @@ func ValidRequestVerifier(Collection *mongo.Collection, tokenString, apiKey stri
 	fmt.Println("validRequestVerifier: apiKeyResult: ", apiKeyResult)
 
 	return claims != nil && apiKeyResult, nil
+}
+
+func AuthenticateAdmin(Collection *mongo.Collection, Admin *admin.AdminRequest) bool {
+	token := Admin.Token
+
+	verified, err := TokenVerifier(Collection, token)
+	fmt.Println(verified)
+
+	return err == nil
+
 }

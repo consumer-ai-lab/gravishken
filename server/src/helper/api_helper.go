@@ -6,7 +6,7 @@ import (
 	"log"
 	"reflect"
 
-	"gravtest/types"
+	"server/src/types"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"

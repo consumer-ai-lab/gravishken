@@ -1,9 +1,12 @@
-package models
+package user
 
 import (
+	"context"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type User struct {
@@ -39,17 +42,15 @@ func (userTest *UserTest) GetCollectionName() string {
 	return "user_tests"
 }
 
-type UserUpdateRequest struct {
-	Username string   `json:"username"`
-	Token    string   `json:"token"`
-	ApiKey   string   `json:"apiKey"`
-	Property string   `json:"property"`
-	Value    []string `json:"value"`
-}
+func FindByUsername(Collection *mongo.Collection, userName string) (*User, error) {
 
+	filter := bson.M{"username": userName}
 
-type UserLoginRequest struct {
-    Username string `json:"username"`
-    Password string `json:"password"`
-    TestPassword string `json:"testPassword"`
+	var user User
+	err := Collection.FindOne(context.TODO(), filter).Decode(&user)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }

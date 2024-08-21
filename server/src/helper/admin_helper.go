@@ -1,11 +1,10 @@
 package helper
 
 import (
-	"gravtest/auth"
-	"gravtest/models"
-	"gravtest/types"
 	"context"
 	"fmt"
+	"server/src/models/admin"
+	"server/src/types"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -16,7 +15,7 @@ import (
 
 func RegisterAdmin(Collection *mongo.Collection, Admin types.ModelInterface) error {
 
-	password := Admin.(*models.Admin).Password
+	password := Admin.(*admin.Admin).Password
 
 	fmt.Printf("Original password: %s\n", password)
 
@@ -26,19 +25,19 @@ func RegisterAdmin(Collection *mongo.Collection, Admin types.ModelInterface) err
 		return err
 	}
 
-	Admin.(*models.Admin).Password = string(hashedPassword)
+	Admin.(*admin.Admin).Password = string(hashedPassword)
 
 	Add_Model_To_DB(Collection, Admin)
 	return nil
 }
 
 func AdminLogin(Collection *mongo.Collection, Admin types.ModelInterface) error {
-	username := Admin.(*models.Admin).Username
-	password := Admin.(*models.Admin).Password
+	username := Admin.(*admin.Admin).Username
+	password := Admin.(*admin.Admin).Password
 	secretKey := []byte("token")
 
-	var admin models.Admin
-	err := Collection.FindOne(context.TODO(), bson.M{"username": username}).Decode(&admin)
+	var user admin.Admin
+	err := Collection.FindOne(context.TODO(), bson.M{"username": username}).Decode(&user)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return fmt.Errorf("admin not found")
@@ -46,10 +45,10 @@ func AdminLogin(Collection *mongo.Collection, Admin types.ModelInterface) error 
 		return fmt.Errorf("error finding admin: %v", err)
 	}
 
-	fmt.Printf("Admin: %v | Password: %s\n", admin, password)
+	fmt.Printf("Admin: %v | Password: %s\n", user, password)
 
 	// Compare the hashed password with the plaintext password
-	err = bcrypt.CompareHashAndPassword([]byte(admin.Password), []byte(password))
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
 		return fmt.Errorf("password does not match: %v", err)
 	}
@@ -71,9 +70,9 @@ func AdminLogin(Collection *mongo.Collection, Admin types.ModelInterface) error 
 		return err
 	}
 
-	Admin.(*models.Admin).Token = append(Admin.(*models.Admin).Token, tokenString)
+	Admin.(*admin.Admin).Token = append(Admin.(*admin.Admin).Token, tokenString)
 
-	err = Update_Model_By_ID(Collection, admin.ID.Hex(), Admin)
+	err = Update_Model_By_ID(Collection, user.ID.Hex(), Admin)
 
 	if err != nil {
 		return fmt.Errorf("error updating admin: %v", err)
@@ -84,11 +83,11 @@ func AdminLogin(Collection *mongo.Collection, Admin types.ModelInterface) error 
 	return nil
 }
 
-func AdminLogout(Collection *mongo.Collection, Admin *models.AdminRequest) error {
-	token := Admin.Token
-	username := Admin.Username
+func AdminLogout(Collection *mongo.Collection, AdminRequest *admin.AdminRequest) error {
+	token := AdminRequest.Token
+	username := AdminRequest.Username
 
-	var admin models.Admin
+	var admin admin.Admin
 	err := Collection.FindOne(context.TODO(), bson.M{"username": username}).Decode(&admin)
 	if err != nil {
 		return err
@@ -118,21 +117,11 @@ func AdminLogout(Collection *mongo.Collection, Admin *models.AdminRequest) error
 	return nil
 }
 
-func AuthenticateAdmin(Collection *mongo.Collection, Admin *models.AdminRequest) bool {
-	token := Admin.Token
-
-	verified, err := auth.TokenVerifier(Collection, token)
-	fmt.Println(verified)
-
-	return err == nil
-
-}
-
-func ChangePassword(Collection *mongo.Collection, model *models.AdminChangePassword) error {
+func ChangePassword(Collection *mongo.Collection, model *admin.AdminChangePassword) error {
 
 	username := model.Username
 
-	var ADMIN models.Admin
+	var ADMIN admin.Admin
 	err := Collection.FindOne(context.TODO(), bson.M{"username": username}).Decode(&ADMIN)
 
 	if err != nil {
@@ -158,10 +147,3 @@ func ChangePassword(Collection *mongo.Collection, model *models.AdminChangePassw
 	return nil
 
 }
-
-
-
-
-
-
-
