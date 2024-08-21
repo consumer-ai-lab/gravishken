@@ -2,13 +2,13 @@ package main
 
 import (
 	types "common"
-	"path/filepath"
+	"log"
 
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
-	webview "github.com/thrombe/webview_go"
 )
 
 /*
@@ -42,24 +42,6 @@ func (self *Error) Error() string {
 	return fmt.Sprintf("Error: %s", self.message)
 }
 
-func app() {
-	w := webview.New(build_mode == "DEV")
-	defer w.Destroy()
-
-	w.SetTitle("gravishken")
-
-	if build_mode == "DEV" {
-		url := fmt.Sprintf("http://localhost:%s/", os.Getenv("SERVER_PORT"))
-		w.Navigate(url)
-	} else {
-		url := fmt.Sprintf("http://localhost:%s/", port)
-		w.Navigate(url)
-	}
-
-	w.Run()
-	w.Destroy()
-}
-
 func main() {
 	if build_mode == "DEV" {
 		root, ok := os.LookupEnv("PROJECT_ROOT")
@@ -73,34 +55,41 @@ func main() {
 	var command = &cobra.Command{
 		// default action
 		Run: func(cmd *cobra.Command, args []string) {
-			go server()
-			go app()
-			test()
+			app, err := newApp()
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer app.destroy()
+			app.openWv()
+			app.prepareEnv()
+			go app.serve()
+			app.wait()
 		},
 	}
-
+	command.AddCommand(&cobra.Command{
+		Use:   "test",
+		Short: "testing command",
+		Run: func(cmd *cobra.Command, args []string) {
+			panic("TODO")
+		},
+	})
 	command.AddCommand(&cobra.Command{
 		Use:   "server",
 		Short: "start server",
 		Run: func(cmd *cobra.Command, args []string) {
-			server()
+			app, err := newApp()
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer app.destroy()
+			app.serve()
 		},
 	})
 	command.AddCommand(&cobra.Command{
 		Use:   "app",
 		Short: "launch app",
 		Run: func(cmd *cobra.Command, args []string) {
-			go server()
-			app()
-		},
-	})
-	command.AddCommand(&cobra.Command{
-		Use:   "test",
-		Short: "testing command",
-		Run: func(cmd *cobra.Command, args []string) {
-			go app()
-			test()
-			// types.Test()
+			command.Run(cmd, args)
 		},
 	})
 
