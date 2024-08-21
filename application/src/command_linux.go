@@ -2,5 +2,5 @@
 
 package main
 
-func (self Runner) disableTitlebar() {
+func (self *Runner) disableTitlebar() {
 }

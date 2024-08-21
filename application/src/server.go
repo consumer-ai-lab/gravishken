@@ -19,7 +19,7 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func (self App) serve() {
+func (self *App) serve() {
 	fmt.Println("Starting server...")
 
 	// TODO: this ctx is currently useless

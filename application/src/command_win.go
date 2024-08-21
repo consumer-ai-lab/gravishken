@@ -63,7 +63,7 @@ func EnumWindowsProc(hwnd syscall.Handle, lParam uintptr) uintptr {
 	return 1 // Continue enumeration
 }
 
-func (self Runner) disableTitlebar() {
+func (self *Runner) disableTitlebar() {
 	hwnd, _, _ := getForegroundWindow.Call()
 
 	style, _, _ := getWindowLong.Call(hwnd, GWL_STYLE)
