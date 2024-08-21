@@ -14,18 +14,6 @@ import (
 var build_mode string
 var port string
 
-type Error struct {
-	message string
-}
-
-func NewError(msg string) Error {
-	return Error{message: msg}
-}
-
-func (self *Error) Error() string {
-	return fmt.Sprintf("Error: %s", self.message)
-}
-
 func main() {
 	if build_mode == "DEV" {
 		root, ok := os.LookupEnv("PROJECT_ROOT")
@@ -47,6 +35,7 @@ func main() {
 			app.openWv()
 			app.prepareEnv()
 			go app.serve()
+			go app.handleMessages()
 			app.wait()
 		},
 	}

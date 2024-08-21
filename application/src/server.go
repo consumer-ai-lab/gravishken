@@ -14,13 +14,8 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-}
-
 func (self *App) serve() {
-	fmt.Println("Starting server...")
+	log.Println("Starting server...")
 
 	// TODO: this ctx is currently useless
 	ctx, close := context.WithCancel(context.Background())
@@ -59,24 +54,6 @@ func (self *App) serve() {
 				return
 			}
 			self.recv <- msg
-			// // Parse the message and add the data to the DataStore [added by kurve, just for testing]
-			// user := UserTest{
-			// 	UserID: msg.UserID,
-			// 	TestID: msg.TestID,
-			// 	StartTime: msg.StartTime,
-			// 	EndTime: msg.EndTime,
-			// 	ElapsedTime: msg.ElapsedTime,
-			// 	SubmissionReceived: msg.SubmissionReceived,
-			// 	ReadingElapsedTime: msg.ReadingElapsedTime,
-			// 	ReadingSubmissionReceived: msg.ReadingSubmissionReceived,
-			// 	SubmissionFolderID: msg.SubmissionFolderID,
-			// 	MergedFileID: msg.MergedFileID,
-			// 	WPM: msg.WPM,
-			// 	WPMNormal: msg.WPMNormal,
-			// 	ResultDownloaded: msg.ResultDownloaded,
-			// }
-			// AddDataToStore(user)
-			// log.Println("Added data to the store:", user)
 		}
 	}
 
@@ -125,4 +102,43 @@ func (self *App) serve() {
 
 	err := http.ListenAndServe(fmt.Sprintf("localhost:%s", port), mux)
 	log.Fatal(err)
+}
+
+func (self *App) handleMessages() {
+	for {
+		msg, ok := <-self.recv
+		if !ok {
+			return
+		}
+
+		switch msg.Type {
+		case types.ExeNotFound:
+			val, err := types.Get[types.TExeNotFound](msg)
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+			log.Println(val)
+		case types.Err:
+			val, err := types.Get[types.TErr](msg)
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+			log.Println(val)
+		case types.Unknown:
+			log.Printf("unknown message type received: '%s'\n", msg.Val)
+		// TODO:
+		// case types.UserTestSomethingSomething:
+		// 	user, err := types.Get[UserTest](msg)
+		// 	if err != nil {
+		// 		log.Println(err)
+		// 		continue
+		// 	}
+		// 	AddDataToStore(*user)
+		// 	log.Println("Added data to the store:", user)
+		default:
+			log.Printf("message type '%s' not handled ('%s')\n", msg.Type.TSName(), msg.Val)
+		}
+	}
 }

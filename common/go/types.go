@@ -2,12 +2,26 @@ package types
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
 
 	"github.com/tkrajina/typescriptify-golang-structs/typescriptify"
 )
+
+// this is a custom error type for use throughout the app
+type Error struct {
+	message string
+}
+
+func NewError(msg string) Error {
+	return Error{message: msg}
+}
+
+func (self Error) Error() string {
+	return fmt.Sprintf("Error: %s", self.message)
+}
 
 type Varient int
 
@@ -68,10 +82,17 @@ func NewMessage(typ interface{}) Message {
 	}
 }
 
-func Get[T any](msg Message) (T, error) {
+func Get[T any](msg Message) (*T, error) {
 	var val T
+
+	name := reflect.TypeOf(val).Name()
+	if name != msg.Type.TSName() {
+		err_msg := fmt.Sprintf("message of type '%s' but asked to be decoded as '%s'", msg.Type.TSName(), name)
+		return nil, NewError(err_msg)
+	}
+
 	err := json.Unmarshal([]byte(msg.Val), &val)
-	return val, err
+	return &val, err
 }
 
 // - [tkrajina/tkypescriptify-golang-structs](https://github.com/tkrajina/typescriptify-golang-structs)
