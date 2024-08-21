@@ -34,8 +34,8 @@ func main() {
 			defer app.destroy()
 			app.openWv()
 			app.prepareEnv()
-			go app.serve()
 			go app.handleMessages()
+			go app.serve()
 			app.wait()
 		},
 	}
@@ -55,6 +55,7 @@ func main() {
 				log.Fatal(err)
 			}
 			defer app.destroy()
+			go app.handleMessages()
 			app.serve()
 		},
 	})

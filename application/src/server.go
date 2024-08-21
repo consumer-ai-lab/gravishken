@@ -111,9 +111,9 @@ func (self *App) handleMessages() {
 			return
 		}
 
-		switch msg.Type {
-		case types.ExeNotFound:
-			val, err := types.Get[types.TExeNotFound](msg)
+		switch msg.Typ {
+		case types.UserLogin:
+			val, err := types.Get[types.TUserLogin](msg)
 			if err != nil {
 				log.Println(err)
 				continue
@@ -126,6 +126,8 @@ func (self *App) handleMessages() {
 				continue
 			}
 			log.Println(val)
+		case types.ExeNotFound:
+			log.Printf("message of type '%s' cannot be handled here: '%s'\n", msg.Typ.TSName(), msg.Val)
 		case types.Unknown:
 			log.Printf("unknown message type received: '%s'\n", msg.Val)
 		// TODO:
@@ -138,7 +140,7 @@ func (self *App) handleMessages() {
 		// 	AddDataToStore(*user)
 		// 	log.Println("Added data to the store:", user)
 		default:
-			log.Printf("message type '%s' not handled ('%s')\n", msg.Type.TSName(), msg.Val)
+			log.Printf("message type '%s' not handled ('%s')\n", msg.Typ.TSName(), msg.Val)
 		}
 	}
 }
