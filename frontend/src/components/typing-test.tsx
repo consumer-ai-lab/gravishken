@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { PlayCircle, StopCircle, Send } from 'lucide-react';
+import { match } from 'assert';
 
 const mockText = "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).";
 
@@ -18,13 +19,19 @@ export default function TypingTest({
     rollNumber,
     candidateName
 }: TypingTestProps) {
+    const [totalCharsTyped, setTotalCharsTyped] = useState(0);
+    const [totalCorrectCharacters, setTotalCorrectCharacters] = useState(0);
     const [isStarted, setIsStarted] = useState(false);
     const [inputText, setInputText] = useState('');
     const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
+    const [rawWPM, setrawWPM] = useState(0);
     const [wpm, setWpm] = useState(0);
     const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
+    const [traversal, setTraversal] = useState<number>(0);
+    const [matched, setMatched] = useState<number[]>([]);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
 
     useEffect(() => {
         if (isStarted && timeLeft > 0) {
@@ -40,11 +47,32 @@ export default function TypingTest({
         };
     }, [isStarted, timeLeft]);
 
+
+
     useEffect(() => {
         if (isStarted) {
-            const wordsTyped = inputText.trim().split(/\s+/).length;
+            if (inputText.length - 1 < traversal) {
+                if (matched.includes(traversal)) {
+                    setMatched((prev) => prev.filter(item => item !== traversal));
+                }
+                setTraversal(traversal - 1);
+            } else {
+                if (mockText[traversal] === inputText[traversal]) {
+                    setTotalCorrectCharacters((prev) => prev + 1);
+                    setMatched((prev) => [...prev, traversal]);
+                }
+                setTotalCharsTyped((prev) => prev + 1);
+                setTraversal(traversal + 1);
+            }
+
             const minutesPassed = (300 - timeLeft) / 60;
-            setWpm(Math.round(wordsTyped / minutesPassed) || 0);
+            if (minutesPassed <= 0) return; 
+
+            const rawWPM = (totalCharsTyped / 5) / minutesPassed;
+            const WPM = rawWPM * (totalCorrectCharacters / totalCharsTyped);
+
+            setrawWPM(Math.round(rawWPM) || 0);
+            setWpm(Math.round(WPM) || 0);
 
             const isCorrect = mockText.startsWith(inputText);
             setFeedback(isCorrect ? 'correct' : 'incorrect');
@@ -56,10 +84,12 @@ export default function TypingTest({
         if (textareaRef.current) textareaRef.current.focus();
     };
 
-
     const handleSubmit = () => {
         if (timerRef.current) clearInterval(timerRef.current);
         setIsStarted(false);
+        console.log('TotalCharsTyped:', totalCharsTyped);
+        console.log('TotalCorrectCharacters:', totalCorrectCharacters);
+
 
         console.log('Submitting results:', {
             testId,
@@ -67,6 +97,7 @@ export default function TypingTest({
             candidateName,
             timeTaken: 300 - timeLeft,
             wpm,
+            rawWPM,
             accuracy: calculateAccuracy(inputText, mockText)
         });
     };
