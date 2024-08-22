@@ -52,6 +52,8 @@ web-dev() {
 app() {
   cd $PROJECT_ROOT/application
 
+  mkdir -p ./dist
+
   go build -ldflags "$VARS" -o build/gravtest ./src/.
   ./build/gravtest $@
 }
