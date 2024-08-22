@@ -28,11 +28,11 @@ type Varient int
 const (
 	ExeNotFound Varient = iota
 	UserLogin
+	LoadRoute
+	ReloadUi
 	Err
-	Unknown
+	Unknown // NOTE: keep this as the last constant here.
 )
-
-var allVarients = []Varient{ExeNotFound, UserLogin, Err, Unknown}
 
 func (self Varient) TSName() string {
 	switch self {
@@ -40,6 +40,10 @@ func (self Varient) TSName() string {
 		return "ExeNotFound"
 	case UserLogin:
 		return "UserLogin"
+	case LoadRoute:
+		return "LoadRoute"
+	case ReloadUi:
+		return "ReloadUi"
 	case Err:
 		return "Err"
 	default:
@@ -52,6 +56,10 @@ func varientFromName(typ string) Varient {
 		return ExeNotFound
 	case "UserLogin":
 		return UserLogin
+	case "ReloadUi":
+		return ReloadUi
+	case "LoadRoute":
+		return LoadRoute
 	case "Err":
 		return Err
 	default:
@@ -74,6 +82,12 @@ type TUserLogin struct {
 	Password string
 	TestCode string
 }
+
+type TLoadRoute struct {
+	Route string
+}
+
+type TReloadUi struct{}
 
 // only for unexpected errors / for errors that we can't do much about, other than telling the user about it
 type TErr struct {
@@ -108,12 +122,19 @@ func Get[T any](msg Message) (*T, error) {
 
 // - [tkrajina/tkypescriptify-golang-structs](https://github.com/tkrajina/typescriptify-golang-structs)
 func DumpTypes(dir string) {
+	allVarients := make([]Varient, Unknown+1)
+	for i := range Unknown + 1 {
+		allVarients[i] = i
+	}
+
 	converter := typescriptify.New().
 		WithInterface(true).
 		WithBackupDir("").
 		Add(Message{}).
 		Add(TExeNotFound{}).
 		Add(TUserLogin{}).
+		Add(TLoadRoute{}).
+		Add(TReloadUi{}).
 		Add(TErr{}).
 		AddEnum(allVarients)
 
