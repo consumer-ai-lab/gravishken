@@ -1,14 +1,14 @@
 package helper
 
 import (
-	"gravtest/auth"
-	"gravtest/types"
 	"context"
 	"errors"
 	"fmt"
+	"server/src/auth"
+	"server/src/types"
 	"strconv"
 
-	"gravtest/models"
+	User "server/src/models/user"
 	"strings"
 	"time"
 
@@ -17,8 +17,22 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+type UserUpdateRequest struct {
+	Username string   `json:"username"`
+	Token    string   `json:"token"`
+	ApiKey   string   `json:"apiKey"`
+	Property string   `json:"property"`
+	Value    []string `json:"value"`
+}
+
+type UserLoginRequest struct {
+	Username     string `json:"username"`
+	Password     string `json:"password"`
+	TestPassword string `json:"testPassword"`
+}
+
 func UpdateUserTestTime(Collection *mongo.Collection, Username string, TimeToIncrease int64) error {
-	var user models.User
+	var user User.User
 
 	err := Collection.FindOne(context.TODO(), bson.M{"username": Username}).Decode(&user)
 
@@ -56,7 +70,7 @@ func UpdateBatchTestTime(Collection *mongo.Collection, Usernames []string, TimeT
 	return nil
 }
 
-func UpdateUserDate(Collection *mongo.Collection, Model *models.UserUpdateRequest) error {
+func UpdateUserDate(Collection *mongo.Collection, Model *UserUpdateRequest) error {
 	valid_request, err := auth.ValidRequestVerifier(Collection, Model.Token, Model.ApiKey)
 	if err != nil {
 		return err
@@ -66,7 +80,7 @@ func UpdateUserDate(Collection *mongo.Collection, Model *models.UserUpdateReques
 		return errors.New("invalid request: Token or Apikey is invalid")
 	}
 
-	var userTest models.UserTest
+	var userTest User.UserTest
 
 	err = Collection.FindOne(context.TODO(), bson.M{"username": Model.Username}).Decode(&userTest)
 
@@ -151,14 +165,14 @@ func UpdateUserDate(Collection *mongo.Collection, Model *models.UserUpdateReques
 		if err != nil {
 			return err
 		}
-		user, err := GetModelByBatchId(Collection, batchID, &models.User{})
+		user, err := GetModelByBatchId(Collection, batchID, &User.User{})
 		if err != nil {
 			return err
 		}
 
 		var usernames []string
 		for _, user := range user {
-			usernames = append(usernames, user.(*models.User).Username)
+			usernames = append(usernames, user.(*User.User).Username)
 		}
 
 		err = UpdateBatchTestTime(Collection, usernames, timeToIncrease.Unix())
@@ -177,24 +191,24 @@ func UpdateUserDate(Collection *mongo.Collection, Model *models.UserUpdateReques
 
 func GetBatchDataForFrontend(Collection *mongo.Collection, BatchID string) ([][]string, error) {
 	var result [][]string
-	user, err := GetModelByBatchId(Collection, BatchID, &models.User{})
+	user, err := GetModelByBatchId(Collection, BatchID, &User.User{})
 	if err != nil {
 		return nil, err
 	}
 
 	for _, user := range user {
-		start_time := user.(*models.User).Tests.StartTime
+		start_time := user.(*User.User).Tests.StartTime
 		userArr := []string{}
 		if start_time.IsZero() {
-			userArr = append(userArr, user.(*models.User).Username)
-			userArr = append(userArr, user.(*models.User).Tests.MergedFileID)
+			userArr = append(userArr, user.(*User.User).Username)
+			userArr = append(userArr, user.(*User.User).Tests.MergedFileID)
 			userArr = append(userArr, "Present")
-			userArr = append(userArr, user.(*models.User).Tests.SubmissionFolderID)
+			userArr = append(userArr, user.(*User.User).Tests.SubmissionFolderID)
 		} else {
-			userArr = append(userArr, user.(*models.User).Username)
-			userArr = append(userArr, user.(*models.User).Tests.MergedFileID)
+			userArr = append(userArr, user.(*User.User).Username)
+			userArr = append(userArr, user.(*User.User).Tests.MergedFileID)
 			userArr = append(userArr, "Absent")
-			userArr = append(userArr, user.(*models.User).Tests.SubmissionFolderID)
+			userArr = append(userArr, user.(*User.User).Tests.SubmissionFolderID)
 		}
 
 		result = append(result, userArr)
@@ -204,8 +218,8 @@ func GetBatchDataForFrontend(Collection *mongo.Collection, BatchID string) ([][]
 }
 
 // incomplete
-func UserLogin(Collection *mongo.Collection, userRequest *models.UserLoginRequest) error {
-	user, err := auth.FindUserByUsername(Collection, userRequest.Username)
+func UserLogin(Collection *mongo.Collection, userRequest *UserLoginRequest) error {
+	user, err := User.FindByUsername(Collection, userRequest.Username)
 	if err != nil {
 		return err
 	}
@@ -253,7 +267,7 @@ type RequestData struct {
 }
 
 func SetUserResultToDownloaded(Collection *mongo.Collection, request *RequestData) error {
-	user, err := Get_All_Models(Collection, &models.User{})
+	user, err := Get_All_Models(Collection, &User.User{})
 	if err != nil {
 		return err
 	}
@@ -262,19 +276,19 @@ func SetUserResultToDownloaded(Collection *mongo.Collection, request *RequestDat
 	resultDownloaded := request.resultDownloaded
 	filered_users := []types.ModelInterface{}
 	for _, user := range user {
-		username, _ := strconv.Atoi(user.(*models.User).Username) // Convert username to integer
+		username, _ := strconv.Atoi(user.(*User.User).Username) // Convert username to integer
 		if username >= from && username <= to {
 			filered_users = append(filered_users, user)
 		}
 	}
 
 	for _, filtered_user := range filered_users {
-		if !filtered_user.(*models.User).Tests.SubmissionReceived {
+		if !filtered_user.(*User.User).Tests.SubmissionReceived {
 			continue
 		}
 
-		filtered_user.(*models.User).Tests.ResultDownloaded = resultDownloaded
-		err = Update_Model_By_ID(Collection, filtered_user.(*models.User).ID.Hex(), filtered_user)
+		filtered_user.(*User.User).Tests.ResultDownloaded = resultDownloaded
+		err = Update_Model_By_ID(Collection, filtered_user.(*User.User).ID.Hex(), filtered_user)
 		if err != nil {
 			return err
 		}
