@@ -15,8 +15,6 @@ import (
 )
 
 func (self *App) serve() {
-	log.Println("Starting server...")
-
 	// TODO: this ctx is currently useless
 	ctx, close := context.WithCancel(context.Background())
 	defer close()
@@ -100,6 +98,7 @@ func (self *App) serve() {
 		panic("invalid BUILD_MODE")
 	}
 
+	log.Printf("Starting application on port %s...\n", port)
 	err := http.ListenAndServe(fmt.Sprintf("localhost:%s", port), mux)
 	log.Fatal(err)
 }
