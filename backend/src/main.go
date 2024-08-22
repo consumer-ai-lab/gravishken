@@ -15,14 +15,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var build_mode string
+
 func main() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 	router := SetupRouter()
+<<<<<<< HEAD
 	log.Fatal(router.Run(":" + os.Getenv("GO_PORT")))
 	
+=======
+	log.Fatal(router.Run(":" + os.Getenv("SERVER_PORT")))
+>>>>>>> 068a08dbbdfe5cbe16e2019c4277f21895fecf20
 }
 
 func SetupRouter() *gin.Engine {
@@ -36,12 +42,14 @@ func SetupRouter() *gin.Engine {
 
 	router := gin.Default()
 
-	if os.Getenv("GO_ENV") == "dev" {
+	if build_mode == "DEV" {
 		gin.SetMode(gin.DebugMode)
-	} else if os.Getenv("GO_ENV") == "test" {
-		gin.SetMode(gin.TestMode)
-	} else {
+		// } else if build_mode == "test" {
+		// 	gin.SetMode(gin.TestMode)
+	} else if build_mode == "PROD" {
 		gin.SetMode(gin.ReleaseMode)
+	} else {
+		panic("invalid BUILD_MODE")
 	}
 
 	router.Use(cors.New(cors.Config{

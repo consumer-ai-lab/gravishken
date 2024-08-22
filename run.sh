@@ -40,7 +40,9 @@ server() {
   cd $PROJECT_ROOT/backend
   source ./.env
 
-  go run .
+  export VARS="-X main.build_mode=$BUILD_MODE"
+  go build -ldflags "$VARS" -o build/server ./src/.
+  ./build/server $@
 }
 
 web-dev() {
@@ -75,7 +77,7 @@ run() {
       build-windows-app
     ;;
     "server")
-      server
+      server $@
     ;;
     "web-dev")
       web-dev
