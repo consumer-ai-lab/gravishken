@@ -23,12 +23,8 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 	router := SetupRouter()
-<<<<<<< HEAD
 	log.Fatal(router.Run(":" + os.Getenv("GO_PORT")))
 	
-=======
-	log.Fatal(router.Run(":" + os.Getenv("SERVER_PORT")))
->>>>>>> 068a08dbbdfe5cbe16e2019c4277f21895fecf20
 }
 
 func SetupRouter() *gin.Engine {
