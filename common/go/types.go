@@ -2,7 +2,7 @@ package types
 
 import (
 	"encoding/json"
-	"log"
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -10,23 +10,36 @@ import (
 	"github.com/tkrajina/typescriptify-golang-structs/typescriptify"
 )
 
+// this is a custom error type for use throughout the app
+type Error struct {
+	message string
+}
+
+func NewError(msg string) Error {
+	return Error{message: msg}
+}
+
+func (self Error) Error() string {
+	return fmt.Sprintf("Error: %s", self.message)
+}
+
 type Varient int
 
 const (
-	Var1 Varient = iota
-	Var2
+	ExeNotFound Varient = iota
+	UserLogin
 	Err
 	Unknown
 )
 
-var allVarients = []Varient{Var1, Var2, Err, Unknown}
+var allVarients = []Varient{ExeNotFound, UserLogin, Err, Unknown}
 
 func (self Varient) TSName() string {
 	switch self {
-	case Var1:
-		return "Var1"
-	case Var2:
-		return "Var2"
+	case ExeNotFound:
+		return "ExeNotFound"
+	case UserLogin:
+		return "UserLogin"
 	case Err:
 		return "Err"
 	default:
@@ -35,10 +48,10 @@ func (self Varient) TSName() string {
 }
 func varientFromName(typ string) Varient {
 	switch typ {
-	case "Var1":
-		return Var1
-	case "Var2":
-		return Var2
+	case "ExeNotFound":
+		return ExeNotFound
+	case "UserLogin":
+		return UserLogin
 	case "Err":
 		return Err
 	default:
@@ -47,20 +60,22 @@ func varientFromName(typ string) Varient {
 }
 
 type Message struct {
-	Type Varient
-	Val  string
+	Typ Varient
+	Val string
 }
 
-type TVar1 struct {
-	Field1 int
-	Field2 bool
+type TExeNotFound struct {
+	Name   string
+	ErrMsg string
 }
 
-type TVar2 struct {
-	Field1 bool
-	Field3 string
+type TUserLogin struct {
+	Username string
+	Password string
+	TestCode string
 }
 
+// only for unexpected errors / for errors that we can't do much about, other than telling the user about it
 type TErr struct {
 	Message string
 }
@@ -73,15 +88,22 @@ func NewMessage(typ interface{}) Message {
 		panic(err)
 	}
 	return Message{
-		Type: varient,
-		Val:  string(json),
+		Typ: varient,
+		Val: string(json),
 	}
 }
 
-func Get[T any](msg Message) (T, error) {
+func Get[T any](msg Message) (*T, error) {
 	var val T
+
+	name := reflect.TypeOf(val).Name()[1:]
+	if name != msg.Typ.TSName() {
+		err_msg := fmt.Sprintf("message of type '%s' but asked to be decoded as '%s'", msg.Typ.TSName(), name)
+		return nil, NewError(err_msg)
+	}
+
 	err := json.Unmarshal([]byte(msg.Val), &val)
-	return val, err
+	return &val, err
 }
 
 // - [tkrajina/tkypescriptify-golang-structs](https://github.com/tkrajina/typescriptify-golang-structs)
@@ -90,8 +112,8 @@ func DumpTypes(dir string) {
 		WithInterface(true).
 		WithBackupDir("").
 		Add(Message{}).
-		Add(TVar1{}).
-		Add(TVar2{}).
+		Add(TExeNotFound{}).
+		Add(TUserLogin{}).
 		Add(TErr{}).
 		AddEnum(allVarients)
 
@@ -103,15 +125,4 @@ func DumpTypes(dir string) {
 	if err != nil {
 		panic(err.Error())
 	}
-}
-
-func Test() {
-	v1 := TVar1{Field1: 42, Field2: false}
-	msg := NewMessage(v1)
-	log.Println(msg)
-	jmsg, _ := json.Marshal(msg)
-	log.Println(string(jmsg))
-
-	back, _ := Get[TVar1](msg)
-	log.Println(back)
 }

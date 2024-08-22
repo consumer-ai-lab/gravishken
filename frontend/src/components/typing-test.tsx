@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { PlayCircle, StopCircle, Send } from 'lucide-react';
+import { match } from 'assert';
 
 const mockText = "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).";
 
@@ -18,13 +19,20 @@ export default function TypingTest({
     rollNumber,
     candidateName
 }: TypingTestProps) {
+    const testime = 300;
+    const [totalCharsTyped, setTotalCharsTyped] = useState(0);
+    const [totalCorrectCharacters, setTotalCorrectCharacters] = useState(0);
     const [isStarted, setIsStarted] = useState(false);
     const [inputText, setInputText] = useState('');
-    const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
+    const [timeLeft, setTimeLeft] = useState(testime); // 5 minutes in seconds
+    const [rawWPM, setrawWPM] = useState(0);
     const [wpm, setWpm] = useState(0);
     const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
+    const [traversal, setTraversal] = useState<number>(0);
+    const [matched, setMatched] = useState<number[]>([]);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
 
     useEffect(() => {
         if (isStarted && timeLeft > 0) {
@@ -40,11 +48,39 @@ export default function TypingTest({
         };
     }, [isStarted, timeLeft]);
 
+
+
     useEffect(() => {
+        if (traversal == mockText.length - 1){
+            handleSubmit();
+        }
         if (isStarted) {
-            const wordsTyped = inputText.trim().split(/\s+/).length;
-            const minutesPassed = (300 - timeLeft) / 60;
-            setWpm(Math.round(wordsTyped / minutesPassed) || 0);
+            if(inputText.length === 0) {
+                return;
+            }
+
+            if (inputText.length - 1 < traversal) {
+                if (matched.includes(traversal)) {
+                    setMatched((prev) => prev.filter(item => item !== traversal));
+                }
+                setTraversal(traversal - 1);
+            } else {
+                if (mockText[traversal] === inputText[traversal]) {
+                    setTotalCorrectCharacters((prev) => prev + 1);
+                    setMatched((prev) => [...prev, traversal]);
+                }
+                setTotalCharsTyped((prev) => prev + 1);
+                setTraversal(traversal + 1);
+            }
+
+            const minutesPassed = (testime - timeLeft) / 60;
+            if (minutesPassed <= 0) return; 
+
+            const rawWPM = (totalCharsTyped / 5) / minutesPassed;
+            const WPM = rawWPM * (totalCorrectCharacters / totalCharsTyped);
+
+            setrawWPM(Math.round(rawWPM) || 0);
+            setWpm(Math.round(WPM) || 0);
 
             const isCorrect = mockText.startsWith(inputText);
             setFeedback(isCorrect ? 'correct' : 'incorrect');
@@ -53,13 +89,18 @@ export default function TypingTest({
 
     const handleStart = () => {
         setIsStarted(true);
-        if (textareaRef.current) textareaRef.current.focus();
+        setTimeout(() => {
+            if (textareaRef.current) {
+                textareaRef.current.focus();  
+            }
+        }, 0);  
     };
-
-
     const handleSubmit = () => {
         if (timerRef.current) clearInterval(timerRef.current);
         setIsStarted(false);
+        console.log('TotalCharsTyped:', totalCharsTyped);
+        console.log('TotalCorrectCharacters:', totalCorrectCharacters);
+
 
         console.log('Submitting results:', {
             testId,
@@ -67,6 +108,7 @@ export default function TypingTest({
             candidateName,
             timeTaken: 300 - timeLeft,
             wpm,
+            rawWPM,
             accuracy: calculateAccuracy(inputText, mockText)
         });
     };
@@ -77,6 +119,35 @@ export default function TypingTest({
         const correctWords = inputWords.filter((word, index) => word === originalWords[index]);
         return Math.round((correctWords.length / originalWords.length) * 100);
     };
+
+    const getHighlightedText = () => {
+        return (
+          <pre className="bg-gray-800 text-white p-4 rounded-lg whitespace-pre-wrap break-words">
+            {mockText.split('').map((char, index) => {
+              const isCorrect = inputText[index] === char;
+              const isSpace = char === ' ';
+              return (
+                <span
+                  key={index}
+                  className={`${
+                    inputText[index] !== undefined
+                      ? isCorrect
+                        ? "text-green-500"
+                        : isSpace
+                          ? "text-red-500 bg-red-900"
+                          : "text-red-500"
+                      : ""
+                  }`}
+                >
+                  {char}
+                </span>
+              );
+            })}
+          </pre>
+        );
+      };
+    
+    console.log(mockText.split(''));
 
     return (
         <Card className="w-full max-w-8xl rounded-lg overflow-hidden mx-auto">
@@ -95,7 +166,7 @@ export default function TypingTest({
                     <p>Type the following text as accurately and quickly as you can. Your time starts when you click "Start".</p>
                 </div>
                 <div className="bg-white border border-gray-300 p-4 rounded-md">
-                    <p className="text-gray-700">{mockText}</p>
+                    {getHighlightedText()} {/* Highlighted Original Text */}
                 </div>
                 <Textarea
                     ref={textareaRef}
@@ -103,11 +174,13 @@ export default function TypingTest({
                     onChange={(e) => setInputText(e.target.value)}
                     placeholder="Start typing here..."
                     disabled={!isStarted}
-                    className={`h-40 resize-none ${
-                        feedback === 'correct' ? 'border-green-500' : 
-                        feedback === 'incorrect' ? 'border-red-500' : ''
-                    }`}
+                    className={`h-40 resize-none px-4 py-3 rounded-lg shadow-sm transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent 
+                        ${isStarted ? 'bg-white' : 'bg-gray-100 border-black cursor-not-allowed'} 
+                        ${feedback === 'correct' ? 'border-green-500' : 
+                        feedback === 'incorrect' ? 'border-red-500' : 'border-black'}
+                    `}
                 />
+
                 <div className="flex justify-between items-center">
                     <div className="text-lg font-semibold">
                         Time Left: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}

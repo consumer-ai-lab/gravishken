@@ -6,11 +6,11 @@ export function exhausted(d: never) {
 }
 
 export type Message = {
-    Typ: types.Varient.Var1,
-    Val: types.TVar1,
+    Typ: types.Varient.ExeNotFound,
+    Val: types.TExeNotFound,
 } | {
-    Typ: types.Varient.Var2,
-    Val: types.TVar2,
+    Typ: types.Varient.UserLogin,
+    Val: types.TUserLogin,
 } | {
     Typ: types.Varient.Err,
     Val: types.TErr,
@@ -52,17 +52,20 @@ export class Server {
     async handle_message(msg: Message) {
         console.log(msg);
         switch (msg.Typ) {
-            case types.Varient.Var1:
-            case types.Varient.Var2:
+            case types.Varient.ExeNotFound:
             case types.Varient.Err:
-            case types.Varient.Unknown:
                 break;
+            case types.Varient.Unknown:
+            case types.Varient.UserLogin: {
+                throw new Error(`message type '${msg.Typ}' can't be handled here`);
+            } break;
             default:
                 throw exhausted(msg);
         }
     }
 
     send_message(msg: Message) {
+        console.log(msg);
         msg.Val = JSON.stringify(msg.Val);
         let json = JSON.stringify(msg);
         this.ws.send(json);

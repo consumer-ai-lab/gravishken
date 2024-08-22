@@ -1,15 +1,25 @@
 import React, { useState } from 'react';
 import { UserIcon, KeyIcon, LockOpenIcon } from 'lucide-react';
+import { server } from '@common/server';
+import * as types from '@common/types';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [userPassword, setUserPassword] = useState('');
   const [testPassword, setTestPassword] = useState('');
 
-  const handleSubmit = (e:React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     console.log('Login submitted:', { username, userPassword, testPassword });
+    server.send_message({
+      Typ: types.Varient.UserLogin,
+      Val: {
+        Username: username,
+        Password: userPassword,
+        TestCode: testPassword,
+      }
+    });
   };
 
   return (

@@ -3,7 +3,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"syscall"
 	"unsafe"
 
@@ -57,13 +57,13 @@ func EnumWindowsProc(hwnd syscall.Handle, lParam uintptr) uintptr {
 
 	winhand := win.HWND(hwnd)
 	if win.IsWindowVisible(winhand) {
-		fmt.Printf("HWND: %v, Title: %s\n", hwnd, title)
+		log.Printf("HWND: %v, Title: %s\n", hwnd, title)
 	}
 
 	return 1 // Continue enumeration
 }
 
-func disableTitlebar() {
+func (self *Runner) disableTitlebar() {
 	hwnd, _, _ := getForegroundWindow.Call()
 
 	style, _, _ := getWindowLong.Call(hwnd, GWL_STYLE)
@@ -74,11 +74,14 @@ func disableTitlebar() {
 
 	_, _, err := setWindowLong.Call(hwnd, GWL_STYLE, newStyle)
 	if err != nil && err.Error() != "The operation completed successfully." {
-		fmt.Println("Error setting window style:", err)
+		log.Println("Error setting window style:", err)
 	} else {
-		fmt.Println("Title bar and borders removed successfully.")
+		log.Println("Title bar and borders removed successfully.")
 	}
 
+	// - [maybe keep setting this in a loop to keep the window in bg](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowpos)
+	//   - HWND_BOTTOM
+	// - MAYBE: keep looping through unknown windows and keep hiding them?
 	syscall.SyscallN(uintptr(user32.NewProc("SetWindowPos").Addr()), 5,
 		hwnd, 0, 0, 0, 0, win.SWP_NOMOVE|win.SWP_NOSIZE)
 }

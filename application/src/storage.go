@@ -3,19 +3,22 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"sync"
 )
 
-type DataStore map[string]UserTest
-
-var dataStore DataStore = make(DataStore)
+var dataStore sync.Map
 
 func AddDataToStore(user UserTest) {
-	dataStore[user.UserID] = user
+	dataStore.Store(user.UserID, user)
 }
 
 func GetDataFromStore(userId string) UserTest {
-	if val, ok := dataStore[userId]; ok {
-		return val
+	if val, ok := dataStore.Load(userId); ok {
+		user, ok := val.(UserTest)
+		if !ok {
+			panic("we only store UserTest in the map. nothing else should exist in it")
+		}
+		return user
 	}
 	return UserTest{}
 }
