@@ -13,6 +13,12 @@ export type Message = {
     Typ: types.Varient.UserLogin,
     Val: types.TUserLogin,
 } | {
+    Typ: types.Varient.LoadRoute,
+    Val: types.TLoadRoute,
+} | {
+    Typ: types.Varient.ReloadUi,
+    Val: types.TReloadUi,
+} | {
     Typ: types.Varient.Err,
     Val: types.TErr,
 } | {
@@ -24,6 +30,8 @@ export type Message = {
 type ValType<T extends types.Varient> = 
     T extends types.Varient.ExeNotFound ? types.TExeNotFound :
     T extends types.Varient.UserLogin ? types.TUserLogin :
+    T extends types.Varient.LoadRoute ? types.TLoadRoute :
+    T extends types.Varient.ReloadUi ? types.TReloadUi :
     T extends types.Varient.Err ? types.TErr :
     unknown;
 
@@ -70,7 +78,7 @@ export class Server {
 
             let callbacks = this.callbacks.get(type) ?? null;
             if (callbacks == null) {
-                this.callbacks.set(type, callbacks);
+                this.callbacks.set(type, [[id, cb]]);
             } else {
                 callbacks.push([id, cb]);
             }
@@ -99,7 +107,11 @@ export class Server {
 
         switch (msg.Typ) {
             case types.Varient.ExeNotFound:
+            case types.Varient.LoadRoute:
             case types.Varient.Err:
+                break;
+            case types.Varient.ReloadUi:
+                window.location.href = "/";
                 break;
             case types.Varient.Unknown:
             case types.Varient.UserLogin: {
@@ -123,4 +135,3 @@ export let server: Server = null;
 export async function init() {
     server = await Server.new();
 }
-

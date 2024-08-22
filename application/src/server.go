@@ -15,11 +15,7 @@ import (
 )
 
 func (self *App) serve() {
-	// TODO: this ctx is currently useless
-	ctx, close := context.WithCancel(context.Background())
-	defer close()
-
-	handleClient := func(ws *websocket.Conn) {
+	handleClient := func(ws *websocket.Conn, ctx context.Context) {
 		defer ws.Close()
 
 		for {
@@ -41,7 +37,7 @@ func (self *App) serve() {
 		}
 	}
 
-	handleMessages := func(ws *websocket.Conn) {
+	handleMessages := func(ws *websocket.Conn, close context.CancelFunc) {
 		defer ws.Close()
 
 		for {
@@ -49,6 +45,7 @@ func (self *App) serve() {
 			err := ws.ReadJSON(&msg)
 			if err != nil {
 				log.Println(err)
+				close()
 				return
 			}
 			self.recv <- msg
@@ -70,9 +67,11 @@ func (self *App) serve() {
 			return
 		}
 
+		ctx, close := context.WithCancel(context.Background())
+
 		log.Println("new conn")
-		go handleClient(ws)
-		handleMessages(ws)
+		go handleClient(ws, ctx)
+		handleMessages(ws, close)
 	}
 
 	mux := http.NewServeMux()

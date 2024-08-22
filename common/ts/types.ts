@@ -4,8 +4,10 @@
 export enum Varient {
     ExeNotFound = 0,
     UserLogin = 1,
-    Err = 2,
-    Unknown = 3,
+    LoadRoute = 2,
+    ReloadUi = 3,
+    Err = 4,
+    Unknown = 5,
 }
 export interface Message {
     Typ: Varient;
@@ -19,6 +21,12 @@ export interface TUserLogin {
     Username: string;
     Password: string;
     TestCode: string;
+}
+export interface TLoadRoute {
+    Route: string;
+}
+export interface TReloadUi {
+
 }
 export interface TErr {
     Message: string;
