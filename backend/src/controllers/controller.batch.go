@@ -8,7 +8,7 @@ import (
 
 
 func (this *Class) AddBatchToDB(ctx *gin.Context, filePath string) {
-	testCollection := this.TestCollection
+	testCollection := this.BatchCollection
 	err := utils.Add_CSVData_To_DB(testCollection, filePath)
 	if err != nil {
 		ctx.JSON(500, gin.H{
