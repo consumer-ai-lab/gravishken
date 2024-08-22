@@ -10,13 +10,14 @@ import (
 )
 
 type User struct {
-	ID       primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	Name     string             `bson:"name" json:"name" binding:"required"`
-	Username string             `bson:"username" json:"username" binding:"required"`
-	Password string             `bson:"password" json:"-" binding:"required"`
-	Token    string             `bson:"token" json:"token"`
-	BatchID  primitive.ObjectID `bson:"batch" json:"batch,omitempty" binding:"required"`
-	Tests    UserTest           `bson:"tests" json:"tests,omitempty"`
+	ID           primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	Name         string             `bson:"name" json:"name" binding:"required"`
+	Username     string             `bson:"username" json:"username" binding:"required"`
+	Password     string             `bson:"password" json:"password" binding:"required"`
+	TestPassword string             `bson:"testPassword" json:"testPassword" binding:"required"`
+	Token        string             `bson:"token" json:"token"`
+	BatchID      primitive.ObjectID `bson:"batch" json:"batch,omitempty" binding:"required"`
+	Tests        UserTest           `bson:"tests" json:"tests,omitempty"`
 }
 
 type UserTest struct {
@@ -53,4 +54,18 @@ func FindByUsername(Collection *mongo.Collection, userName string) (*User, error
 	}
 
 	return &user, nil
+}
+
+type UserUpdateRequest struct {
+	Username string   `json:"username"`
+	Token    string   `json:"token"`
+	ApiKey   string   `json:"apiKey"`
+	Property string   `json:"property"`
+	Value    []string `json:"value"`
+}
+
+type UserLoginRequest struct {
+	Username     string `json:"username"`
+	Password     string `json:"password"`
+	TestPassword string `json:"testPassword"`
 }

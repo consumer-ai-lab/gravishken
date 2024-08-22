@@ -1,16 +1,18 @@
 package main
 
 import (
-	helmet "github.com/danielkov/gin-helmet"
 	config "server/config"
 	route "server/src/routes"
+
+	helmet "github.com/danielkov/gin-helmet"
+	"github.com/joho/godotenv"
+
+	"log"
+	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
-	"log"
-	"os"
 )
 
 func main() {
@@ -20,10 +22,17 @@ func main() {
 	}
 	router := SetupRouter()
 	log.Fatal(router.Run(":" + os.Getenv("GO_PORT")))
+	
 }
 
 func SetupRouter() *gin.Engine {
-	db := config.Connection()
+	db, err := config.Connection()
+
+	if err != nil {
+		log.Fatal("Error connecting to MongoDB: ", err)
+
+		return nil
+	}
 
 	router := gin.Default()
 

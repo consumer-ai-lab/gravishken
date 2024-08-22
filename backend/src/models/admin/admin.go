@@ -11,7 +11,7 @@ import (
 type Admin struct {
 	ID       primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
 	Username string             `bson:"username" json:"username"`
-	Password string             `bson:"password" json:"-"`
+	Password string             `bson:"password" json:"password"`
 	Token    []string           `bson:"token" json:"token"`
 }
 
@@ -26,7 +26,7 @@ type AdminRequest struct {
 
 type AdminChangePassword struct {
 	Username    string `json:"username"`
-	NewPassword string `json:"oldPassword"`
+	NewPassword string `json:"newPassword"`
 }
 
 func FindByUsername(Collection *mongo.Collection, userName string) (*Admin, error) {

@@ -17,19 +17,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type UserUpdateRequest struct {
-	Username string   `json:"username"`
-	Token    string   `json:"token"`
-	ApiKey   string   `json:"apiKey"`
-	Property string   `json:"property"`
-	Value    []string `json:"value"`
-}
 
-type UserLoginRequest struct {
-	Username     string `json:"username"`
-	Password     string `json:"password"`
-	TestPassword string `json:"testPassword"`
-}
 
 func UpdateUserTestTime(Collection *mongo.Collection, Username string, TimeToIncrease int64) error {
 	var user User.User
@@ -70,7 +58,7 @@ func UpdateBatchTestTime(Collection *mongo.Collection, Usernames []string, TimeT
 	return nil
 }
 
-func UpdateUserDate(Collection *mongo.Collection, Model *UserUpdateRequest) error {
+func UpdateUserDate(Collection *mongo.Collection, Model *User.UserUpdateRequest) error {
 	valid_request, err := auth.ValidRequestVerifier(Collection, Model.Token, Model.ApiKey)
 	if err != nil {
 		return err
@@ -217,25 +205,25 @@ func GetBatchDataForFrontend(Collection *mongo.Collection, BatchID string) ([][]
 	return result, nil
 }
 
-// incomplete
-func UserLogin(Collection *mongo.Collection, userRequest *UserLoginRequest) error {
+
+func UserLogin(Collection *mongo.Collection, userRequest *User.UserLoginRequest) (string, error) {
 	user, err := User.FindByUsername(Collection, userRequest.Username)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	if user == nil {
-		return errors.New("user not found")
+		return "", errors.New("user not found")
 	}
 
 	batch_data, err := GetQuestionPaper(Collection, userRequest.TestPassword)
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	if batch_data == nil {
-		return errors.New("batch not found")
+		return "", errors.New("batch not found")
 	}
 
 	// Generate JWT token
@@ -246,18 +234,17 @@ func UserLogin(Collection *mongo.Collection, userRequest *UserLoginRequest) erro
 
 	tokenString, err := token.SignedString([]byte("token"))
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	user.Token = tokenString
-	user.Password = userRequest.TestPassword // I am still confused are there 2 passwords or only one password
+	user.TestPassword = userRequest.TestPassword
 
 	err = Update_Model_By_ID(Collection, user.ID.Hex(), user)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return tokenString, nil
 }
 
 type RequestData struct {

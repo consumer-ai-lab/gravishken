@@ -157,11 +157,15 @@ func Update_Model_By_ID(Collection *mongo.Collection, ID string, Model types.Mod
 		return fmt.Errorf("invalid ID format: %v", err)
 	}
 
+	fmt.Println("Updating Model with ID: ", ID)
+
 	result, err := Collection.ReplaceOne(context.TODO(), bson.M{"_id": objectID}, Model)
 	if err != nil {
 		log.Printf("Error in updating Model from database: %v", err)
 		return err
 	}
+
+	fmt.Println("Model updated successfully")
 
 	if result.MatchedCount == 0 {
 		return fmt.Errorf("no document found with ID: %s", ID)

@@ -16,8 +16,7 @@ import (
 func RegisterAdmin(Collection *mongo.Collection, Admin types.ModelInterface) error {
 
 	password := Admin.(*admin.Admin).Password
-
-	fmt.Printf("Original password: %s\n", password)
+	
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -31,26 +30,26 @@ func RegisterAdmin(Collection *mongo.Collection, Admin types.ModelInterface) err
 	return nil
 }
 
-func AdminLogin(Collection *mongo.Collection, Admin types.ModelInterface) error {
+func AdminLogin(Collection *mongo.Collection, Admin types.ModelInterface) (string, error) {
 	username := Admin.(*admin.Admin).Username
 	password := Admin.(*admin.Admin).Password
 	secretKey := []byte("token")
+
 
 	var user admin.Admin
 	err := Collection.FindOne(context.TODO(), bson.M{"username": username}).Decode(&user)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return fmt.Errorf("admin not found")
+			return "", fmt.Errorf("admin not found")
 		}
-		return fmt.Errorf("error finding admin: %v", err)
+		return "", fmt.Errorf("error finding admin: %v", err)
 	}
-
-	fmt.Printf("Admin: %v | Password: %s\n", user, password)
 
 	// Compare the hashed password with the plaintext password
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	
 	if err != nil {
-		return fmt.Errorf("password does not match: %v", err)
+		return "", err
 	}
 
 	expirationTime := time.Now().Add(48 * time.Hour)
@@ -67,55 +66,14 @@ func AdminLogin(Collection *mongo.Collection, Admin types.ModelInterface) error 
 	tokenString, err := token.SignedString(secretKey)
 	if err != nil {
 		fmt.Println("Error signing the token:", err)
-		return err
-	}
-
-	Admin.(*admin.Admin).Token = append(Admin.(*admin.Admin).Token, tokenString)
-
-	err = Update_Model_By_ID(Collection, user.ID.Hex(), Admin)
-
-	if err != nil {
-		return fmt.Errorf("error updating admin: %v", err)
+		return "", err
 	}
 
 	fmt.Println("Login successful")
 
-	return nil
+	return tokenString, nil
 }
 
-func AdminLogout(Collection *mongo.Collection, AdminRequest *admin.AdminRequest) error {
-	token := AdminRequest.Token
-	username := AdminRequest.Username
-
-	var admin admin.Admin
-	err := Collection.FindOne(context.TODO(), bson.M{"username": username}).Decode(&admin)
-	if err != nil {
-		return err
-	}
-
-	new_token := []string{}
-
-	for _, t := range admin.Token {
-		if t != token {
-			new_token = append(new_token, t)
-		}
-	}
-
-	admin.Token = new_token
-	result, err := Collection.ReplaceOne(context.TODO(), bson.M{"username": username}, admin)
-
-	if err != nil {
-		return err
-	}
-
-	if result.MatchedCount == 0 {
-		return fmt.Errorf("no document found with ID: %s", username)
-	}
-
-	fmt.Println("Admin Logout successfully")
-
-	return nil
-}
 
 func ChangePassword(Collection *mongo.Collection, model *admin.AdminChangePassword) error {
 
