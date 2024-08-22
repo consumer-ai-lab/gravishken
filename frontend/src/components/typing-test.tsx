@@ -19,11 +19,12 @@ export default function TypingTest({
     rollNumber,
     candidateName
 }: TypingTestProps) {
+    const testime = 300;
     const [totalCharsTyped, setTotalCharsTyped] = useState(0);
     const [totalCorrectCharacters, setTotalCorrectCharacters] = useState(0);
     const [isStarted, setIsStarted] = useState(false);
     const [inputText, setInputText] = useState('');
-    const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
+    const [timeLeft, setTimeLeft] = useState(testime); // 5 minutes in seconds
     const [rawWPM, setrawWPM] = useState(0);
     const [wpm, setWpm] = useState(0);
     const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
@@ -50,7 +51,14 @@ export default function TypingTest({
 
 
     useEffect(() => {
+        if (traversal == mockText.length - 1){
+            handleSubmit();
+        }
         if (isStarted) {
+            if(inputText.length === 0) {
+                return;
+            }
+
             if (inputText.length - 1 < traversal) {
                 if (matched.includes(traversal)) {
                     setMatched((prev) => prev.filter(item => item !== traversal));
@@ -65,7 +73,7 @@ export default function TypingTest({
                 setTraversal(traversal + 1);
             }
 
-            const minutesPassed = (300 - timeLeft) / 60;
+            const minutesPassed = (testime - timeLeft) / 60;
             if (minutesPassed <= 0) return; 
 
             const rawWPM = (totalCharsTyped / 5) / minutesPassed;
@@ -81,9 +89,12 @@ export default function TypingTest({
 
     const handleStart = () => {
         setIsStarted(true);
-        if (textareaRef.current) textareaRef.current.focus();
+        setTimeout(() => {
+            if (textareaRef.current) {
+                textareaRef.current.focus();  
+            }
+        }, 0);  
     };
-
     const handleSubmit = () => {
         if (timerRef.current) clearInterval(timerRef.current);
         setIsStarted(false);
@@ -109,6 +120,35 @@ export default function TypingTest({
         return Math.round((correctWords.length / originalWords.length) * 100);
     };
 
+    const getHighlightedText = () => {
+        return (
+          <pre className="bg-gray-800 text-white p-4 rounded-lg whitespace-pre-wrap break-words">
+            {mockText.split('').map((char, index) => {
+              const isCorrect = inputText[index] === char;
+              const isSpace = char === ' ';
+              return (
+                <span
+                  key={index}
+                  className={`${
+                    inputText[index] !== undefined
+                      ? isCorrect
+                        ? "text-green-500"
+                        : isSpace
+                          ? "text-red-500 bg-red-900"
+                          : "text-red-500"
+                      : ""
+                  }`}
+                >
+                  {char}
+                </span>
+              );
+            })}
+          </pre>
+        );
+      };
+    
+    console.log(mockText.split(''));
+
     return (
         <Card className="w-full max-w-8xl rounded-lg overflow-hidden mx-auto">
             <CardHeader className="bg-blue-600 text-white">
@@ -126,7 +166,7 @@ export default function TypingTest({
                     <p>Type the following text as accurately and quickly as you can. Your time starts when you click "Start".</p>
                 </div>
                 <div className="bg-white border border-gray-300 p-4 rounded-md">
-                    <p className="text-gray-700">{mockText}</p>
+                    {getHighlightedText()} {/* Highlighted Original Text */}
                 </div>
                 <Textarea
                     ref={textareaRef}
@@ -134,11 +174,13 @@ export default function TypingTest({
                     onChange={(e) => setInputText(e.target.value)}
                     placeholder="Start typing here..."
                     disabled={!isStarted}
-                    className={`h-40 resize-none ${
-                        feedback === 'correct' ? 'border-green-500' : 
-                        feedback === 'incorrect' ? 'border-red-500' : ''
-                    }`}
+                    className={`h-40 resize-none px-4 py-3 rounded-lg shadow-sm transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent 
+                        ${isStarted ? 'bg-white' : 'bg-gray-100 border-black cursor-not-allowed'} 
+                        ${feedback === 'correct' ? 'border-green-500' : 
+                        feedback === 'incorrect' ? 'border-red-500' : 'border-black'}
+                    `}
                 />
+
                 <div className="flex justify-between items-center">
                     <div className="text-lg font-semibold">
                         Time Left: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
