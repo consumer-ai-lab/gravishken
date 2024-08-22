@@ -8,7 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func Add_CSVData_To_DB(batch_client *mongo.Collection, file_path string) {
+func Add_CSVData_To_DB(batch_client *mongo.Collection, file_path string) error {
 
 	csvData := Read_CSV(file_path)
 
@@ -27,7 +27,13 @@ func Add_CSVData_To_DB(batch_client *mongo.Collection, file_path string) {
 	}
 
 	for key := range batches {
-		helper.Add_Model_To_DB(batch_client, batches[key])
+		err := helper.Add_Model_To_DB(batch_client, batches[key])
+		if err != nil {
+			return err
+		}
+
 	}
+
+	return nil
 
 }
