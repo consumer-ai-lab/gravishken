@@ -8,7 +8,9 @@ export BUILD_MODE="DEV"
 export APP_PORT=6200
 export SERVER_PORT=6201
 export DEV_PORT=6202
-export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT"
+
+export SERVER_URL="http://localhost:$SERVER_PORT/"
+export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT -X main.server_url=$SERVER_URL"
 
 web-build() {
   cd $PROJECT_ROOT/frontend
@@ -28,12 +30,25 @@ build-windows-app() {
   
   cd $PROJECT_ROOT/application
   export BUILD_MODE="PROD"
-  export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT"
+  # export SERVER_URL=""
+  export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT -X main.server_url=$SERVER_URL"
   export GOOS=windows
   export GOARCH=amd64
   export CGO_ENABLED=1
 
+  echo "NOTE: building with SERVER_URL as $SERVER_URL"
+
   go build -ldflags "$VARS -H windowsgui" -o build/gravtest.exe ./src/.
+}
+
+build-server() {
+  cd $PROJECT_ROOT/backend
+  source ./.env
+
+  export BUILD_MODE="PROD"
+
+  export VARS="-X main.build_mode=$BUILD_MODE"
+  go build -ldflags "$VARS" -o build/server ./src/.
 }
 
 server() {
@@ -75,6 +90,9 @@ run() {
     ;;
     "build-windows-app")
       build-windows-app
+    ;;
+    "build-server")
+      build-server
     ;;
     "server")
       server $@

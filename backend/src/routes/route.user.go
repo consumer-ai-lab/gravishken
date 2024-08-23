@@ -28,6 +28,7 @@ func UserRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) 
 			return
 		}
 
+		// TODO:
 	})
 
 	userRoute.POST("/update_user_data", func(ctx *gin.Context) {
@@ -39,7 +40,6 @@ func UserRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) 
 		}
 
 		allControllers.UpdateUserData(ctx, &userUpdateRequest)
-
 	})
 
 	userRoute.POST("/add_all_users", func(ctx *gin.Context) {
@@ -68,7 +68,6 @@ func UserRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) 
 		}
 
 		allControllers.Increase_Time(ctx, requestData.Param, requestData.Username, requestData.TimeToIncrease)
-
 	})
 
 	userRoute.GET("/get_batchwise_data", func(ctx *gin.Context) {
@@ -84,7 +83,6 @@ func UserRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) 
 		}
 
 		allControllers.GetBatchWiseData(ctx, batchData.Param, batchData.BatchNumber, batchData.Ranges)
-
 	})
 
 	userRoute.POST("/set_user_data", func(ctx *gin.Context) {
