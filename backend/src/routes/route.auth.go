@@ -14,18 +14,18 @@ func InitAuthRoutes(db *mongo.Client, route *gin.Engine) {
 	batchCollection := db.Database("GRAVTEST").Collection("Batch")
 
 	allControllers := controllers.ControllerClass{
-		Client: db,
+		Client:          db,
 		AdminCollection: adminCollection,
-		UserCollection: userCollection,
-		TestCollection: testCollection,
+		UserCollection:  userCollection,
+		TestCollection:  testCollection,
 		BatchCollection: batchCollection,
 	}
 
 	AdminRoutes(&allControllers, route)
+	UserRoutes(&allControllers, route)
 	BatchRoutes(&allControllers, route)
 	TestRoutes(&allControllers, route)
 }
-
 
 func SampleHandler(ctx *gin.Context) {
 	ctx.JSON(200, gin.H{
