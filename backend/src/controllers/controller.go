@@ -2,7 +2,7 @@ package controllers
 
 import "go.mongodb.org/mongo-driver/mongo"
 
-type Class struct {
+type ControllerClass struct {
 	Client          *mongo.Client
 	AdminCollection *mongo.Collection
 	UserCollection  *mongo.Collection

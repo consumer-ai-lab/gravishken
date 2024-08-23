@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func TestRoutes(allControllers *controllers.Class, route *gin.Engine){
+func TestRoutes(allControllers *controllers.ControllerClass, route *gin.Engine){
 	testRoute := route.Group("/test")
 
 	testRoute.GET("/get_question_paper/:password", func(ctx *gin.Context) {

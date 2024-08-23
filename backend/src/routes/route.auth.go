@@ -13,7 +13,7 @@ func InitAuthRoutes(db *mongo.Client, route *gin.Engine) {
 	testCollection := db.Database("GRAVTEST").Collection("Tests")
 	batchCollection := db.Database("GRAVTEST").Collection("Batch")
 
-	allControllers := controllers.Class{
+	allControllers := controllers.ControllerClass{
 		Client: db,
 		AdminCollection: adminCollection,
 		UserCollection: userCollection,

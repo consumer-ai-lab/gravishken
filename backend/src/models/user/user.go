@@ -16,7 +16,7 @@ type User struct {
 	Password     string             `bson:"password" json:"password" binding:"required"`
 	TestPassword string             `bson:"testPassword" json:"testPassword" binding:"required"`
 	Token        string             `bson:"token" json:"token"`
-	BatchID      primitive.ObjectID `bson:"batch" json:"batch,omitempty" binding:"required"`
+	Batch        string             `bson:"batch" json:"batch" binding:"required"`
 	Tests        UserTest           `bson:"tests" json:"tests,omitempty"`
 }
 
@@ -56,10 +56,14 @@ func FindByUsername(Collection *mongo.Collection, userName string) (*User, error
 	return &user, nil
 }
 
+type UserBatchRequestData struct {
+	From             int
+	To               int
+	ResultDownloaded bool
+}
+
 type UserUpdateRequest struct {
 	Username string   `json:"username"`
-	Token    string   `json:"token"`
-	ApiKey   string   `json:"apiKey"`
 	Property string   `json:"property"`
 	Value    []string `json:"value"`
 }
@@ -69,3 +73,4 @@ type UserLoginRequest struct {
 	Password     string `json:"password"`
 	TestPassword string `json:"testPassword"`
 }
+

@@ -80,15 +80,14 @@ func GetModelById(collection *mongo.Collection, ID string, modelType types.Model
 	return result, nil
 }
 
-func GetModelByBatchId(collection *mongo.Collection, ID string, modelType types.ModelInterface) ([]types.ModelInterface, error) {
+
+
+func GetModelByBatchId(collection *mongo.Collection, batchNumber string, modelType types.ModelInterface) ([]types.ModelInterface, error) {
 	fmt.Println("Fetching model from database...")
-	objectID, err := primitive.ObjectIDFromHex(ID)
-	if err != nil {
-		return nil, fmt.Errorf("invalid ID format: %v", err)
-	}
+
 
 	var results []types.ModelInterface
-	cursor, err := collection.Find(context.TODO(), bson.M{"batch": objectID})
+	cursor, err := collection.Find(context.TODO(), bson.M{"batch": batchNumber})
 	if err != nil {
 		fmt.Println("Error in fetching model: ", err)
 		return nil, err
@@ -115,6 +114,8 @@ func GetModelByBatchId(collection *mongo.Collection, ID string, modelType types.
 	fmt.Println("Models in DB:", results)
 	return results, nil
 }
+
+
 
 func Delete_Model_By_ID(Collection *mongo.Collection, ID string) error {
 

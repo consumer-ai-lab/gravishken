@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"server/src/auth"
 	"server/src/types"
 	"strconv"
 
@@ -58,19 +57,11 @@ func UpdateBatchTestTime(Collection *mongo.Collection, Usernames []string, TimeT
 	return nil
 }
 
-func UpdateUserDate(Collection *mongo.Collection, Model *User.UserUpdateRequest) error {
-	valid_request, err := auth.ValidRequestVerifier(Collection, Model.Token, Model.ApiKey)
-	if err != nil {
-		return err
-	}
-
-	if !valid_request {
-		return errors.New("invalid request: Token or Apikey is invalid")
-	}
+func UpdateUserData(Collection *mongo.Collection, Model *User.UserUpdateRequest) error {
 
 	var userTest User.UserTest
 
-	err = Collection.FindOne(context.TODO(), bson.M{"username": Model.Username}).Decode(&userTest)
+	err := Collection.FindOne(context.TODO(), bson.M{"username": Model.Username}).Decode(&userTest)
 
 	if err != nil {
 		return err
@@ -148,12 +139,12 @@ func UpdateUserDate(Collection *mongo.Collection, Model *User.UserUpdateRequest)
 			return err
 		}
 	case "batch_test_time":
-		batchID := Model.Value[0]
+		batchNumber := Model.Value[0]
 		timeToIncrease, err := time.Parse(time.RFC3339, Model.Value[1])
 		if err != nil {
 			return err
 		}
-		user, err := GetModelByBatchId(Collection, batchID, &User.User{})
+		user, err := GetModelByBatchId(Collection, batchNumber, &User.User{})
 		if err != nil {
 			return err
 		}
@@ -169,7 +160,7 @@ func UpdateUserDate(Collection *mongo.Collection, Model *User.UserUpdateRequest)
 			return err
 		}
 
-		fmt.Printf("Batch id: %s, Time to increase: %d\n", batchID, timeToIncrease.Unix())
+		fmt.Printf("Batch id: %s, Time to increase: %d\n", batchNumber, timeToIncrease.Unix())
 	default:
 		return errors.New("invalid property")
 	}
@@ -177,26 +168,83 @@ func UpdateUserDate(Collection *mongo.Collection, Model *User.UserUpdateRequest)
 	return nil
 }
 
-func GetBatchDataForFrontend(Collection *mongo.Collection, BatchID string) ([][]string, error) {
-	var result [][]string
-	user, err := GetModelByBatchId(Collection, BatchID, &User.User{})
+func GetBatchWiseList(Collection *mongo.Collection, BatchNumber string) ([]map[string]string, error) {
+	var result []map[string]string
+	user, err := GetModelByBatchId(Collection, BatchNumber, &User.User{})
+	if err != nil {
+		return nil, err
+	}
+
+	/*
+		userData[i].username,
+        userData[i].merged_file_id,
+        userData[i].submission_folder_id,
+	*/
+
+	for _, user := range user {
+		userMap := map[string]string{
+			"username":            user.(*User.User).Username,
+			"merged_file_id":      user.(*User.User).Tests.MergedFileID,
+			"submission_folder_id": user.(*User.User).Tests.SubmissionFolderID,
+		}
+		result = append(result, userMap)
+	}
+
+	return result, nil
+	
+}
+
+
+func GetBatchWiseListRoll(Collection *mongo.Collection, BatchNumber string, From, To int) ([]map[string]string, error) {
+	var result []map[string]string
+	user, err := GetModelByBatchId(Collection, BatchNumber, &User.User{})
+	if err != nil {
+		return nil, err
+	}
+
+	/*
+		userData[i].username,
+        userData[i].merged_file_id,
+        userData[i].submission_folder_id,
+        userData[i].resultDownloaded,
+        userData[i].submission_received,
+	*/
+
+	for _, user := range user {
+		username, _ := strconv.Atoi(user.(*User.User).Username) // Convert username to integer
+		if username >= From && username <= To {
+			userMap := map[string]string{
+				"username":            user.(*User.User).Username,
+				"merged_file_id":      user.(*User.User).Tests.MergedFileID,
+				"submission_folder_id": user.(*User.User).Tests.SubmissionFolderID,
+				"resultDownloaded":    strconv.FormatBool(user.(*User.User).Tests.ResultDownloaded),
+				"submission_received": strconv.FormatBool(user.(*User.User).Tests.SubmissionReceived),
+			}
+			result = append(result, userMap)
+		}
+	}
+
+	return result, nil
+}
+
+
+func GetBatchDataForFrontend(Collection *mongo.Collection, BatchNumber string) ([]map[string]string, error) {
+	var result []map[string]string
+	user, err := GetModelByBatchId(Collection, BatchNumber, &User.User{})
 	if err != nil {
 		return nil, err
 	}
 
 	for _, user := range user {
 		start_time := user.(*User.User).Tests.StartTime
-		userArr := []string{}
+		userArr := make(map[string]string)
+		userArr["username"] = user.(*User.User).Username
+		userArr["merged_file_id"] = user.(*User.User).Tests.MergedFileID
+		userArr["submission_folder_id"] = user.(*User.User).Tests.SubmissionFolderID
 		if start_time.IsZero() {
-			userArr = append(userArr, user.(*User.User).Username)
-			userArr = append(userArr, user.(*User.User).Tests.MergedFileID)
-			userArr = append(userArr, "Present")
-			userArr = append(userArr, user.(*User.User).Tests.SubmissionFolderID)
+			userArr["status"] = "Present"
 		} else {
-			userArr = append(userArr, user.(*User.User).Username)
-			userArr = append(userArr, user.(*User.User).Tests.MergedFileID)
-			userArr = append(userArr, "Absent")
-			userArr = append(userArr, user.(*User.User).Tests.SubmissionFolderID)
+			userArr["status"] = "Absent"
 		}
 
 		result = append(result, userArr)
@@ -247,21 +295,19 @@ func UserLogin(Collection *mongo.Collection, userRequest *User.UserLoginRequest)
 	return tokenString, nil
 }
 
-type RequestData struct {
-	from             int
-	to               int
-	resultDownloaded bool
-}
 
-func SetUserResultToDownloaded(Collection *mongo.Collection, request *RequestData) error {
+func SetUserResultToDownloaded(Collection *mongo.Collection, request *User.UserBatchRequestData) error {
 	user, err := Get_All_Models(Collection, &User.User{})
 	if err != nil {
 		return err
 	}
-	from := request.from
-	to := request.to
-	resultDownloaded := request.resultDownloaded
+	
+	from := request.From
+	to := request.To
+	resultDownloaded := request.ResultDownloaded
+
 	filered_users := []types.ModelInterface{}
+
 	for _, user := range user {
 		username, _ := strconv.Atoi(user.(*User.User).Username) // Convert username to integer
 		if username >= from && username <= to {
@@ -281,5 +327,32 @@ func SetUserResultToDownloaded(Collection *mongo.Collection, request *RequestDat
 		}
 
 	}
+	return nil
+}
+
+
+func ResetUserData(Collection *mongo.Collection, username string) error{
+	user, err := User.FindByUsername(Collection, username)
+	if err != nil {
+		return err
+	}
+
+	/*
+		userData.submission_received = false;
+		userData.reading_submission_received = false;
+		userData.reading_elapsed_time = 0;
+		userData.elapsed_time = 0;
+	*/
+
+	user.Tests.SubmissionReceived = false
+	user.Tests.ReadingSubmissionReceived = false
+	user.Tests.ReadingElapsedTime = 0
+	user.Tests.ElapsedTime = 0
+
+	err = Update_Model_By_ID(Collection, user.ID.Hex(), user)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

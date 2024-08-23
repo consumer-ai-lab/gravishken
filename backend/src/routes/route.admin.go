@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func AdminRoutes(allControllers *controllers.Class, route *gin.Engine){
+func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine){
 	adminRoute := route.Group("/admin")
 
 

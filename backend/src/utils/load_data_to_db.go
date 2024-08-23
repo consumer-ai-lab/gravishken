@@ -1,38 +1,41 @@
 package utils
 
 import (
-	"server/src/helper"
-	"server/src/models/batch"
-	"strings"
+	"fmt"
 
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func Add_CSVData_To_DB(batch_client *mongo.Collection, file_path string) error {
+func Add_CSVData_To_DB(collection *mongo.Collection, file_path string) error {
 
 	csvData := Read_CSV(file_path)
+	fmt.Println(csvData)
 
-	batches := make(map[string]*batch.Batch)
+	// ****** Change logic here, add users to db and not batches ******
 
-	for _, row := range csvData[1:] { // Skip header row
-		lastCol := row[len(row)-1]
-		splitNumber := strings.Fields(lastCol)
-		if len(splitNumber) < 2 {
-			continue
-		}
-		batchNumber := splitNumber[1]
-		if _, exists := batches[batchNumber]; !exists {
-			batches[batchNumber] = &batch.Batch{Name: batchNumber}
-		}
-	}
+	// batches := make(map[string]*batch.Batch)
 
-	for key := range batches {
-		err := helper.Add_Model_To_DB(batch_client, batches[key])
-		if err != nil {
-			return err
-		}
 
-	}
+
+	// for _, row := range csvData[1:] { // Skip header row
+	// 	lastCol := row[len(row)-1]
+	// 	splitNumber := strings.Fields(lastCol)
+	// 	if len(splitNumber) < 2 {
+	// 		continue
+	// 	}
+	// 	batchNumber := splitNumber[1]
+	// 	if _, exists := batches[batchNumber]; !exists {
+	// 		batches[batchNumber] = &batch.Batch{Name: batchNumber}
+	// 	}
+	// }
+
+	// for key := range batches {
+	// 	err := helper.Add_Model_To_DB(batch_client, batches[key])
+	// 	if err != nil {
+	// 		return err
+	// 	}
+
+	// }
 
 	return nil
 

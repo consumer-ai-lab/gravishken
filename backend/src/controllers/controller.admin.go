@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (this *Class) AdminLoginHandler(ctx *gin.Context, adminModel *admin.Admin) {
+func (this *ControllerClass) AdminLoginHandler(ctx *gin.Context, adminModel *admin.Admin) {
 	adminCollection := this.AdminCollection
 	response, err := helper.AdminLogin(adminCollection, adminModel)
 
@@ -25,7 +25,7 @@ func (this *Class) AdminLoginHandler(ctx *gin.Context, adminModel *admin.Admin) 
 	})
 }
 
-func (this *Class) AdminRegisterHandler(ctx *gin.Context, adminModel *admin.Admin) {
+func (this *ControllerClass) AdminRegisterHandler(ctx *gin.Context, adminModel *admin.Admin) {
 	adminCollection := this.AdminCollection
 	response := helper.RegisterAdmin(adminCollection, adminModel)
 	ctx.JSON(200, gin.H{
@@ -34,7 +34,7 @@ func (this *Class) AdminRegisterHandler(ctx *gin.Context, adminModel *admin.Admi
 	})
 }
 
-func (this *Class) AdminChangePasswordHandler(ctx *gin.Context, adminModel *admin.AdminChangePassword) {
+func (this *ControllerClass) AdminChangePasswordHandler(ctx *gin.Context, adminModel *admin.AdminChangePassword) {
 	adminCollection := this.AdminCollection
 	response := helper.ChangePassword(adminCollection, adminModel)
 	ctx.JSON(200, gin.H{
@@ -43,6 +43,6 @@ func (this *Class) AdminChangePasswordHandler(ctx *gin.Context, adminModel *admi
 	})
 }
 
-func (this *Class) AddAllUsers(ctx *gin.Context, filePath string){
+func (this *ControllerClass) AddAllUsers(ctx *gin.Context, filePath string){
 
 }

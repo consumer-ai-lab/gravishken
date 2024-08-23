@@ -1,22 +1,30 @@
 package controllers
 
 import (
-	"server/src/utils"
+	"server/src/helper"
+	Batch "server/src/models/batch"
 
 	"github.com/gin-gonic/gin"
 )
 
 
-func (this *Class) AddBatchToDB(ctx *gin.Context, filePath string) {
+func (this *ControllerClass) AddBatchToDB(ctx *gin.Context, batchData *Batch.Batch) {
 	testCollection := this.BatchCollection
-	err := utils.Add_CSVData_To_DB(testCollection, filePath)
+
+	err := helper.Add_Model_To_DB(testCollection, batchData)
+
 	if err != nil {
 		ctx.JSON(500, gin.H{
-			"message": "Error while adding batch to DB",
+			"message": "Error in adding batch data",
 			"error": err,
 		})
+		return
 	}
+
 	ctx.JSON(200, gin.H{
-		"message": "Batch added to DB successfully",
-	})
+		"message": "Batch data added successfully",
+	})	
 }
+
+
+
