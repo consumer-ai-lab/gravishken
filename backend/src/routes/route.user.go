@@ -1,9 +1,9 @@
 package route
 
 import (
+	Batch "common/models/batch"
+	User "common/models/user"
 	"server/src/controllers"
-	Batch "server/src/models/batch"
-	User "server/src/models/user"
 
 	"github.com/gin-gonic/gin"
 )

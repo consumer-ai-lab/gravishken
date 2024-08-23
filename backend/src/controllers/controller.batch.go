@@ -1,12 +1,11 @@
 package controllers
 
 import (
+	Batch "common/models/batch"
 	"server/src/helper"
-	Batch "server/src/models/batch"
 
 	"github.com/gin-gonic/gin"
 )
-
 
 func (this *ControllerClass) AddBatchToDB(ctx *gin.Context, batchData *Batch.Batch) {
 	testCollection := this.BatchCollection
@@ -16,15 +15,12 @@ func (this *ControllerClass) AddBatchToDB(ctx *gin.Context, batchData *Batch.Bat
 	if err != nil {
 		ctx.JSON(500, gin.H{
 			"message": "Error in adding batch data",
-			"error": err,
+			"error":   err,
 		})
 		return
 	}
 
 	ctx.JSON(200, gin.H{
 		"message": "Batch data added successfully",
-	})	
+	})
 }
-
-
-

@@ -1,8 +1,8 @@
 package controllers
 
 import (
+	User "common/models/user"
 	"server/src/helper"
-	User "server/src/models/user"
 	"server/src/utils"
 
 	"github.com/gin-gonic/gin"
@@ -15,18 +15,16 @@ func (this *ControllerClass) UserLoginHandler(ctx *gin.Context, userModel *User.
 	if err != nil {
 		ctx.JSON(500, gin.H{
 			"message": "Error in User Login",
-			"error": err,
+			"error":   err,
 		})
 		return
 	}
 
-
 	ctx.JSON(200, gin.H{
-		"message": "Admin Login route here",
+		"message":  "Admin Login route here",
 		"response": response,
 	})
 }
-
 
 func (this *ControllerClass) UpdateUserData(ctx *gin.Context, userUpdateRequest *User.UserUpdateRequest) {
 	userCollection := this.UserCollection
@@ -35,7 +33,7 @@ func (this *ControllerClass) UpdateUserData(ctx *gin.Context, userUpdateRequest 
 	if err != nil {
 		ctx.JSON(500, gin.H{
 			"message": "Error in updating user data",
-			"error": err,
+			"error":   err,
 		})
 		return
 	}
@@ -45,15 +43,14 @@ func (this *ControllerClass) UpdateUserData(ctx *gin.Context, userUpdateRequest 
 	})
 }
 
-
-func (this *ControllerClass) RegisterAllUsers(ctx *gin.Context, filePath string){
+func (this *ControllerClass) RegisterAllUsers(ctx *gin.Context, filePath string) {
 	userCollection := this.UserCollection
 	err := utils.Add_CSVData_To_DB(userCollection, filePath)
 
 	if err != nil {
 		ctx.JSON(500, gin.H{
 			"message": "Error in adding all users",
-			"error": err,
+			"error":   err,
 		})
 		return
 	}
@@ -62,7 +59,6 @@ func (this *ControllerClass) RegisterAllUsers(ctx *gin.Context, filePath string)
 		"message": "All users added successfully",
 	})
 }
-
 
 func (this *ControllerClass) Increase_Time(ctx *gin.Context, param string, username []string, time_to_increase int64) {
 	userCollection := this.UserCollection
@@ -77,20 +73,19 @@ func (this *ControllerClass) Increase_Time(ctx *gin.Context, param string, usern
 	if len(username) > 1 {
 		param = "batch"
 	}
-	
+
 	switch param {
 	case "user":
 		err := helper.UpdateUserTestTime(userCollection, username[0], time_to_increase)
 		if err != nil {
 			ctx.JSON(500, gin.H{
 				"message": "Error in increasing time",
-				"error": err,
+				"error":   err,
 			})
 		}
 		ctx.JSON(200, gin.H{
 			"message": "Time increased successfully",
 		})
-
 
 	case "batch":
 
@@ -98,40 +93,38 @@ func (this *ControllerClass) Increase_Time(ctx *gin.Context, param string, usern
 		if err != nil {
 			ctx.JSON(500, gin.H{
 				"message": "Error in increasing time",
-				"error": err,
+				"error":   err,
 			})
 		}
 		ctx.JSON(200, gin.H{
 			"message": "Time increased successfully",
 		})
 
-
 	default:
 		ctx.JSON(500, gin.H{
 			"message": "Invalid parameter",
 		})
 	}
-	
-}
 
+}
 
 func (this *ControllerClass) GetBatchWiseData(ctx *gin.Context, param string, BatchNumber string, Ranges []int) {
 	userCollection := this.UserCollection
-	
+
 	switch param {
 	case "batch":
 		result, err := helper.GetBatchWiseList(userCollection, BatchNumber)
 		if err != nil {
 			ctx.JSON(500, gin.H{
 				"message": "Error in fetching batch wise data",
-				"error": err,
+				"error":   err,
 			})
 		}
 		ctx.JSON(200, gin.H{
 			"message": "Batch wise data fetched successfully",
-			"data": result,
+			"data":    result,
 		})
-		
+
 	case "roll":
 		From := Ranges[0]
 		To := Ranges[1]
@@ -139,30 +132,28 @@ func (this *ControllerClass) GetBatchWiseData(ctx *gin.Context, param string, Ba
 		if err != nil {
 			ctx.JSON(500, gin.H{
 				"message": "Error in fetching batch wise data",
-				"error": err,
+				"error":   err,
 			})
 		}
 
 		ctx.JSON(200, gin.H{
 			"message": "Batch wise data fetched successfully",
-			"data": result,
+			"data":    result,
 		})
-
 
 	case "frontend":
 		result, err := helper.GetBatchDataForFrontend(userCollection, BatchNumber)
 		if err != nil {
 			ctx.JSON(500, gin.H{
 				"message": "Error in fetching batch wise data",
-				"error": err,
+				"error":   err,
 			})
 		}
 
 		ctx.JSON(200, gin.H{
 			"message": "Batch wise data fetched successfully",
-			"data": result,
+			"data":    result,
 		})
-
 
 	default:
 		ctx.JSON(500, gin.H{
@@ -170,7 +161,6 @@ func (this *ControllerClass) GetBatchWiseData(ctx *gin.Context, param string, Ba
 		})
 	}
 }
-
 
 func (this *ControllerClass) SetUserData(ctx *gin.Context, param string, userRequest *User.UserBatchRequestData, Username string) {
 	userCollection := this.UserCollection
@@ -181,7 +171,7 @@ func (this *ControllerClass) SetUserData(ctx *gin.Context, param string, userReq
 		if err != nil {
 			ctx.JSON(500, gin.H{
 				"message": "Error in setting user data",
-				"error": err,
+				"error":   err,
 			})
 		}
 
@@ -194,18 +184,18 @@ func (this *ControllerClass) SetUserData(ctx *gin.Context, param string, userReq
 		if err != nil {
 			ctx.JSON(500, gin.H{
 				"message": "Error in resetting user data",
-				"error": err,
+				"error":   err,
 			})
 		}
 
 		ctx.JSON(200, gin.H{
 			"message": "User data reset successfully",
 		})
-		
+
 	default:
 		ctx.JSON(500, gin.H{
 			"message": "Invalid parameter",
 		})
 	}
-	
+
 }
