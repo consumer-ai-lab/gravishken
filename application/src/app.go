@@ -48,8 +48,6 @@ func newApp() (*App, error) {
 		return nil, err
 	}
 	app.client = client
-	log.Printf("%p\n", client)
-	log.Printf("%p\n", app.client)
 
 	if runtime.GOOS != "windows" {
 		return app, nil
@@ -104,7 +102,6 @@ func newApp() (*App, error) {
 }
 
 func (self *App) login(user_login types.TUserLogin) error {
-	log.Printf("%p\n", self.client)
 	err := self.client.login(user_login)
 	if err != nil {
 		return err

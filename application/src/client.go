@@ -6,6 +6,7 @@ import (
 	user "common/models/user"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 )
@@ -32,14 +33,14 @@ func (self *Client) login(user_login types.TUserLogin) error {
 		TestPassword: user_login.TestCode,
 	}
 
-	json, err := json.Marshal(login_req)
+	json_data, err := json.Marshal(login_req)
 	if err != nil {
 		return err
 	}
 
 	url := server_url + "user/login"
-	log.Println(url, string(json))
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(json))
+	log.Println(url, string(json_data))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(json_data))
 	if err != nil {
 		return err
 	}
@@ -54,6 +55,21 @@ func (self *Client) login(user_login types.TUserLogin) error {
 	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
 		return fmt.Errorf("%s", resp.Status)
 	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	var result struct {
+		Message  string `json:"message"`
+		Response string `json:"response"`
+	}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return err
+	}
+
+	self.jwt = result.Response
 
 	// TODO: maybe use the cookie jar for jwt??
 
