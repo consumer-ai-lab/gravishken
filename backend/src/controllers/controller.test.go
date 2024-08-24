@@ -1,14 +1,14 @@
 package controllers
 
 import (
+	Test "common/models/test"
 	"server/src/helper"
-	Test "server/src/models/test"
 	"server/src/types"
 
 	"github.com/gin-gonic/gin"
 )
 
-func (this *ControllerClass) GetQuestionPaperHandler(ctx *gin.Context, password string)  (types.ModelInterface, error) {
+func (this *ControllerClass) GetQuestionPaperHandler(ctx *gin.Context, password string) (types.ModelInterface, error) {
 	testCollection := this.TestCollection
 	testModel, err := helper.GetQuestionPaper(testCollection, password)
 

@@ -20,13 +20,18 @@ var build_mode string
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatalln("Error loading .env file")
 	}
+	log.Println("Loaded .env file")
+
+	port, ok := os.LookupEnv("SERVER_PORT")
+	if !ok {
+		log.Fatalln("SERVER_PORT not set")
+	}
+
 	router := SetupRouter()
-	log.Fatal(router.Run(":" + os.Getenv("GO_PORT")))	
+	log.Fatal(router.Run(":" + port))
 }
-
-
 
 func SetupRouter() *gin.Engine {
 	db, err := config.Connection()

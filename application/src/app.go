@@ -16,6 +16,7 @@ type App struct {
 	recv    chan types.Message
 	runner  Runner
 	webview webview.WebView
+	client  *Client
 
 	state struct {
 		webview_opened  bool
@@ -40,12 +41,18 @@ func newApp() (*App, error) {
 		runner:  Runner{},
 		webview: nil,
 	}
+	var err error
+
+	client, err := newClient()
+	if err != nil {
+		return nil, err
+	}
+	app.client = client
 
 	if runtime.GOOS != "windows" {
 		return app, nil
 	}
 
-	var err error
 	app.runner.paths.cmd, err = exec.LookPath(cmd)
 	if err != nil {
 		return nil, err
@@ -92,6 +99,14 @@ func newApp() (*App, error) {
 	}
 
 	return app, nil
+}
+
+func (self *App) login(user_login types.TUserLogin) error {
+	err := self.client.login(user_login)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (self *App) openWv() {

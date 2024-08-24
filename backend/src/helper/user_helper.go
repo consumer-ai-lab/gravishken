@@ -7,7 +7,7 @@ import (
 	"server/src/types"
 	"strconv"
 
-	User "server/src/models/user"
+	User "common/models/user"
 	"strings"
 	"time"
 
@@ -15,8 +15,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
-
-
 
 func UpdateUserTestTime(Collection *mongo.Collection, Username string, TimeToIncrease int64) error {
 	var user User.User
@@ -176,24 +174,23 @@ func GetBatchWiseList(Collection *mongo.Collection, BatchNumber string) ([]map[s
 	}
 
 	/*
-		userData[i].username,
-        userData[i].merged_file_id,
-        userData[i].submission_folder_id,
+				userData[i].username,
+		        userData[i].merged_file_id,
+		        userData[i].submission_folder_id,
 	*/
 
 	for _, user := range user {
 		userMap := map[string]string{
-			"username":            user.(*User.User).Username,
-			"merged_file_id":      user.(*User.User).Tests.MergedFileID,
+			"username":             user.(*User.User).Username,
+			"merged_file_id":       user.(*User.User).Tests.MergedFileID,
 			"submission_folder_id": user.(*User.User).Tests.SubmissionFolderID,
 		}
 		result = append(result, userMap)
 	}
 
 	return result, nil
-	
-}
 
+}
 
 func GetBatchWiseListRoll(Collection *mongo.Collection, BatchNumber string, From, To int) ([]map[string]string, error) {
 	var result []map[string]string
@@ -203,22 +200,22 @@ func GetBatchWiseListRoll(Collection *mongo.Collection, BatchNumber string, From
 	}
 
 	/*
-		userData[i].username,
-        userData[i].merged_file_id,
-        userData[i].submission_folder_id,
-        userData[i].resultDownloaded,
-        userData[i].submission_received,
+				userData[i].username,
+		        userData[i].merged_file_id,
+		        userData[i].submission_folder_id,
+		        userData[i].resultDownloaded,
+		        userData[i].submission_received,
 	*/
 
 	for _, user := range user {
 		username, _ := strconv.Atoi(user.(*User.User).Username) // Convert username to integer
 		if username >= From && username <= To {
 			userMap := map[string]string{
-				"username":            user.(*User.User).Username,
-				"merged_file_id":      user.(*User.User).Tests.MergedFileID,
+				"username":             user.(*User.User).Username,
+				"merged_file_id":       user.(*User.User).Tests.MergedFileID,
 				"submission_folder_id": user.(*User.User).Tests.SubmissionFolderID,
-				"resultDownloaded":    strconv.FormatBool(user.(*User.User).Tests.ResultDownloaded),
-				"submission_received": strconv.FormatBool(user.(*User.User).Tests.SubmissionReceived),
+				"resultDownloaded":     strconv.FormatBool(user.(*User.User).Tests.ResultDownloaded),
+				"submission_received":  strconv.FormatBool(user.(*User.User).Tests.SubmissionReceived),
 			}
 			result = append(result, userMap)
 		}
@@ -226,7 +223,6 @@ func GetBatchWiseListRoll(Collection *mongo.Collection, BatchNumber string, From
 
 	return result, nil
 }
-
 
 func GetBatchDataForFrontend(Collection *mongo.Collection, BatchNumber string) ([]map[string]string, error) {
 	var result []map[string]string
@@ -252,7 +248,6 @@ func GetBatchDataForFrontend(Collection *mongo.Collection, BatchNumber string) (
 
 	return result, nil
 }
-
 
 func UserLogin(Collection *mongo.Collection, userRequest *User.UserLoginRequest) (string, error) {
 	user, err := User.FindByUsername(Collection, userRequest.Username)
@@ -295,13 +290,12 @@ func UserLogin(Collection *mongo.Collection, userRequest *User.UserLoginRequest)
 	return tokenString, nil
 }
 
-
 func SetUserResultToDownloaded(Collection *mongo.Collection, request *User.UserBatchRequestData) error {
 	user, err := Get_All_Models(Collection, &User.User{})
 	if err != nil {
 		return err
 	}
-	
+
 	from := request.From
 	to := request.To
 	resultDownloaded := request.ResultDownloaded
@@ -330,8 +324,7 @@ func SetUserResultToDownloaded(Collection *mongo.Collection, request *User.UserB
 	return nil
 }
 
-
-func ResetUserData(Collection *mongo.Collection, username string) error{
+func ResetUserData(Collection *mongo.Collection, username string) error {
 	user, err := User.FindByUsername(Collection, username)
 	if err != nil {
 		return err

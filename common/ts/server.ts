@@ -26,15 +26,7 @@ export type Message = {
     Val: unknown,
 }
 
-// type ValType<T extends types.Varient> = Message extends { Typ: T; Val: infer V } ? V : never;
-type ValType<T extends types.Varient> = 
-    T extends types.Varient.ExeNotFound ? types.TExeNotFound :
-    T extends types.Varient.UserLogin ? types.TUserLogin :
-    T extends types.Varient.LoadRoute ? types.TLoadRoute :
-    T extends types.Varient.ReloadUi ? types.TReloadUi :
-    T extends types.Varient.Err ? types.TErr :
-    unknown;
-
+type ValType<T extends types.Varient> = Message extends infer P ? P extends { Typ: T, Val: infer V } ? V : never : never;
 type Callback<T extends types.Varient> = (res: ValType<T>) => PromiseLike<void>;
 type DisableCallback = () => Promise<void>;
 
@@ -68,19 +60,20 @@ export class Server {
         return self;
     }
 
-    // @ts-ignore
-    callbacks = new Map<Message["Typ"], [number, Callback<Message["Typ"]>][]>();
+    callbacks = new Map<types.Varient, [number, Callback<types.Varient>][]>();
     callback_mutex: Mutex = new Mutex();
     callback_id = 1;
-    async add_callback<T extends Message["Typ"]>(type: T, cb: Callback<typeof type>): Promise<DisableCallback> {
+    async add_callback<T extends types.Varient>(type: T, cb: Callback<typeof type>): Promise<DisableCallback> {
         let id = await this.callback_mutex.runExclusive(async () => {
             let id = this.callback_id++;
 
+            // @ts-ignore
+            let callback: Callback<types.Varient> = cb;
             let callbacks = this.callbacks.get(type) ?? null;
             if (callbacks == null) {
-                this.callbacks.set(type, [[id, cb]]);
+                this.callbacks.set(type, [[id, callback]]);
             } else {
-                callbacks.push([id, cb]);
+                callbacks.push([id, callback]);
             }
 
             return id;

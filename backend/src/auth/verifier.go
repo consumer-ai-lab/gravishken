@@ -1,11 +1,11 @@
 package auth
 
 import (
+	"common/models/admin"
+	"common/models/user"
 	"errors"
 	"fmt"
 	"os"
-	"server/src/models/admin"
-	"server/src/models/user"
 
 	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/mongo"
