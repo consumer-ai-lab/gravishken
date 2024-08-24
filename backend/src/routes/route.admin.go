@@ -1,16 +1,16 @@
 package route
 
 import (
+	"common/models/admin"
+	Batch "common/models/batch"
+	Test "common/models/test"
+	User "common/models/user"
 	"fmt"
-	"server/src/controllers"
-	"server/src/models/admin"
-	Batch "server/src/models/batch"
-	Test "server/src/models/test"
-	User "server/src/models/user"
 	"github.com/gin-gonic/gin"
+	"server/src/controllers"
 )
 
-func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine){
+func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) {
 	adminRoute := route.Group("/admin")
 
 	adminRoute.POST("/login", func(ctx *gin.Context) {
@@ -24,17 +24,15 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 		allControllers.AdminLoginHandler(ctx, &adminModel)
 	})
 
-
 	adminRoute.POST("/register", func(ctx *gin.Context) {
 		var adminModel admin.Admin
 		if err := ctx.ShouldBindJSON(&adminModel); err != nil {
 			ctx.JSON(400, gin.H{"error": "Invalid request body"})
 			return
 		}
-		
+
 		allControllers.AdminRegisterHandler(ctx, &adminModel)
 	})
-
 
 	adminRoute.POST("/changepassword", func(ctx *gin.Context) {
 		var adminModel admin.AdminChangePassword
@@ -42,10 +40,9 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 			ctx.JSON(400, gin.H{"error": "Invalid request body"})
 			return
 		}
-		
+
 		allControllers.AdminChangePasswordHandler(ctx, &adminModel)
 	})
-
 
 	adminRoute.POST("/add_all_users", func(ctx *gin.Context) {
 		var filePath string
@@ -56,17 +53,15 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 		allControllers.AddAllUsersBacthesToDb(ctx, filePath)
 	})
 
-
 	adminRoute.POST("/add_batch", func(ctx *gin.Context) {
 		var batchData Batch.Batch
 		if err := ctx.ShouldBindJSON(&batchData); err != nil {
 			ctx.JSON(400, gin.H{"error": "Invalid request body"})
 			return
 		}
-		
+
 		allControllers.AddBatchToDB(ctx, &batchData)
 	})
-
 
 	adminRoute.POST("/add_test", func(ctx *gin.Context) {
 		var testModel Test.Test
@@ -79,7 +74,6 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 		allControllers.AddTestToDB(ctx, &testModel)
 	})
 
-
 	adminRoute.POST("/update_user_data", func(ctx *gin.Context) {
 		var userUpdateRequest User.UserUpdateRequest
 
@@ -91,7 +85,6 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 		allControllers.UpdateUserData(ctx, &userUpdateRequest)
 
 	})
-
 
 	adminRoute.POST("/increase_test_time", func(ctx *gin.Context) {
 		var requestData struct {
@@ -113,7 +106,6 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 
 	})
 
-
 	adminRoute.GET("/get_batchwise_data", func(ctx *gin.Context) {
 		var batchData struct {
 			Param       string `json:"param"`
@@ -129,7 +121,6 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 		allControllers.GetBatchWiseData(ctx, batchData.Param, batchData.BatchNumber, batchData.Ranges)
 
 	})
-
 
 	adminRoute.POST("/set_user_data", func(ctx *gin.Context) {
 		var userRequest struct {

@@ -116,7 +116,11 @@ func (self *App) handleMessages() {
 				log.Println(err)
 				continue
 			}
-			log.Println(val)
+			err = self.login(*val)
+			if err != nil {
+				self.notifyErr(err)
+				continue
+			}
 		case types.Err:
 			val, err := types.Get[types.TErr](msg)
 			if err != nil {

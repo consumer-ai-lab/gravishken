@@ -1,10 +1,10 @@
 package types
 
 import (
-	"server/src/models/admin"
-	"server/src/models/batch"
-	"server/src/models/test"
-	"server/src/models/user"
+	"common/models/admin"
+	"common/models/batch"
+	"common/models/test"
+	"common/models/user"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -24,4 +24,3 @@ type Claims struct {
 	Username string `json:"username"`
 	jwt.RegisteredClaims
 }
-

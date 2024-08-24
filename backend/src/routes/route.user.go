@@ -1,8 +1,8 @@
 package route
 
 import (
+	User "common/models/user"
 	"server/src/controllers"
-	User "server/src/models/user"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,6 +19,4 @@ func UserRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) 
 
 		allControllers.UserLoginHandler(ctx, &userModel)
 	})
-
 }
-	

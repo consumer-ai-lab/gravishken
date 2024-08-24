@@ -3,11 +3,11 @@ package route
 import (
 	"server/src/controllers"
 
+	Batch "common/models/batch"
 	"github.com/gin-gonic/gin"
-	Batch "server/src/models/batch"
 )
 
-func BatchRoutes(allControllers *controllers.ControllerClass, route *gin.Engine){
+func BatchRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) {
 	batchRoute := route.Group("/batch")
 
 	batchRoute.POST("/add", func(ctx *gin.Context) {
@@ -16,8 +16,7 @@ func BatchRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 			ctx.JSON(400, gin.H{"error": "Invalid request body"})
 			return
 		}
-		
+
 		allControllers.AddBatchToDB(ctx, &batchData)
 	})
 }
-

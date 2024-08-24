@@ -1,9 +1,9 @@
 package helper
 
 import (
+	"common/models/admin"
 	"context"
 	"fmt"
-	"server/src/models/admin"
 	"server/src/types"
 	"time"
 
@@ -16,7 +16,6 @@ import (
 func RegisterAdmin(Collection *mongo.Collection, Admin types.ModelInterface) error {
 
 	password := Admin.(*admin.Admin).Password
-	
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -35,7 +34,6 @@ func AdminLogin(Collection *mongo.Collection, Admin types.ModelInterface) (strin
 	password := Admin.(*admin.Admin).Password
 	secretKey := []byte("token")
 
-
 	var user admin.Admin
 	err := Collection.FindOne(context.TODO(), bson.M{"username": username}).Decode(&user)
 	if err != nil {
@@ -47,7 +45,7 @@ func AdminLogin(Collection *mongo.Collection, Admin types.ModelInterface) (strin
 
 	// Compare the hashed password with the plaintext password
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
-	
+
 	if err != nil {
 		return "", err
 	}
@@ -73,7 +71,6 @@ func AdminLogin(Collection *mongo.Collection, Admin types.ModelInterface) (strin
 
 	return tokenString, nil
 }
-
 
 func ChangePassword(Collection *mongo.Collection, model *admin.AdminChangePassword) error {
 
