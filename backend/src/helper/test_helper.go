@@ -18,3 +18,15 @@ func GetQuestionPaper(Collection *mongo.Collection, password string) (types.Mode
 	}
 	return questionPaper, nil
 }
+
+
+func GetQuestionPaperByBatchNumber(Collection *mongo.Collection, batchNumber string) (types.ModelInterface, error) {
+	var questionPaper types.ModelInterface
+
+	err := Collection.FindOne(context.TODO(), bson.M{"batch": batchNumber}).Decode(&questionPaper)
+
+	if err != nil {
+		return nil, err
+	}
+	return questionPaper, nil
+}

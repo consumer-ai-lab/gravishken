@@ -3,7 +3,6 @@ package controllers
 import (
 	"server/src/helper"
 	User "server/src/models/user"
-	"server/src/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -45,23 +44,6 @@ func (this *ControllerClass) UpdateUserData(ctx *gin.Context, userUpdateRequest 
 	})
 }
 
-
-func (this *ControllerClass) RegisterAllUsers(ctx *gin.Context, filePath string){
-	userCollection := this.UserCollection
-	err := utils.Add_CSVData_To_DB(userCollection, filePath)
-
-	if err != nil {
-		ctx.JSON(500, gin.H{
-			"message": "Error in adding all users",
-			"error": err,
-		})
-		return
-	}
-
-	ctx.JSON(200, gin.H{
-		"message": "All users added successfully",
-	})
-}
 
 
 func (this *ControllerClass) Increase_Time(ctx *gin.Context, param string, username []string, time_to_increase int64) {

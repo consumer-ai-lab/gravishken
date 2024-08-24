@@ -15,7 +15,6 @@ type User struct {
 	Username     string             `bson:"username" json:"username" binding:"required"`
 	Password     string             `bson:"password" json:"password" binding:"required"`
 	TestPassword string             `bson:"testPassword" json:"testPassword" binding:"required"`
-	Token        string             `bson:"token" json:"token"`
 	Batch        string             `bson:"batch" json:"batch" binding:"required"`
 	Tests        UserTest           `bson:"tests" json:"tests,omitempty"`
 }

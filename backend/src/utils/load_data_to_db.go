@@ -1,15 +1,14 @@
 package utils
 
 import (
-	"fmt"
 
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func Add_CSVData_To_DB(collection *mongo.Collection, file_path string) error {
 
-	csvData := Read_CSV(file_path)
-	fmt.Println(csvData)
+	// csvData := Read_CSV(file_path)
+	// fmt.Println(csvData)
 
 	// ****** Change logic here, add users to db and not batches ******
 

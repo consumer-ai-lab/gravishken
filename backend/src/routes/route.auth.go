@@ -27,8 +27,3 @@ func InitAuthRoutes(db *mongo.Client, route *gin.Engine) {
 	TestRoutes(&allControllers, route)
 }
 
-func SampleHandler(ctx *gin.Context) {
-	ctx.JSON(200, gin.H{
-		"message": "Auth routes here",
-	})
-}

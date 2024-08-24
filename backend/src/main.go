@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	config "server/config"
 	route "server/src/routes"
 
@@ -8,7 +9,6 @@ import (
 	"github.com/joho/godotenv"
 
 	"log"
-	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
@@ -23,9 +23,10 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 	router := SetupRouter()
-	log.Fatal(router.Run(":" + os.Getenv("GO_PORT")))
-	
+	log.Fatal(router.Run(":" + os.Getenv("GO_PORT")))	
 }
+
+
 
 func SetupRouter() *gin.Engine {
 	db, err := config.Connection()
