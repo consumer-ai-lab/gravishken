@@ -1,88 +1,122 @@
-Thank you for the clarification. I'll update the README to reflect these four specific test types. Here's a revised version of the README:
+# WCL Test Application: NodeJS Backend
 
-# WCL Test Application
+## Run backend
+Move to required directory `backend/`
 
-## Overview
-
-This application has been developed for World Computer Limited (WCL) to conduct annual tests in our college. The system supports four types of tests:
-
-1. Typing Test
-2. PowerPoint Test
-3. Excel Test
-4. Word Test
-
-The application is designed to provide a seamless testing experience with robust features to handle technical issues and ensure data persistence.
-
-## Features
-
-- **Multiple Test Types**: Conduct four different types of tests through a single platform.
-- **Real-time Data Persistence**: Continuous saving of user progress to prevent data loss.
-- **Interruption Handling**: Ability to resume tests from where the user left off in case of technical issues.
-- **Accurate Time Tracking**: Server-side timer to ensure precise test duration.
-- **Application Integration**: Tests for PowerPoint, Excel, and Word to assess proficiency in these tools.
-
-## Test Modules
-
-1. **Typing Test**: Measures typing speed and accuracy.
-2. **PowerPoint Test**: Assesses skills in creating and manipulating presentations.
-3. **Excel Test**: Evaluates proficiency in spreadsheet operations and formulas.
-4. **Word Test**: Gauges competency in document creation and formatting.
-
-## Technical Stack
-
-- **Backend**: Go (Golang)
-- **Frontend**: [Your frontend technology, e.g., React, Vue, etc.]
-- **Real-time Communication**: WebSockets
-- **Data Storage**: In-memory data store with persistence capabilities
-
-## Key Components
-
-1. **WebSocket Server**: Handles real-time communication between client and server.
-2. **DataStore**: Manages user data and test progress.
-3. **Test Modules**: Separate modules for each test type.
-4. **User Interface**: Responsive design for seamless test-taking experience.
-
-## Installation
-
-[Provide installation steps here]
-
-## Usage
-
-[Provide usage instructions here]
-
-## Development
-
-To run the application in development mode:
-
+- Install dependencies
 ```bash
-BUILD_MODE=DEV go run main.go
+npm install
 ```
 
-For production:
-
+- Start server
 ```bash
-BUILD_MODE=PROD go run main.go
+npm run start
 ```
 
-## Contributing
+## Tests
 
-[Provide guidelines for contributing to the project]
+We perform load testing to make sure our backend will hold well in practical use case.
 
-## License
+There are two major scenarios where our application might fail:
+1. Our node server, with overload of concurrent users
+2. Mongo DB with concurrent read/write access
 
-[Specify the license under which this project is released]
+Thus we will run two tests as of now,
+1. Basic request test on node, to check if our nodejs backend can handle that many users.
+2. Read/write on mongoDB to check if mongo DB can handle these many requests
 
-## Acknowledgements
+We are not taking into account AWS S3 stress as it is only required at the end of test and is very stable.
 
-- World Computer Limited (WCL) for the opportunity to develop this application
-- [Any other acknowledgements]
+Current Stress requirement: (2023)
+ - Total users: 160/batch, thus we will be testing for 200 requests per second.
 
-## Contact
+### Populating mongoDB
 
-For any queries regarding this application, please contact:
+- We are putting fake data in mongoDB, `load-test-table` we will put `500` records there, to do so we will be using `scripts/populate-mongodb.js`. (we only do this once)
+- To test `read/write` we will use `scripts/fake-id.js` to get fake id for virtual user to access and update
+- We will request on `/load-test` to read and write on these records and load test mongoDB
 
-[Provide contact information]
+### Load testing
 
----
+- Move to required directory `backend/tests/`
+- we will be using `Artillery` module for load testing our backend application.
+- Article link: [a-guide-to-load-testing-nodejs-apis-with-artillery](https://blog.appsignal.com/2021/11/10/a-guide-to-load-testing-nodejs-apis-with-artillery.html)
 
-We hope this application serves WCL and our college well in conducting efficient and reliable annual tests across typing, PowerPoint, Excel, and Word skills. Your feedback and suggestions for improvement are always welcome!
+- Install `Artillery`
+```bash
+npm install -g artillery@latest
+```
+
+- Check version
+```bash
+artillery -V
+```
+
+- In the `tests/` folder, we have different test files for different cases.
+- In the `package.json`, we have scripts to run different `.yml` files that will run load-tests and store it's result in specified `.json` file, the command format is as follows
+```bash
+artillery run test-file-path.yml --output output-file-path.json
+```
+
+- To run load test of any kind check out `package.json` and run `npm run your-test-name`
+```bash
+npm run basic-test
+```
+
+## Making Docker file
+
+Move to required directory
+
+- Build Image
+```bash
+docker build --tag YOUR-USER-NAME/wcl_backend:v1 .
+```
+
+v1 is for versions
+
+- Run Image at port 5000
+```bash
+docker run -d -p 5000:5000 YOUR-USER-NAME/wcl_backend
+```
+
+- Check images
+```bash
+docker ps
+```
+
+- Stop once done
+```bash
+docker stop YOUR-USER-NAME/wcl_backend
+```
+
+- Upload image to docker hub
+```bash
+docker push YOUR-USER-NAME/wcl_backend
+```
+
+## Deploying backend to AWS EC2
+
+1. Login to your EC2 terminal
+2. Install docker (if not done already) on EC2: [how-to-install-docker-on-aws-ec2-ubuntu](https://linux.how2shout.com/how-to-install-docker-on-aws-ec2-ubuntu-22-04-or-20-04-linux/)
+
+- Pull image from docker hub
+```bash
+docker pull YOUR-USER-NAME/wcl_backend
+```
+
+- Run Image at port 5000
+```bash
+docker run -d -p 5000:5000 YOUR-USER-NAME/wcl_backend
+```
+
+- See container logs
+```bash
+docker logs -f container_id
+```
+
+- Enter into Container terminal
+```bash
+docker exec -it container_id /bin/sh
+```
+
+Note: Add network security group to open up port to public

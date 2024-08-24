@@ -123,10 +123,11 @@ func Get[T any](msg Message) (*T, error) {
 // - [tkrajina/tkypescriptify-golang-structs](https://github.com/tkrajina/typescriptify-golang-structs)
 func DumpTypes(dir string) {
 	allVarients := make([]Varient, Unknown+1)
-	for i := range Unknown + 1 {
-		allVarients[i] = i
-	}
 
+	for i := 0; i <= int(Unknown); i++ {
+        allVarients[i] = Varient(i)
+    }
+	
 	converter := typescriptify.New().
 		WithInterface(true).
 		WithBackupDir("").
