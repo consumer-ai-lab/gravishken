@@ -10,6 +10,7 @@ import (
 
 func (this *ControllerClass) GetQuestionPaperHandler(ctx *gin.Context, password string) (types.ModelInterface, error) {
 	testCollection := this.TestCollection
+	
 	testModel, err := helper.GetQuestionPaper(testCollection, password)
 
 	if err != nil {
@@ -17,5 +18,5 @@ func (this *ControllerClass) GetQuestionPaperHandler(ctx *gin.Context, password 
 		return &Test.Test{}, err
 	}
 
-	return testModel, nil
+	return &testModel, nil
 }

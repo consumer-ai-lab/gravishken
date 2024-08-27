@@ -1,13 +1,14 @@
 package route
 
 import (
-	"common/models/admin"
 	Batch "common/models/batch"
 	Test "common/models/test"
 	User "common/models/user"
+	"common/models/admin"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"server/src/controllers"
+
+	"github.com/gin-gonic/gin"
 )
 
 func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) {
@@ -34,6 +35,7 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 		allControllers.AdminRegisterHandler(ctx, &adminModel)
 	})
 
+	// change password not working properly
 	adminRoute.POST("/changepassword", func(ctx *gin.Context) {
 		var adminModel admin.AdminChangePassword
 		if err := ctx.ShouldBindJSON(&adminModel); err != nil {
@@ -45,12 +47,15 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 	})
 
 	adminRoute.POST("/add_all_users", func(ctx *gin.Context) {
-		var filePath string
-		if err := ctx.ShouldBindJSON(&filePath); err != nil {
+		var FilePathRequest struct {
+			FilePath string `json:"filePath" binding:"required"`
+		}
+
+		if err := ctx.ShouldBindJSON(&FilePathRequest); err != nil {
 			ctx.JSON(400, gin.H{"error": "Invalid request body"})
 			return
 		}
-		allControllers.AddAllUsersBacthesToDb(ctx, filePath)
+		allControllers.AddAllUsersBacthesToDb(ctx, FilePathRequest.FilePath)
 	})
 
 	adminRoute.POST("/add_batch", func(ctx *gin.Context) {
@@ -64,6 +69,7 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 	})
 
 	adminRoute.POST("/add_test", func(ctx *gin.Context) {
+		
 		var testModel Test.Test
 
 		if err := ctx.ShouldBindJSON(&testModel); err != nil {
@@ -82,6 +88,7 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 			return
 		}
 
+		
 		allControllers.UpdateUserData(ctx, &userUpdateRequest)
 
 	})

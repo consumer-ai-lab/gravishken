@@ -19,7 +19,7 @@ import (
 func UpdateUserTestTime(Collection *mongo.Collection, Username string, TimeToIncrease int64) error {
 	var user User.User
 
-	err := Collection.FindOne(context.TODO(), bson.M{"username": Username}).Decode(&user)
+	err := Collection.FindOne(context.TODO(), bson.M{"name": Username}).Decode(&user)
 
 	if err != nil {
 		return err
@@ -28,6 +28,7 @@ func UpdateUserTestTime(Collection *mongo.Collection, Username string, TimeToInc
 	userTest := user.Tests
 	prevTimeElapsedUser := userTest.ElapsedTime
 	userTest.ElapsedTime = prevTimeElapsedUser - 60*TimeToIncrease
+
 
 	if userTest.ElapsedTime < 0 {
 		userTest.ElapsedTime = 0
@@ -39,7 +40,7 @@ func UpdateUserTestTime(Collection *mongo.Collection, Username string, TimeToInc
 
 	user.Tests = userTest
 
-	Collection.ReplaceOne(context.TODO(), bson.M{"username": Username}, user)
+	Collection.ReplaceOne(context.TODO(), bson.M{"name": Username}, user)
 
 	return nil
 }
@@ -57,33 +58,42 @@ func UpdateBatchTestTime(Collection *mongo.Collection, Usernames []string, TimeT
 
 func UpdateUserData(Collection *mongo.Collection, Model *User.UserUpdateRequest) error {
 
-	var userTest User.UserTest
+	var user User.User
 
-	err := Collection.FindOne(context.TODO(), bson.M{"username": Model.Username}).Decode(&userTest)
+	err := Collection.FindOne(context.TODO(), bson.M{"name": Model.Username}).Decode(&user)
 
+	
+	userTest := user.Tests
 	if err != nil {
 		return err
 	}
 
+	
+
 	property := strings.ToLower(Model.Property)
 	_ = property
+
 	switch property {
 	case "start_time":
+		
 		startTime, err := time.Parse(time.RFC3339, Model.Value[0])
 		if err != nil {
 			return err
 		}
 		userTest.StartTime = startTime
 		userTest.ElapsedTime = 0
-		Collection.ReplaceOne(context.TODO(), bson.M{"username": Model.Username}, userTest)
-
+		user.Tests = userTest
+		Collection.ReplaceOne(context.TODO(), bson.M{"name": Model.Username}, user)
+		
 	case "reading_submission_received":
 		userTest.ReadingSubmissionReceived = true
-		Collection.ReplaceOne(context.TODO(), bson.M{"username": Model.Username}, userTest)
+		user.Tests = userTest
+		Collection.ReplaceOne(context.TODO(), bson.M{"name": Model.Username}, user)
 
 	case "submission_received":
 		userTest.SubmissionReceived = true
-		Collection.ReplaceOne(context.TODO(), bson.M{"username": Model.Username}, userTest)
+		user.Tests = userTest
+		Collection.ReplaceOne(context.TODO(), bson.M{"name": Model.Username}, user)
 
 	case "elapsed_time":
 		elapsedTime, err := time.Parse(time.RFC3339, Model.Value[0])
@@ -91,7 +101,8 @@ func UpdateUserData(Collection *mongo.Collection, Model *User.UserUpdateRequest)
 			return err
 		}
 		userTest.ElapsedTime = elapsedTime.Unix()
-		Collection.ReplaceOne(context.TODO(), bson.M{"username": Model.Username}, userTest)
+		user.Tests = userTest
+		Collection.ReplaceOne(context.TODO(), bson.M{"name": Model.Username}, user)
 
 	case "reading_elapsed_time":
 		readingElapsedTime, err := time.Parse(time.RFC3339, Model.Value[0])
@@ -99,12 +110,14 @@ func UpdateUserData(Collection *mongo.Collection, Model *User.UserUpdateRequest)
 			return err
 		}
 		userTest.ReadingElapsedTime = readingElapsedTime.Unix()
-		Collection.ReplaceOne(context.TODO(), bson.M{"username": Model.Username}, userTest)
+		user.Tests = userTest
+		Collection.ReplaceOne(context.TODO(), bson.M{"name": Model.Username}, user)
 
 	case "submission_folder_id":
 		userTest.SubmissionFolderID = Model.Value[0]
 		userTest.MergedFileID = Model.Value[1]
-		Collection.ReplaceOne(context.TODO(), bson.M{"username": Model.Username}, userTest)
+		user.Tests = userTest
+		Collection.ReplaceOne(context.TODO(), bson.M{"name": Model.Username}, user)
 
 	case "wpm":
 		wpm, err := time.Parse(time.RFC3339, Model.Value[0])
@@ -124,7 +137,8 @@ func UpdateUserData(Collection *mongo.Collection, Model *User.UserUpdateRequest)
 			return err
 		}
 		userTest.WPMNormal = float64(wpm_normal.Unix())
-		Collection.ReplaceOne(context.TODO(), bson.M{"username": Model.Username}, userTest)
+		user.Tests = userTest
+		Collection.ReplaceOne(context.TODO(), bson.M{"name": Model.Username}, user)
 
 	case "user_test_time":
 		username := Model.Value[0]
@@ -200,11 +214,11 @@ func GetBatchWiseListRoll(Collection *mongo.Collection, BatchNumber string, From
 	}
 
 	/*
-				userData[i].username,
-		        userData[i].merged_file_id,
-		        userData[i].submission_folder_id,
-		        userData[i].resultDownloaded,
-		        userData[i].submission_received,
+		userData[i].username,
+		userData[i].merged_file_id,
+		userData[i].submission_folder_id,
+		userData[i].resultDownloaded,
+		userData[i].submission_received,
 	*/
 
 	for _, user := range user {
@@ -251,22 +265,13 @@ func GetBatchDataForFrontend(Collection *mongo.Collection, BatchNumber string) (
 
 func UserLogin(Collection *mongo.Collection, userRequest *User.UserLoginRequest) (string, error) {
 	user, err := User.FindByUsername(Collection, userRequest.Username)
+
 	if err != nil {
 		return "", err
 	}
 
 	if user == nil {
 		return "", errors.New("user not found")
-	}
-
-	batch_data, err := GetQuestionPaper(Collection, userRequest.TestPassword)
-
-	if err != nil {
-		return "", err
-	}
-
-	if batch_data == nil {
-		return "", errors.New("batch not found")
 	}
 
 	// Generate JWT token
@@ -276,13 +281,6 @@ func UserLogin(Collection *mongo.Collection, userRequest *User.UserLoginRequest)
 	})
 
 	tokenString, err := token.SignedString([]byte("token"))
-	if err != nil {
-		return "", err
-	}
-
-	user.TestPassword = userRequest.TestPassword
-
-	err = Update_Model_By_ID(Collection, user.ID.Hex(), user)
 	if err != nil {
 		return "", err
 	}

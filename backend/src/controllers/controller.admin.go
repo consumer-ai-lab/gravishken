@@ -102,7 +102,7 @@ func (this *ControllerClass) AddAllUsersBacthesToDb(ctx *gin.Context, filePath s
 			return
 		}
 
-		batch_passwords[batch] = test_data.(*Test.Test).Password
+		batch_passwords[batch] = test_data.Password
 	}
 
 	// Looping over all user data fetched from reading csv file and adding them to db

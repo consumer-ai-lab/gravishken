@@ -14,16 +14,12 @@ import (
 )
 
 func Add_Model_To_DB(Collection *mongo.Collection, Model types.ModelInterface) error {
-
-	fmt.Println("Adding " + Model.GetCollectionName() + " to database...")
 	_, err := Collection.InsertOne(context.TODO(), Model)
 
 	if err != nil {
 		fmt.Println("Error in adding Model to database: ", err)
 		return err
 	}
-
-	log.Default().Println(Model.GetCollectionName() + " added successfully")
 
 	return nil
 }
@@ -58,7 +54,6 @@ func Get_All_Models(collection *mongo.Collection, modelType types.ModelInterface
 		results = append(results, item)
 	}
 
-	fmt.Println("Models in DB:", results)
 	return results, nil
 }
 
@@ -111,7 +106,6 @@ func GetModelByBatchId(collection *mongo.Collection, batchNumber string, modelTy
 		results = append(results, item)
 	}
 
-	fmt.Println("Models in DB:", results)
 	return results, nil
 }
 

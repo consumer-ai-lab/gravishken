@@ -28,9 +28,12 @@ func main() {
 	if !ok {
 		log.Fatalln("SERVER_PORT not set")
 	}
+	build_mode = os.Getenv("GO_ENV")
 
 	router := SetupRouter()
 	log.Fatal(router.Run(":" + port))
+
+
 }
 
 func SetupRouter() *gin.Engine {

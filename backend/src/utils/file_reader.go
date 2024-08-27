@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"strings"
 )
 
 func Read_CSV(file_path string) ([]map[string]string, map[string]bool) {
@@ -29,7 +30,11 @@ func Read_CSV(file_path string) ([]map[string]string, map[string]bool) {
 			log.Fatalf("failed to read record: %v", err)
 		}
 		lastColumn := record[len(record)-1]
-		unique_batches[lastColumn] = true
+		batchNumber := strings.Split(lastColumn, " ")
+		if len(batchNumber) > 1{
+			lastColumn = batchNumber[1]
+			unique_batches[batchNumber[1]] = true
+		}
 		csv_single_data["sr_no"] = record[0]
 		csv_single_data["roll_no"] = record[1]
 		csv_single_data["name"] = record[2]
@@ -37,7 +42,7 @@ func Read_CSV(file_path string) ([]map[string]string, map[string]bool) {
 		csv_single_data["neis_no"] = record[4]
 		csv_single_data["designation"] = record[5]
 		csv_single_data["area"] = record[6]
-		csv_single_data["slot"] = record[7]
+		csv_single_data["slot"] = lastColumn
 
 		csv_data = append(csv_data, csv_single_data)
 	}
