@@ -22,6 +22,7 @@ type App struct {
 		webview_opened  bool
 		explorer_killed bool
 	}
+	jwt string
 }
 
 func (self *App) destroy() {
@@ -102,10 +103,19 @@ func newApp() (*App, error) {
 }
 
 func (self *App) login(user_login types.TUserLogin) error {
-	err := self.client.login(user_login)
+	jwt, err := self.client.login(user_login)
 	if err != nil {
 		return err
 	}
+	self.jwt = jwt
+
+    routeMessage := types.TLoadRoute{
+        Route: "/instructions",
+    }
+    message := types.NewMessage(routeMessage)
+
+    self.send <- message
+
 	return nil
 }
 

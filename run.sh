@@ -5,6 +5,9 @@ export PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 # export BUILD_MODE="PROD"
 export BUILD_MODE="DEV"
 
+# command to install webkit on fedora
+# sudo dnf install webkit2gtk3-devel
+
 export APP_PORT=6200
 export SERVER_PORT=6201
 export DEV_PORT=6202

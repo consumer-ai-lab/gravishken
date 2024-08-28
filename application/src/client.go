@@ -15,7 +15,6 @@ var server_url string
 
 type Client struct {
 	client http.Client
-	jwt    string
 }
 
 func newClient() (*Client, error) {
@@ -26,7 +25,7 @@ func newClient() (*Client, error) {
 	return self, nil
 }
 
-func (self *Client) login(user_login types.TUserLogin) error {
+func (self *Client) login(user_login types.TUserLogin) (string, error) {
 	login_req := user.UserLoginRequest{
 		Username:     user_login.Username,
 		Password:     user_login.Password,
@@ -35,30 +34,30 @@ func (self *Client) login(user_login types.TUserLogin) error {
 
 	json_data, err := json.Marshal(login_req)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	url := server_url + "user/login"
 	log.Println(url, string(json_data))
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(json_data))
 	if err != nil {
-		return err
+		return "", err
 	}
 	req.Header.Set("content-type", "application/json")
 
 	resp, err := self.client.Do(req)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer resp.Body.Close()
 
 	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
-		return fmt.Errorf("%s", resp.Status)
+		return "", fmt.Errorf("%s", resp.Status)
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	var result struct {
@@ -66,12 +65,8 @@ func (self *Client) login(user_login types.TUserLogin) error {
 		Response string `json:"response"`
 	}
 	if err := json.Unmarshal(body, &result); err != nil {
-		return err
+		return "", err
 	}
 
-	self.jwt = result.Response
-
-	// TODO: maybe use the cookie jar for jwt??
-
-	return nil
+	return result.Response, nil
 }
