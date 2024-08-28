@@ -7,7 +7,8 @@ export enum Varient {
     LoadRoute = 2,
     ReloadUi = 3,
     Err = 4,
-    Unknown = 5,
+    GetTest = 5,
+    Unknown = 6,
 }
 export interface Message {
     Typ: Varient;

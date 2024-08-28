@@ -105,7 +105,11 @@ func newApp() (*App, error) {
 func (self *App) login(user_login types.TUserLogin) error {
 	jwt, err := self.client.login(user_login)
 	if err != nil {
-		return err
+		errorMessage := types.NewMessage(types.TErr{
+            Message: "Failed to log in user: " + err.Error(),
+        })
+        self.send <- errorMessage
+        return err
 	}
 	self.jwt = jwt
 
@@ -118,6 +122,27 @@ func (self *App) login(user_login types.TUserLogin) error {
 
 	return nil
 }
+
+
+func (self *App) startTest(testData types.TGetTest) error{
+	questionPaper, err := self.client.getTest(testData)
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Question paper: ",questionPaper)
+
+	routeMessage := types.TLoadRoute{
+		Route: "/tests/1",
+	}
+	message := types.NewMessage(routeMessage)
+	
+	self.send <- message
+
+	return nil
+}
+
 
 func (self *App) openWv() {
 	self.webview = webview.New(build_mode == "DEV")

@@ -121,6 +121,18 @@ func (self *App) handleMessages() {
 				self.notifyErr(err)
 				continue
 			}
+		case types.GetTest:
+			val, err := types.Get[types.TGetTest](msg)
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+			err = self.startTest(*val)
+			if err != nil {
+				self.notifyErr(err)
+				continue
+			}
+			
 		case types.Err:
 			val, err := types.Get[types.TErr](msg)
 			if err != nil {

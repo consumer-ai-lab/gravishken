@@ -274,6 +274,10 @@ func UserLogin(Collection *mongo.Collection, userRequest *User.UserLoginRequest)
 		return "", errors.New("user not found")
 	}
 
+	if user.Password != userRequest.Password {
+		return "", errors.New("invalid password")
+	}
+
 	// Generate JWT token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"username": user.Username,

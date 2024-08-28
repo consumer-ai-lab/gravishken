@@ -31,6 +31,7 @@ const (
 	LoadRoute
 	ReloadUi
 	Err
+	GetTest
 	Unknown // NOTE: keep this as the last constant here.
 )
 
@@ -46,6 +47,8 @@ func (self Varient) TSName() string {
 		return "ReloadUi"
 	case Err:
 		return "Err"
+	case GetTest:
+		return "GetTest"
 	default:
 		return "Unknown"
 	}
@@ -62,6 +65,8 @@ func varientFromName(typ string) Varient {
 		return LoadRoute
 	case "Err":
 		return Err
+	case "GetTest":
+		return GetTest
 	default:
 		return Unknown
 	}
@@ -92,6 +97,10 @@ type TReloadUi struct{}
 // only for unexpected errors / for errors that we can't do much about, other than telling the user about it
 type TErr struct {
 	Message string
+}
+
+type TGetTest struct {
+	TestPassword string
 }
 
 func NewMessage(typ interface{}) Message {

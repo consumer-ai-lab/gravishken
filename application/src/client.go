@@ -4,6 +4,7 @@ import (
 	"bytes"
 	types "common"
 	user "common/models/user"
+	TEST "common/models/test"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -66,6 +67,43 @@ func (self *Client) login(user_login types.TUserLogin) (string, error) {
 	}
 	if err := json.Unmarshal(body, &result); err != nil {
 		return "", err
+	}
+
+	return result.Response, nil
+}
+
+
+func (self *Client) getTest(testData types.TGetTest) (TEST.Test, error) {
+	test_code := testData.TestPassword
+	url := server_url + "test/get_question_paper/" + test_code
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return TEST.Test{}, err
+	}
+	req.Header.Set("content-type", "application/json")
+	req.Header.Set("test_code", test_code)
+
+	resp, err := self.client.Do(req)
+	if err != nil {
+		return TEST.Test{}, err
+	}
+	defer resp.Body.Close()
+
+	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
+		return TEST.Test{}, fmt.Errorf("%s", resp.Status)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return TEST.Test{}, err
+	}
+
+	var result struct {
+		Message  string `json:"message"`
+		Response TEST.Test `json:"response"`
+	}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return TEST.Test{}, err
 	}
 
 	return result.Response, nil

@@ -12,7 +12,7 @@ func (this *ControllerClass) UserLoginHandler(ctx *gin.Context, userModel *User.
 	response, err := helper.UserLogin(userCollection, userModel)
 
 	if err != nil {
-		ctx.JSON(500, gin.H{
+		ctx.JSON(401, gin.H{
 			"message": "Error in User Login",
 			"error":   err,
 		})

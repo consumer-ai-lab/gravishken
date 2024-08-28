@@ -3,14 +3,26 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Clock, AlertTriangle } from 'lucide-react';
 import { useState } from "react";
-
-
+import { server } from '@common/server';
+import * as types from '@common/types';
 
 export default function InstructionsPage() {
 
     const [slotTime, setSlotTime] = useState("")
-    const [rollNumber, setRollNumber] = useState(0)
+    const [rollNumber, setRollNumber] = useState(12345)  
     const [candidateName, setCandidateName] = useState("Yash Thombre")
+    const testPassword = "examplePassword123"; 
+    // Function to handle Start Test
+    const handleStartTest = () => {
+        console.log("Starting test with testPassword:", testPassword);
+
+        server.send_message({
+            Typ: types.Varient.GetTest, 
+            Val: {
+                TestPassword: testPassword
+            }
+        });
+    };
 
     return (
         <div className="min-h-screen bg-gray-100 p-4 flex items-center justify-center">
@@ -39,7 +51,7 @@ export default function InstructionsPage() {
                             Ensure you have a stable internet connection before starting the test.
                         </AlertDescription>
                     </Alert>
-                    <Button className="bg-green-600 hover:bg-green-700 text-white py-3">
+                    <Button className="bg-green-600 hover:bg-green-700 text-white py-3" onClick={handleStartTest}>
                         <Clock className="mr-2 h-4 w-4" /> Start Test
                     </Button>
                 </CardFooter>

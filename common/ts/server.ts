@@ -22,6 +22,9 @@ export type Message = {
     Typ: types.Varient.Err,
     Val: types.TErr,
 } | {
+    Typ: types.Varient.GetTest,
+    Val: types.TGetTest,
+} | {
     Typ: types.Varient.Unknown,
     Val: unknown,
 }
@@ -102,6 +105,7 @@ export class Server {
             case types.Varient.ExeNotFound:
             case types.Varient.LoadRoute:
             case types.Varient.Err:
+            case types.Varient.GetTest:
                 break;
             case types.Varient.ReloadUi:
                 window.location.href = "/";
