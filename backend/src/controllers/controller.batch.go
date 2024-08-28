@@ -24,3 +24,23 @@ func (this *ControllerClass) AddBatchToDB(ctx *gin.Context, batchData *Batch.Bat
 		"message": "Batch data added successfully",
 	})
 }
+
+
+func (this *ControllerClass) GetBatches(ctx *gin.Context) {
+	testCollection := this.BatchCollection
+
+	batchData, err := helper.Get_All_Models(testCollection, &Batch.Batch{})
+
+	if err != nil {
+		ctx.JSON(500, gin.H{
+			"message": "Error in fetching batch data",
+			"error":   err,
+		})
+		return
+	}
+
+	ctx.JSON(200, gin.H{
+		"message": "Batch data fetched successfully",
+		"data":    batchData,
+	})
+}

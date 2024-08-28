@@ -19,4 +19,8 @@ func BatchRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 
 		allControllers.AddBatchToDB(ctx, &batchData)
 	})
+
+	batchRoute.GET("/get_batches", func(ctx *gin.Context) {
+		allControllers.GetBatches(ctx)
+	})
 }

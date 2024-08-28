@@ -1,9 +1,10 @@
-import AdminDashboard from "./components/AdminDashboard";
+import SideBar from "./components/SideBar";
+
 
 export default function Home() {
   return (
     <div>
-      <AdminDashboard />
-    </div>  
+      <SideBar />
+    </div>
   );
 }

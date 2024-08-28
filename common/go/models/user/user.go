@@ -70,5 +70,5 @@ type UserUpdateRequest struct {
 type UserLoginRequest struct {
 	Username     string `json:"username"`
 	Password     string `json:"password"`
+	TestPassword string `json:"testPassword"`
 }
-

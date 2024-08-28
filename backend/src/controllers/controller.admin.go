@@ -110,7 +110,7 @@ func (this *ControllerClass) AddAllUsersBacthesToDb(ctx *gin.Context, filePath s
 		user := User.User{
 			Name:         data["name"],
 			Username:     data["roll_no"],
-			Password:     "",
+			Password:     data["password"],
 			TestPassword: batch_passwords[data["slot"]],
 			Batch:        data["slot"],
 			Tests:        User.UserTest{},
@@ -118,4 +118,8 @@ func (this *ControllerClass) AddAllUsersBacthesToDb(ctx *gin.Context, filePath s
 
 		helper.Add_Model_To_DB(userCollection, &user)
 	}
+
+	ctx.JSON(200, gin.H{
+		"message": "All users added to db",
+	})
 }

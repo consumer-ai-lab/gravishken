@@ -113,7 +113,7 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 
 	})
 
-	adminRoute.GET("/get_batchwise_data", func(ctx *gin.Context) {
+	adminRoute.POST("/get_batchwise_data", func(ctx *gin.Context) {
 		var batchData struct {
 			Param       string `json:"param"`
 			BatchNumber string `json:"batchNumber"`

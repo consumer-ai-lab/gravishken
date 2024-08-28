@@ -43,6 +43,7 @@ func Read_CSV(file_path string) ([]map[string]string, map[string]bool) {
 		csv_single_data["designation"] = record[5]
 		csv_single_data["area"] = record[6]
 		csv_single_data["slot"] = lastColumn
+		csv_single_data["password"] = "wcl_" + record[1]
 
 		csv_data = append(csv_data, csv_single_data)
 	}
