@@ -70,6 +70,7 @@ app() {
   cd $PROJECT_ROOT/application
 
   mkdir -p ./dist
+  touch ./dist/ignore
 
   go build -ldflags "$VARS" -o build/gravtest ./src/.
   ./build/gravtest $@
