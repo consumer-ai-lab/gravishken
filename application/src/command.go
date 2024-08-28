@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
-	"time"
 
 	"github.com/go-vgo/robotgo"
 )
@@ -41,54 +40,6 @@ type Runner struct {
 		notepad    string
 		powerpoint string
 	}
-}
-
-func newRunner() (*Runner, error) {
-	runner := &Runner{}
-
-	log.Println(runtime.GOOS)
-	if runtime.GOOS != "windows" {
-		return runner, nil
-	}
-
-	var err error
-	runner.paths.cmd, err = exec.LookPath(cmd)
-	log.Println(runner.paths.cmd)
-	if err != nil {
-		return nil, err
-	}
-	runner.paths.kill, err = exec.LookPath(kill)
-	log.Println(runner.paths.kill)
-	if err != nil {
-		return nil, err
-	}
-	runner.paths.explorer, err = exec.LookPath(explorer)
-	log.Println(runner.paths.explorer)
-	if err != nil {
-		return nil, err
-	}
-	runner.paths.notepad, err = exec.LookPath(notepad)
-	log.Println(runner.paths.notepad)
-	if err != nil {
-		return nil, err
-	}
-	// runner.paths.word, err = exec.LookPath(word)
-	// log.Println(runner.paths.word)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// runner.paths.excel, err = exec.LookPath(excel)
-	// log.Println(runner.paths.excel)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// runner.paths.powerpoint, err = exec.LookPath(powerpoint)
-	// log.Println(runner.paths.powerpoint)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	return runner, nil
 }
 
 func (self *Runner) killExplorer() error {
@@ -173,66 +124,4 @@ func (self *Runner) run(name string, args ...string) error {
 		log.Println(err)
 	}
 	return err
-}
-
-func (self *Runner) maybe(err error) {
-	if err != nil {
-		log.Println(err)
-		if self != nil {
-			self.startExplorer()
-		}
-		panic(err)
-	}
-}
-
-func test() {
-	pids, _ := robotgo.Pids()
-	for _, p := range pids {
-		log.Println(p)
-	}
-
-	runner, err := newRunner()
-	runner.maybe(err)
-
-	err = runner.killExplorer()
-	runner.maybe(err)
-
-	file, err := os.CreateTemp("", tmp_txt)
-	runner.maybe(err)
-	file.Close()
-
-	dest := file.Name()
-	log.Println(dest)
-	err = runner.newTemplate(template_txt, dest)
-	runner.maybe(err)
-
-	time.Sleep(2000 * time.Millisecond)
-
-	// runner.disableTitlebar()
-	runner.fullscreenForegroundWindow()
-	// gadsgadd()
-
-	go (func() {
-	})()
-
-	_ = runner.open(runner.paths.notepad, dest)
-	time.Sleep(3000 * time.Millisecond)
-
-	err = runner.kill(notepad)
-	runner.maybe(err)
-
-	err = os.Remove(dest)
-	runner.maybe(err)
-
-	runner.startExplorer()
-}
-func asyncTest() {
-	path, err := exec.LookPath("")
-	command := exec.Command(path)
-	command.Start()
-	command.Process.Kill()
-	err = command.Wait()
-	if err != nil {
-
-	}
 }

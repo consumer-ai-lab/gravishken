@@ -15,6 +15,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// build time configuration. these get set using -ldflags in build script
 var build_mode string
 
 func main() {
