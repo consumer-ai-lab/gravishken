@@ -208,7 +208,7 @@ func test() {
 
 	time.Sleep(2000 * time.Millisecond)
 
-	runner.disableTitlebar()
+	// runner.disableTitlebar()
 	runner.fullscreenForegroundWindow()
 	// gadsgadd()
 

@@ -32,6 +32,7 @@ const (
 	ReloadUi
 	Err
 	GetTest
+	MicrosoftApps
 	Unknown // NOTE: keep this as the last constant here.
 )
 
@@ -49,6 +50,8 @@ func (self Varient) TSName() string {
 		return "Err"
 	case GetTest:
 		return "GetTest"
+	case MicrosoftApps:
+		return "MicrosoftApps"
 	default:
 		return "Unknown"
 	}
@@ -67,6 +70,8 @@ func varientFromName(typ string) Varient {
 		return Err
 	case "GetTest":
 		return GetTest
+	case "MicrosoftApps":
+		return MicrosoftApps
 	default:
 		return Unknown
 	}
@@ -103,6 +108,11 @@ type TGetTest struct {
 	TestPassword string
 }
 
+type TMicrosoftApps struct {
+	AppName string
+	Device  string
+}
+
 func NewMessage(typ interface{}) Message {
 	name := reflect.TypeOf(typ).Name()[1:]
 	varient := varientFromName(name)
@@ -134,9 +144,9 @@ func DumpTypes(dir string) {
 	allVarients := make([]Varient, Unknown+1)
 
 	for i := 0; i <= int(Unknown); i++ {
-        allVarients[i] = Varient(i)
-    }
-	
+		allVarients[i] = Varient(i)
+	}
+
 	converter := typescriptify.New().
 		WithInterface(true).
 		WithBackupDir("").

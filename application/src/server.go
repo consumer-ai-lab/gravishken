@@ -132,6 +132,18 @@ func (self *App) handleMessages() {
 				self.notifyErr(err)
 				continue
 			}
+		
+		case types.MicrosoftApps:
+			val, err := types.Get[types.TMicrosoftApps](msg)
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+			err = self.StartMicrosoftApps(*val)
+			if err != nil {
+				self.notifyErr(err)
+				continue
+			}
 			
 		case types.Err:
 			val, err := types.Get[types.TErr](msg)

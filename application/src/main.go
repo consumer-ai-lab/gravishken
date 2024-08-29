@@ -11,10 +11,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
+
 var build_mode string
 var port string
 
-func main() {
+func main(){
+
+	
 	if build_mode == "DEV" {
 		root, ok := os.LookupEnv("PROJECT_ROOT")
 		if !ok {

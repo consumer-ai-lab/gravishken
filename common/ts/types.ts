@@ -8,7 +8,8 @@ export enum Varient {
     ReloadUi = 3,
     Err = 4,
     GetTest = 5,
-    Unknown = 6,
+    MicrosoftApps = 6,
+    Unknown = 7,
 }
 export interface Message {
     Typ: Varient;

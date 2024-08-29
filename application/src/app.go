@@ -144,6 +144,30 @@ func (self *App) startTest(testData types.TGetTest) error{
 }
 
 
+// here we have to start the microsoft word, excel, powerpoint application
+
+func (self *App) StartMicrosoftApps(microSoftApp types.TMicrosoftApps) error {
+	runner, err := new(LinuxRunner).newRunner()
+	if err != nil {
+		return err
+	}
+
+	err = self.client.StartMicrosoftApps(runner, microSoftApp)
+	if err != nil {
+		return err
+	}
+
+	routeMessage := types.TLoadRoute{
+		Route: "/tests/2",
+	}
+	message := types.NewMessage(routeMessage)
+	
+	self.send <- message
+
+	return nil
+}
+
+
 func (self *App) openWv() {
 	self.webview = webview.New(build_mode == "DEV")
 	self.state.webview_opened = true
@@ -181,6 +205,6 @@ func (self *App) prepareEnv() {
 	self.notifyErr(err)
 	self.state.explorer_killed = err == nil
 
-	self.runner.disableTitlebar()
+	// self.runner.disableTitlebar()
 	self.runner.fullscreenForegroundWindow()
 }

@@ -3,13 +3,14 @@ package main
 import (
 	"bytes"
 	types "common"
-	user "common/models/user"
 	TEST "common/models/test"
+	user "common/models/user"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
+
 )
 
 var server_url string
@@ -107,4 +108,22 @@ func (self *Client) getTest(testData types.TGetTest) (TEST.Test, error) {
 	}
 
 	return result.Response, nil
+}
+
+
+func (self *Client) StartMicrosoftApps(runner *LinuxRunner,  microsftApp types.TMicrosoftApps) error{
+
+	switch microsftApp.AppName {
+	case "Word":
+		runner.runLibreOffice()
+	case "NotePad":
+		runner.runNotepad()
+	case "PowerPoint":
+		runner.runPowerPoint()
+	default:
+		return fmt.Errorf("Invalid Microsoft App")
+	}
+
+	return nil
+	
 }

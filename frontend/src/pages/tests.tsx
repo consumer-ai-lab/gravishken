@@ -1,3 +1,4 @@
+import OfficeAppSwitcher from "@/components/main-test";
 import TypingTest from "@/components/typing-test";
 import { useNavigate, useParams } from "react-router-dom"
 
@@ -23,15 +24,8 @@ export default function TestsPage() {
                 );
             default:
                 return (
-                    <div className="text-center p-8">
-                        <h2 className="text-2xl font-bold mb-4">Test Not Found</h2>
-                        <p className="mb-4">The requested test does not exist or you don't have access to it.</p>
-                        <button
-                            onClick={() => navigate('/')}
-                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                        >
-                            Go to Home
-                        </button>
+                    <div>
+                        <OfficeAppSwitcher/>
                     </div>
                 );
         }
