@@ -7,10 +7,12 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
+	"path/filepath"
 	"syscall"
 	"unsafe"
 
-	"github.com/lxn/win"
+	"github.com/go-vgo/robotgo"
+	"github.com/tailscale/win"
 )
 
 var (
@@ -49,7 +51,11 @@ type Runner struct {
 		notepad    string
 		powerpoint string
 	}
-	running_app     *exec.Cmd
+	state struct {
+		running_typ types.AppType
+		running_app *exec.Cmd
+		file        string
+	}
 	explorer_killed bool
 }
 
@@ -126,14 +132,14 @@ func (self *Runner) RestoreEnv() error {
 
 // waits until app is finished runninig
 func (self *Runner) OpenApp(typ types.AppType, file string) error {
-	if self.running_app != nil {
-		if self.running_app.Process != nil {
-			return fmt.Errorf("an app is already running")
-		} else {
-			self.running_app = nil
-		}
+	if self.isOpen() {
+		return fmt.Errorf("an app is already running")
+	} else {
+		self.state.running_app = nil
 	}
 
+	self.state.running_typ = typ
+	self.state.file = file
 	switch typ {
 	case types.TXT:
 		return self.open(self.paths.notepad, file)
@@ -149,15 +155,55 @@ func (self *Runner) OpenApp(typ types.AppType, file string) error {
 }
 
 func (self *Runner) KillApp() error {
-	if self.running_app != nil {
+	if self.state.running_app != nil {
 		return nil
 	}
 
-	err := self.running_app.Process.Kill()
+	err := self.state.running_app.Process.Kill()
 	if err != nil {
-		self.running_app = nil
+		self.state.running_app = nil
 	}
 	return err
+}
+
+func (self *Runner) FocusOpenApp() error {
+	log.Println("trying to focus open app")
+	if self.state.running_app == nil {
+		return nil
+	}
+	if self.state.running_app.Process == nil {
+		return nil
+	}
+	log.Println("focusing app...")
+
+	// TODO: make this work for all types of apps
+	//       get the name of window stuff from task manager
+	name := filepath.Base(self.state.file)
+	name = name + " - Notepad"
+	hwnd = robotgo.FindWindow(name)
+	// pid := self.state.running_app.Process.Pid
+	// hwnd, _ := GetHWNDFromPID(pid)
+
+	_ = robotgo.SetForeg(hwnd)
+	return nil
+}
+
+func (self *Runner) FocusOrOpenApp(typ types.AppType, file string) error {
+	if self.isOpen() && self.state.running_typ == typ {
+		return self.FocusOpenApp()
+	} else {
+		return self.OpenApp(typ, file)
+	}
+}
+
+func (self *Runner) isOpen() bool {
+	app := self.state.running_app
+	if app != nil {
+		if app.ProcessState == nil || !app.ProcessState.Exited() {
+			return true
+		}
+	}
+	return false
 }
 
 func (self *Runner) killExplorer() error {
@@ -185,10 +231,16 @@ func (self *Runner) kill(name string) error {
 }
 
 func (self *Runner) open(exe string, file string) error {
+	if exe == "" {
+		return fmt.Errorf("executable unspecified")
+	}
+	if file == "" {
+		return fmt.Errorf("file path unspecified")
+	}
 	// cmd := exec.Command(self.paths.explorer, file)
 	// cmd := exec.Command(self.paths.cmd, "/C", "start", file)
 	cmd := exec.Command(exe, file)
-	self.running_app = cmd
+	self.state.running_app = cmd
 	out, err := cmd.CombinedOutput()
 	log.Printf("%s\n", string(out))
 	log.Println(err)
@@ -196,6 +248,34 @@ func (self *Runner) open(exe string, file string) error {
 		log.Println(err)
 	}
 	return err
+}
+
+var hwnd win.HWND
+
+// Callback function for EnumWindows
+func enumWindowsProc(hWnd win.HWND, lParam uintptr) uintptr {
+	var pid uint32
+	// Get the process ID associated with the window
+	win.GetWindowThreadProcessId(hWnd, &pid)
+	name, _ := robotgo.FindName(int(pid))
+	log.Printf("window process: %s %d\n", name, pid)
+
+	// Check if the PID matches
+	if pid == uint32(lParam) {
+		hwnd = hWnd // Store the HWND
+		return 0    // Stop enumeration
+	}
+	return 1 // Continue enumeration
+}
+
+// GetHWNDFromPID retrieves the HWND for a given PID
+func GetHWNDFromPID(pid int) (win.HWND, error) {
+	hwnd = 0 // Reset hwnd
+	enumWindows.Call(syscall.NewCallback(enumWindowsProc), uintptr(uint32(pid)))
+	if hwnd == 0 {
+		return 0, fmt.Errorf("no window found for PID %d", pid)
+	}
+	return hwnd, nil
 }
 
 // func (self *Runner) fullscreenForegroundWindow() {

@@ -24,6 +24,8 @@ type IRunner interface {
 	NewTemplate(types.AppType) (string, error)
 	// waits until app is finished runninig
 	OpenApp(typ types.AppType, file_path string) error
+	FocusOrOpenApp(typ types.AppType, file_path string) error
+	FocusOpenApp() error
 	KillApp() error
 }
 

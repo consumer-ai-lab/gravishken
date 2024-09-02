@@ -53,6 +53,12 @@ func (self *Runner) OpenApp(typ types.AppType, file string) error {
 func (self *Runner) KillApp() error {
 	return nil
 }
+func (self *Runner) FocusOpenApp() error {
+	return nil
+}
+func (self *Runner) FocusOrOpenApp(typ types.AppType, file string) error {
+	return nil
+}
 
 func (self *Runner) killTasks(pids []string) error {
 	for _, pid := range pids {

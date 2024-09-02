@@ -29,7 +29,6 @@ func UpdateUserTestTime(Collection *mongo.Collection, Username string, TimeToInc
 	prevTimeElapsedUser := userTest.ElapsedTime
 	userTest.ElapsedTime = prevTimeElapsedUser - 60*TimeToIncrease
 
-
 	if userTest.ElapsedTime < 0 {
 		userTest.ElapsedTime = 0
 	}
@@ -62,20 +61,17 @@ func UpdateUserData(Collection *mongo.Collection, Model *User.UserUpdateRequest)
 
 	err := Collection.FindOne(context.TODO(), bson.M{"name": Model.Username}).Decode(&user)
 
-	
 	userTest := user.Tests
 	if err != nil {
 		return err
 	}
-
-	
 
 	property := strings.ToLower(Model.Property)
 	_ = property
 
 	switch property {
 	case "start_time":
-		
+
 		startTime, err := time.Parse(time.RFC3339, Model.Value[0])
 		if err != nil {
 			return err
@@ -84,7 +80,7 @@ func UpdateUserData(Collection *mongo.Collection, Model *User.UserUpdateRequest)
 		userTest.ElapsedTime = 0
 		user.Tests = userTest
 		Collection.ReplaceOne(context.TODO(), bson.M{"name": Model.Username}, user)
-		
+
 	case "reading_submission_received":
 		userTest.ReadingSubmissionReceived = true
 		user.Tests = userTest
