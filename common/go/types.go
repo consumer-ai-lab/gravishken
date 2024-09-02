@@ -26,11 +26,11 @@ func (self Error) Error() string {
 type Varient int
 
 const (
-	ExeNotFound Varient = iota
+	Err Varient = iota
+	ExeNotFound
 	UserLogin
 	LoadRoute
 	ReloadUi
-	Err
 	GetTest
 	MicrosoftApps
 	Unknown // NOTE: keep this as the last constant here.
@@ -38,6 +38,8 @@ const (
 
 func (self Varient) TSName() string {
 	switch self {
+	case Err:
+		return "Err"
 	case ExeNotFound:
 		return "ExeNotFound"
 	case UserLogin:
@@ -46,8 +48,6 @@ func (self Varient) TSName() string {
 		return "LoadRoute"
 	case ReloadUi:
 		return "ReloadUi"
-	case Err:
-		return "Err"
 	case GetTest:
 		return "GetTest"
 	case MicrosoftApps:
@@ -58,6 +58,8 @@ func (self Varient) TSName() string {
 }
 func varientFromName(typ string) Varient {
 	switch typ {
+	case "Err":
+		return Err
 	case "ExeNotFound":
 		return ExeNotFound
 	case "UserLogin":
@@ -66,8 +68,6 @@ func varientFromName(typ string) Varient {
 		return ReloadUi
 	case "LoadRoute":
 		return LoadRoute
-	case "Err":
-		return Err
 	case "GetTest":
 		return GetTest
 	case "MicrosoftApps":
@@ -75,6 +75,11 @@ func varientFromName(typ string) Varient {
 	default:
 		return Unknown
 	}
+}
+
+// only for unexpected errors / for errors that we can't do much about, other than telling the user about it
+type TErr struct {
+	Message string
 }
 
 type Message struct {
@@ -98,11 +103,6 @@ type TLoadRoute struct {
 }
 
 type TReloadUi struct{}
-
-// only for unexpected errors / for errors that we can't do much about, other than telling the user about it
-type TErr struct {
-	Message string
-}
 
 type TGetTest struct {
 	TestPassword string
@@ -150,12 +150,14 @@ func DumpTypes(dir string) {
 	converter := typescriptify.New().
 		WithInterface(true).
 		WithBackupDir("").
+		Add(TErr{}).
 		Add(Message{}).
 		Add(TExeNotFound{}).
 		Add(TUserLogin{}).
 		Add(TLoadRoute{}).
 		Add(TReloadUi{}).
-		Add(TErr{}).
+		Add(TGetTest{}).
+		Add(TMicrosoftApps{}).
 		AddEnum(allVarients)
 
 	err := os.MkdirAll(dir, 0755)
