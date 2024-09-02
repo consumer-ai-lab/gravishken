@@ -110,6 +110,13 @@ func (self *App) handleMessages() {
 		}
 
 		switch msg.Typ {
+		case types.LoadRoute:
+			val, err := types.Get[types.TLoadRoute](msg)
+			if err != nil {
+				self.notifyErr(err)
+				continue
+			}
+			self.send <- types.NewMessage(*val)
 		case types.UserLogin:
 			val, err := types.Get[types.TUserLogin](msg)
 			if err != nil {
