@@ -125,7 +125,7 @@ func (self *Runner) RestoreEnv() error {
 }
 
 // waits until app is finished runninig
-func (self *Runner) OpenApp(typ AppType, file string) error {
+func (self *Runner) OpenApp(typ types.AppType, file string) error {
 	if self.running_app != nil {
 		if self.running_app.Process != nil {
 			return fmt.Errorf("an app is already running")
@@ -135,13 +135,13 @@ func (self *Runner) OpenApp(typ AppType, file string) error {
 	}
 
 	switch typ {
-	case TXT:
+	case types.TXT:
 		return self.open(self.paths.notepad, file)
-	case DOCX:
+	case types.DOCX:
 		return self.open(self.paths.word, file)
-	case PPTX:
+	case types.PPTX:
 		return self.open(self.paths.powerpoint, file)
-	case XLSX:
+	case types.XLSX:
 		return self.open(self.paths.excel, file)
 	default:
 		return fmt.Errorf("invalid app type: %d", typ)

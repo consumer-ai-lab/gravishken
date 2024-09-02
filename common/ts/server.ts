@@ -25,8 +25,8 @@ export type Message = {
     Typ: types.Varient.GetTest,
     Val: types.TGetTest,
 } | {
-    Typ: types.Varient.MicrosoftApps,
-    Val: types.TMicrosoftApps,
+    Typ: types.Varient.OpenApp,
+    Val: types.TOpenApp,
 } | {
     Typ: types.Varient.Unknown,
     Val: unknown,
@@ -109,7 +109,7 @@ export class Server {
             case types.Varient.LoadRoute:
             case types.Varient.Err:
             case types.Varient.GetTest:
-            case types.Varient.MicrosoftApps:
+            case types.Varient.OpenApp:
                 break;
             case types.Varient.ReloadUi:
                 window.location.href = "/";
