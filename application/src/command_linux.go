@@ -4,11 +4,11 @@ package main
 
 import (
 	"bytes"
+	types "common"
 	"fmt"
 	"log"
 	"os/exec"
 	"strings"
-	"time"
 )
 
 func (self *Runner) disableTitlebar() {
@@ -21,7 +21,7 @@ const libre_impress_path = "/usr/bin/ooimpress"       // PowerPoint equivalent i
 
 const kill_cmd = "kill -9"
 
-type LinuxRunner struct {
+type Runner struct {
 	paths struct {
 		kill       string
 		excel      string
@@ -30,8 +30,8 @@ type LinuxRunner struct {
 	}
 }
 
-func (self *LinuxRunner) newRunner() (*LinuxRunner, error) {
-	runner := &LinuxRunner{}
+func NewRunner(send chan<- types.Message) (*Runner, error) {
+	runner := &Runner{}
 
 	runner.paths.kill = kill_cmd
 	runner.paths.excel = libre_office_path
@@ -41,7 +41,20 @@ func (self *LinuxRunner) newRunner() (*LinuxRunner, error) {
 	return runner, nil
 }
 
-func (self *LinuxRunner) killTasks(pids []string) error {
+func (self *Runner) SetupEnv() error {
+	return nil
+}
+func (self *Runner) RestoreEnv() error {
+	return nil
+}
+func (self *Runner) OpenApp(typ types.AppType, file string) error {
+	return nil
+}
+func (self *Runner) KillApp() error {
+	return nil
+}
+
+func (self *Runner) killTasks(pids []string) error {
 	for _, pid := range pids {
 		cmd := self.paths.kill + " " + pid
 		err := exec.Command("sh", "-c", cmd).Run()
@@ -53,7 +66,7 @@ func (self *LinuxRunner) killTasks(pids []string) error {
 	return nil
 }
 
-func (self *LinuxRunner) findPIDs(processName string) ([]string, error) {
+func (self *Runner) findPIDs(processName string) ([]string, error) {
 	cmd := exec.Command("sh", "-c", fmt.Sprintf("pgrep -f %s", processName))
 	var out bytes.Buffer
 	cmd.Stdout = &out
@@ -70,7 +83,7 @@ func (self *LinuxRunner) findPIDs(processName string) ([]string, error) {
 	return pids, nil
 }
 
-func (self *LinuxRunner) killLibreOffice() error {
+func (self *Runner) killLibreOffice() error {
 	pids, err := self.findPIDs("libreoffice")
 	if err != nil {
 		return fmt.Errorf("error finding LibreOffice process: %v", err)
@@ -85,7 +98,7 @@ func (self *LinuxRunner) killLibreOffice() error {
 	return nil
 }
 
-func (self *LinuxRunner) runLibreOffice() error {
+func (self *Runner) runLibreOffice() error {
 	// Create a new command to run LibreOffice
 	cmd := exec.Command(self.paths.excel)
 
@@ -99,7 +112,7 @@ func (self *LinuxRunner) runLibreOffice() error {
 	return nil
 }
 
-func (self *LinuxRunner) runNotepad() error {
+func (self *Runner) runNotepad() error {
 	cmd := exec.Command(self.paths.notepad)
 
 	err := cmd.Start()
@@ -111,7 +124,7 @@ func (self *LinuxRunner) runNotepad() error {
 	return nil
 }
 
-func (self *LinuxRunner) runPowerPoint() error {
+func (self *Runner) runPowerPoint() error {
 	cmd := exec.Command(self.paths.powerpoint)
 
 	err := cmd.Start()
@@ -123,24 +136,41 @@ func (self *LinuxRunner) runPowerPoint() error {
 	return nil
 }
 
-func TestLinux() {
-	runner, err := new(LinuxRunner).newRunner()
-	if err != nil {
-		log.Fatalf("Failed to initialize LinuxRunner: %v", err)
-	}
+// func (runner *Runner) StartMicrosoftApps(microsftApp types.TMicrosoftApps) error {
 
-	// Run LibreOffice
-	err = runner.runLibreOffice()
-	if err != nil {
-		log.Fatalf("Failed to start LibreOffice: %v", err)
-	}
+// 	switch microsftApp.AppName {
+// 	case "Word":
+// 		runner.runLibreOffice()
+// 	case "NotePad":
+// 		runner.runNotepad()
+// 	case "PowerPoint":
+// 		runner.runPowerPoint()
+// 	default:
+// 		return fmt.Errorf("Invalid Microsoft App")
+// 	}
 
-	// Sleep for 15 seconds
-	time.Sleep(10 * time.Second)
+// 	return nil
 
-	// Kill LibreOffice
-	err = runner.killLibreOffice()
-	if err != nil {
-		log.Fatalf("Failed to kill LibreOffice: %v", err)
-	}
-}
+// }
+
+// func TestLinux() {
+// 	runner, err := newRunner()
+// 	if err != nil {
+// 		log.Fatalf("Failed to initialize LinuxRunner: %v", err)
+// 	}
+
+// 	// Run LibreOffice
+// 	err = runner.runLibreOffice()
+// 	if err != nil {
+// 		log.Fatalf("Failed to start LibreOffice: %v", err)
+// 	}
+
+// 	// Sleep for 15 seconds
+// 	time.Sleep(10 * time.Second)
+
+// 	// Kill LibreOffice
+// 	err = runner.killLibreOffice()
+// 	if err != nil {
+// 		log.Fatalf("Failed to kill LibreOffice: %v", err)
+// 	}
+// }

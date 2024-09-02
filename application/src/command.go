@@ -2,24 +2,12 @@ package main
 
 import (
 	assets "app"
+	types "common"
 	"fmt"
-	"log"
 	"os"
-	"os/exec"
-	"runtime"
 
 	"github.com/go-vgo/robotgo"
 )
-
-const kill = "TASKKILL.exe"
-const explorer = "explorer.exe"
-const cmd = "cmd.exe"
-const word = "WINWORD.exe"
-const excel = "EXCEL.exe"
-const powerpoint = "POWERPNT.exe"
-const notepad = "NOTEPAD.exe"
-
-const windows = "windows"
 
 const template_docx = "template.docx"
 const template_xlsx = "template.xlsx"
@@ -30,65 +18,47 @@ const tmp_xlsx = "tmp_*.xlsx"
 const tmp_pptx = "tmp_*.pptx"
 const tmp_txt = "tmp_*.txt"
 
-type Runner struct {
-	paths struct {
-		kill       string
-		explorer   string
-		cmd        string
-		word       string
-		excel      string
-		notepad    string
-		powerpoint string
-	}
+type IRunner interface {
+	SetupEnv() error
+	RestoreEnv() error
+	NewTemplate(types.AppType) (string, error)
+	// waits until app is finished runninig
+	OpenApp(typ types.AppType, file_path string) error
+	KillApp() error
 }
 
-func (self *Runner) killExplorer() error {
-	return self.kill(explorer)
-}
-
-func (self *Runner) startExplorer() {
-	if runtime.GOOS != windows {
-		return
+func (self *Runner) NewTemplate(typ types.AppType) (string, error) {
+	var tmp string
+	var template string
+	switch typ {
+	case types.TXT:
+		tmp = tmp_txt
+		template = template_txt
+	case types.DOCX:
+		tmp = tmp_docx
+		template = template_docx
+	case types.PPTX:
+		tmp = tmp_pptx
+		template = template_pptx
+	case types.XLSX:
+		tmp = tmp_xlsx
+		template = template_xlsx
+	default:
+		return "", fmt.Errorf("unknown app type %d", typ)
 	}
 
-	// OOF: running explorer.exe always seems to return 1 :/
-	command := exec.Command(self.paths.cmd, "/C", "start", self.paths.explorer)
-	err := command.Run()
+	file, err := os.CreateTemp("", tmp)
 	if err != nil {
-		log.Println(err)
+		return "", err
 	}
-}
+	file.Close()
 
-func (self *Runner) kill(name string) error {
-	if runtime.GOOS != "windows" {
-		return nil
-	}
-
-	// command := exec.Command(self.paths.cmd, "/C", self.paths.kill, "/F", "/IM", name)
-	command := exec.Command(self.paths.kill, "/F", "/IM", name)
-	out, err := command.CombinedOutput()
-	log.Printf("%s\n", string(out))
+	dest := file.Name()
+	err = self.newTemplate(template, dest)
 	if err != nil {
-		log.Println(err)
+		return "", err
 	}
-	return err
-}
-
-func (self *Runner) open(exe string, file string) error {
-	if runtime.GOOS != "windows" {
-		return nil
-	}
-
-	// cmd := exec.Command(self.paths.explorer, file)
-	// cmd := exec.Command(self.paths.cmd, "/C", "start", file)
-	cmd := exec.Command(exe, file)
-	out, err := cmd.CombinedOutput()
-	log.Printf("%s\n", string(out))
-	log.Println(err)
-	if err != nil {
-		log.Println(err)
-	}
-	return err
+	return dest, nil
 }
 
 func (self *Runner) newTemplate(name string, dest string) error {
@@ -113,15 +83,11 @@ func (self *Runner) fullscreenForegroundWindow() {
 	robotgo.MaxWindow(pid)
 }
 
-func (self *Runner) run(name string, args ...string) error {
-	if runtime.GOOS != "windows" {
-		return nil
-	}
-
-	cmd := exec.Command(name, args...)
-	err := cmd.Run()
-	if err != nil {
-		log.Println(err)
-	}
-	return err
-}
+// func (self *Runner) run(name string, args ...string) error {
+// 	cmd := exec.Command(name, args...)
+// 	err := cmd.Run()
+// 	if err != nil {
+// 		log.Println(err)
+// 	}
+// 	return err
+// }

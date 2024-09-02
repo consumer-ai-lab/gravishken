@@ -113,7 +113,7 @@ func (self *App) handleMessages() {
 		case types.UserLogin:
 			val, err := types.Get[types.TUserLogin](msg)
 			if err != nil {
-				log.Println(err)
+				self.notifyErr(err)
 				continue
 			}
 			err = self.login(*val)
@@ -124,7 +124,7 @@ func (self *App) handleMessages() {
 		case types.GetTest:
 			val, err := types.Get[types.TGetTest](msg)
 			if err != nil {
-				log.Println(err)
+				self.notifyErr(err)
 				continue
 			}
 			err = self.startTest(*val)
@@ -132,19 +132,24 @@ func (self *App) handleMessages() {
 				self.notifyErr(err)
 				continue
 			}
-		
-		case types.MicrosoftApps:
-			val, err := types.Get[types.TMicrosoftApps](msg)
-			if err != nil {
-				log.Println(err)
-				continue
-			}
-			err = self.StartMicrosoftApps(*val)
+		case types.OpenApp:
+			val, err := types.Get[types.TOpenApp](msg)
 			if err != nil {
 				self.notifyErr(err)
 				continue
 			}
-			
+			// TODO: use fixed paths instead of generating a random path
+			// this will help in cases where someone restarts the test
+			dest, err := self.runner.NewTemplate(val.Typ)
+			if err != nil {
+				self.notifyErr(err)
+				continue
+			}
+			err = self.runner.OpenApp(val.Typ, dest)
+			if err != nil {
+				self.notifyErr(err)
+				continue
+			}
 		case types.Err:
 			val, err := types.Get[types.TErr](msg)
 			if err != nil {

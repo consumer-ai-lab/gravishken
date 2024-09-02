@@ -32,7 +32,7 @@ const (
 	LoadRoute
 	ReloadUi
 	GetTest
-	MicrosoftApps
+	OpenApp
 	Unknown // NOTE: keep this as the last constant here.
 )
 
@@ -50,8 +50,8 @@ func (self Varient) TSName() string {
 		return "ReloadUi"
 	case GetTest:
 		return "GetTest"
-	case MicrosoftApps:
-		return "MicrosoftApps"
+	case OpenApp:
+		return "OpenApp"
 	default:
 		return "Unknown"
 	}
@@ -70,8 +70,8 @@ func varientFromName(typ string) Varient {
 		return LoadRoute
 	case "GetTest":
 		return GetTest
-	case "MicrosoftApps":
-		return MicrosoftApps
+	case "OpenApp":
+		return OpenApp
 	default:
 		return Unknown
 	}
@@ -108,9 +108,32 @@ type TGetTest struct {
 	TestPassword string
 }
 
-type TMicrosoftApps struct {
-	AppName string
-	Device  string
+type AppType int
+
+const (
+	TXT AppType = iota
+	DOCX
+	XLSX
+	PPTX
+)
+
+func (self AppType) TSName() string {
+	switch self {
+	case TXT:
+		return "TXT"
+	case DOCX:
+		return "DOCX"
+	case XLSX:
+		return "XLSX"
+	case PPTX:
+		return "PPTX"
+	default:
+		return "Unknown"
+	}
+}
+
+type TOpenApp struct {
+	Typ AppType
 }
 
 func NewMessage(typ interface{}) Message {
@@ -157,7 +180,8 @@ func DumpTypes(dir string) {
 		Add(TLoadRoute{}).
 		Add(TReloadUi{}).
 		Add(TGetTest{}).
-		Add(TMicrosoftApps{}).
+		Add(TOpenApp{}).
+		AddEnum([]AppType{TXT, DOCX, XLSX, PPTX}).
 		AddEnum(allVarients)
 
 	err := os.MkdirAll(dir, 0755)
