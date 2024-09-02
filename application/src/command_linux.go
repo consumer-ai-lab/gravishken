@@ -11,9 +11,13 @@ import (
 	"time"
 )
 
-const libre_office_path = "/usr/bin/libreoffice"     // Excel equivalent in Linux
+func (self *Runner) disableTitlebar() {
+	// empty (for conditional compilation)
+}
+
+const libre_office_path = "/usr/bin/libreoffice"      // Excel equivalent in Linux
 const text_editor_path = "/usr/bin/gnome-text-editor" // Notepad equivalent in Linux
-const libre_impress_path = "/usr/bin/ooimpress"      // PowerPoint equivalent in Linux
+const libre_impress_path = "/usr/bin/ooimpress"       // PowerPoint equivalent in Linux
 
 const kill_cmd = "kill -9"
 
@@ -95,7 +99,6 @@ func (self *LinuxRunner) runLibreOffice() error {
 	return nil
 }
 
-
 func (self *LinuxRunner) runNotepad() error {
 	cmd := exec.Command(self.paths.notepad)
 
@@ -103,13 +106,12 @@ func (self *LinuxRunner) runNotepad() error {
 	if err != nil {
 		return err
 	}
-	
+
 	log.Println("Notepad started successfully")
 	return nil
 }
 
-
-func (self *LinuxRunner) runPowerPoint() error{
+func (self *LinuxRunner) runPowerPoint() error {
 	cmd := exec.Command(self.paths.powerpoint)
 
 	err := cmd.Start()

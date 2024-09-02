@@ -106,43 +106,41 @@ func (self *App) login(user_login types.TUserLogin) error {
 	jwt, err := self.client.login(user_login)
 	if err != nil {
 		errorMessage := types.NewMessage(types.TErr{
-            Message: "Failed to log in user: " + err.Error(),
-        })
-        self.send <- errorMessage
-        return err
+			Message: "Failed to log in user: " + err.Error(),
+		})
+		self.send <- errorMessage
+		return err
 	}
 	self.jwt = jwt
 
-    routeMessage := types.TLoadRoute{
-        Route: "/instructions",
-    }
-    message := types.NewMessage(routeMessage)
+	routeMessage := types.TLoadRoute{
+		Route: "/instructions",
+	}
+	message := types.NewMessage(routeMessage)
 
-    self.send <- message
+	self.send <- message
 
 	return nil
 }
 
-
-func (self *App) startTest(testData types.TGetTest) error{
+func (self *App) startTest(testData types.TGetTest) error {
 	questionPaper, err := self.client.getTest(testData)
 
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("Question paper: ",questionPaper)
+	fmt.Println("Question paper: ", questionPaper)
 
 	routeMessage := types.TLoadRoute{
 		Route: "/tests/1",
 	}
 	message := types.NewMessage(routeMessage)
-	
+
 	self.send <- message
 
 	return nil
 }
-
 
 // here we have to start the microsoft word, excel, powerpoint application
 
@@ -161,12 +159,11 @@ func (self *App) StartMicrosoftApps(microSoftApp types.TMicrosoftApps) error {
 		Route: "/tests/2",
 	}
 	message := types.NewMessage(routeMessage)
-	
+
 	self.send <- message
 
 	return nil
 }
-
 
 func (self *App) openWv() {
 	self.webview = webview.New(build_mode == "DEV")
@@ -205,6 +202,6 @@ func (self *App) prepareEnv() {
 	self.notifyErr(err)
 	self.state.explorer_killed = err == nil
 
-	// self.runner.disableTitlebar()
+	self.runner.disableTitlebar()
 	self.runner.fullscreenForegroundWindow()
 }
