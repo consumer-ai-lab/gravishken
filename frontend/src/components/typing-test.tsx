@@ -165,7 +165,7 @@ export default function TypingTest({
                     <h3 className="font-semibold mb-2">Instructions:</h3>
                     <p>Type the following text as accurately and quickly as you can. Your time starts when you click "Start".</p>
                 </div>
-                <div className="bg-white border border-gray-300 p-4 rounded-md">
+                <div className="bg-white border border-gray-300 p-4 rounded-md select-none">
                     {getHighlightedText()} {/* Highlighted Original Text */}
                 </div>
                 <Textarea
@@ -179,6 +179,10 @@ export default function TypingTest({
                         ${feedback === 'correct' ? 'border-green-500' : 
                         feedback === 'incorrect' ? 'border-red-500' : 'border-black'}
                     `}
+                    onPasteCapture={(e) => {
+                      console.log(e);
+                      e.preventDefault();
+                    }}
                 />
 
                 <div className="flex justify-between items-center">
