@@ -152,11 +152,10 @@ func (self *App) handleMessages() {
 				self.notifyErr(err)
 				continue
 			}
-			err = self.runner.OpenApp(val.Typ, dest)
-			if err != nil {
+			go (func() {
+				err = self.runner.FocusOrOpenApp(val.Typ, dest)
 				self.notifyErr(err)
-				continue
-			}
+			})()
 		case types.Err:
 			val, err := types.Get[types.TErr](msg)
 			if err != nil {
