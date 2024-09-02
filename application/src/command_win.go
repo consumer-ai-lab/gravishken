@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
-	"path/filepath"
 	"syscall"
+	"time"
 	"unsafe"
 
 	"github.com/go-vgo/robotgo"
@@ -55,6 +55,7 @@ type Runner struct {
 		running_typ types.AppType
 		running_app *exec.Cmd
 		file        string
+		hwnd        win.HWND
 	}
 	explorer_killed bool
 }
@@ -135,7 +136,7 @@ func (self *Runner) OpenApp(typ types.AppType, file string) error {
 	if self.isOpen() {
 		return fmt.Errorf("an app is already running")
 	} else {
-		self.state.running_app = nil
+		self.resetState()
 	}
 
 	self.state.running_typ = typ
@@ -161,7 +162,7 @@ func (self *Runner) KillApp() error {
 
 	err := self.state.running_app.Process.Kill()
 	if err != nil {
-		self.state.running_app = nil
+		self.resetState()
 	}
 	return err
 }
@@ -176,15 +177,7 @@ func (self *Runner) FocusOpenApp() error {
 	}
 	log.Println("focusing app...")
 
-	// TODO: make this work for all types of apps
-	//       get the name of window stuff from task manager
-	name := filepath.Base(self.state.file)
-	name = name + " - Notepad"
-	hwnd = robotgo.FindWindow(name)
-	// pid := self.state.running_app.Process.Pid
-	// hwnd, _ := GetHWNDFromPID(pid)
-
-	_ = robotgo.SetForeg(hwnd)
+	_ = robotgo.SetForeg(self.state.hwnd)
 	return nil
 }
 
@@ -194,6 +187,13 @@ func (self *Runner) FocusOrOpenApp(typ types.AppType, file string) error {
 	} else {
 		return self.OpenApp(typ, file)
 	}
+}
+
+func (self *Runner) resetState() {
+	self.state.file = ""
+	self.state.hwnd = 0
+	self.state.running_app = nil
+	self.state.running_typ = 0
 }
 
 func (self *Runner) isOpen() bool {
@@ -237,6 +237,25 @@ func (self *Runner) open(exe string, file string) error {
 	if file == "" {
 		return fmt.Errorf("file path unspecified")
 	}
+
+	// wait for app to open and assign the hwnd to self.state
+	fg := robotgo.GetHWND()
+	go (func() {
+		other := fg
+		timeout := time.After(time.Second * 30)
+		for fg == other {
+			select {
+			case <-timeout:
+				log.Println("ERROR: open app timeout")
+				return
+			default:
+				other = robotgo.GetHWND()
+				time.Sleep(time.Millisecond * 50)
+			}
+		}
+		self.state.hwnd = other
+	})()
+
 	// cmd := exec.Command(self.paths.explorer, file)
 	// cmd := exec.Command(self.paths.cmd, "/C", "start", file)
 	cmd := exec.Command(exe, file)
