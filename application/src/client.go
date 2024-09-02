@@ -10,7 +10,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-
 )
 
 var server_url string
@@ -73,7 +72,6 @@ func (self *Client) login(user_login types.TUserLogin) (string, error) {
 	return result.Response, nil
 }
 
-
 func (self *Client) getTest(testData types.TGetTest) (TEST.Test, error) {
 	test_code := testData.TestPassword
 	url := server_url + "test/get_question_paper/" + test_code
@@ -100,7 +98,7 @@ func (self *Client) getTest(testData types.TGetTest) (TEST.Test, error) {
 	}
 
 	var result struct {
-		Message  string `json:"message"`
+		Message  string    `json:"message"`
 		Response TEST.Test `json:"response"`
 	}
 	if err := json.Unmarshal(body, &result); err != nil {
@@ -108,22 +106,4 @@ func (self *Client) getTest(testData types.TGetTest) (TEST.Test, error) {
 	}
 
 	return result.Response, nil
-}
-
-
-func (self *Client) StartMicrosoftApps(runner *LinuxRunner,  microsftApp types.TMicrosoftApps) error{
-
-	switch microsftApp.AppName {
-	case "Word":
-		runner.runLibreOffice()
-	case "NotePad":
-		runner.runNotepad()
-	case "PowerPoint":
-		runner.runPowerPoint()
-	default:
-		return fmt.Errorf("Invalid Microsoft App")
-	}
-
-	return nil
-	
 }

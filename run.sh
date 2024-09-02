@@ -41,7 +41,20 @@ build-windows-app() {
 
   echo "NOTE: building with SERVER_URL as $SERVER_URL"
 
-  go build -ldflags "$VARS -H windowsgui" -o build/gravtest.exe ./src/.
+  go build -ldflags "$VARS -H windowsgui" -o ../build/gravtest.exe ./src/.
+}
+
+build-windows-server() {
+  cd $PROJECT_ROOT/backend
+  source ./.env
+
+  export BUILD_MODE="PROD"
+  export VARS="-X main.build_mode=$BUILD_MODE"
+  export GOOS=windows
+  export GOARCH=amd64
+  export CGO_ENABLED=1
+
+  go build -ldflags "$VARS -H windowsgui" -o ../build/server.exe ./src/.
 }
 
 build-server() {
@@ -51,7 +64,7 @@ build-server() {
   export BUILD_MODE="PROD"
 
   export VARS="-X main.build_mode=$BUILD_MODE"
-  go build -ldflags "$VARS" -o build/server ./src/.
+  go build -ldflags "$VARS" -o ../build/server ./src/.
 }
 
 server() {
@@ -59,7 +72,7 @@ server() {
   source ./.env
 
   export VARS="-X main.build_mode=$BUILD_MODE"
-  go build -ldflags "$VARS" -o build/server ./src/.
+  go build -ldflags "$VARS" -o ../build/server ./src/.
   ./build/server $@
 }
 
@@ -75,8 +88,8 @@ app() {
   mkdir -p ./dist
   touch ./dist/ignore
 
-  go build -ldflags "$VARS" -o build/gravtest ./src/.
-  ./build/gravtest $@
+  go build -ldflags "$VARS" -o ../build/gravtest ./src/.
+  ../build/gravtest $@
 }
 
 run() {
@@ -94,6 +107,9 @@ run() {
     ;;
     "build-windows-app")
       build-windows-app
+    ;;
+    "build-windows-server")
+      build-windows-server
     ;;
     "build-server")
       build-server

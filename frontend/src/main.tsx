@@ -21,25 +21,25 @@ function WebSocketHandler() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    let disable: () => PromiseLike<void>;
+    let disable: (() => PromiseLike<void>)[] = [];
 
     server.server.add_callback(types.Varient.LoadRoute, async (res) => {
       console.log(res);
       navigate(res.Route)
     }).then(d => {
-      disable = d;
+      disable.push(d);
     });
 
     server.server.add_callback(types.Varient.Err, async (res) => {
       console.error('Error from server:', res.Message);
       setErrorMessage(res.Message);  
     }).then(d => {
-      disable = d;
+      disable.push(d);
     });
 
     return () => {
-      if (disable) {
-        disable();
+      for (let fn of disable) {
+        fn();
       }
     };
   }, [navigate]);

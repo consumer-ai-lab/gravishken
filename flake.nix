@@ -130,6 +130,10 @@
           #!/usr/bin/env bash
           nix develop .#windows -c run build-windows-app
         '')
+        (pkgs.writeShellScriptBin "build-windows-server" ''
+          #!/usr/bin/env bash
+          nix develop .#windows -c run build-windows-server
+        '')
       ];
 
       env-packages = pkgs:

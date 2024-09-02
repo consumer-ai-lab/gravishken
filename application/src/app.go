@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
-	"runtime"
 
 	webview "github.com/thrombe/webview_go"
 )
@@ -14,22 +12,22 @@ import (
 type App struct {
 	send    chan types.Message
 	recv    chan types.Message
-	runner  Runner
+	runner  IRunner
 	webview webview.WebView
 	client  *Client
 
 	state struct {
-		webview_opened  bool
-		explorer_killed bool
+		webview_opened bool
 	}
 	jwt string
 }
 
 func (self *App) destroy() {
 	close(self.send)
-	if self.state.explorer_killed {
-		self.runner.startExplorer()
-	}
+
+	err := self.runner.RestoreEnv()
+	log.Println(err)
+
 	if self.state.webview_opened {
 		self.webview.Destroy()
 	}
@@ -39,7 +37,6 @@ func newApp() (*App, error) {
 	app := &App{
 		send:    make(chan types.Message, 100),
 		recv:    make(chan types.Message, 100),
-		runner:  Runner{},
 		webview: nil,
 	}
 	var err error
@@ -50,53 +47,9 @@ func newApp() (*App, error) {
 	}
 	app.client = client
 
-	if runtime.GOOS != "windows" {
-		return app, nil
-	}
-
-	app.runner.paths.cmd, err = exec.LookPath(cmd)
+	app.runner, err = NewRunner(app.send)
 	if err != nil {
 		return nil, err
-	}
-	app.runner.paths.kill, err = exec.LookPath(kill)
-	if err != nil {
-		return nil, err
-	}
-	app.runner.paths.explorer, err = exec.LookPath(explorer)
-	if err != nil {
-		return nil, err
-	}
-	app.runner.paths.notepad, err = exec.LookPath(notepad)
-	if err != nil {
-		app.send <- types.NewMessage(types.TExeNotFound{
-			Name:   notepad,
-			ErrMsg: fmt.Sprintf("%s", err),
-		})
-		err = nil
-	}
-	app.runner.paths.word, err = exec.LookPath(word)
-	if err != nil {
-		app.send <- types.NewMessage(types.TExeNotFound{
-			Name:   word,
-			ErrMsg: fmt.Sprintf("%s", err),
-		})
-		err = nil
-	}
-	app.runner.paths.excel, err = exec.LookPath(excel)
-	if err != nil {
-		app.send <- types.NewMessage(types.TExeNotFound{
-			Name:   excel,
-			ErrMsg: fmt.Sprintf("%s", err),
-		})
-		err = nil
-	}
-	app.runner.paths.powerpoint, err = exec.LookPath(powerpoint)
-	if err != nil {
-		app.send <- types.NewMessage(types.TExeNotFound{
-			Name:   powerpoint,
-			ErrMsg: fmt.Sprintf("%s", err),
-		})
-		err = nil
 	}
 
 	return app, nil
@@ -106,67 +59,63 @@ func (self *App) login(user_login types.TUserLogin) error {
 	jwt, err := self.client.login(user_login)
 	if err != nil {
 		errorMessage := types.NewMessage(types.TErr{
-            Message: "Failed to log in user: " + err.Error(),
-        })
-        self.send <- errorMessage
-        return err
+			Message: "Failed to log in user: " + err.Error(),
+		})
+		self.send <- errorMessage
+		return err
 	}
 	self.jwt = jwt
 
-    routeMessage := types.TLoadRoute{
-        Route: "/instructions",
-    }
-    message := types.NewMessage(routeMessage)
+	routeMessage := types.TLoadRoute{
+		Route: "/instructions",
+	}
+	message := types.NewMessage(routeMessage)
 
-    self.send <- message
+	self.send <- message
 
 	return nil
 }
 
-
-func (self *App) startTest(testData types.TGetTest) error{
+func (self *App) startTest(testData types.TGetTest) error {
 	questionPaper, err := self.client.getTest(testData)
 
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("Question paper: ",questionPaper)
+	fmt.Println("Question paper: ", questionPaper)
 
 	routeMessage := types.TLoadRoute{
 		Route: "/tests/1",
 	}
 	message := types.NewMessage(routeMessage)
-	
+
 	self.send <- message
 
 	return nil
 }
-
 
 // here we have to start the microsoft word, excel, powerpoint application
+// func (self *App) StartMicrosoftApps(microSoftApp types.TMicrosoftApps) error {
+// 	runner, err := NewRunner()
+// 	if err != nil {
+// 		return err
+// 	}
 
-func (self *App) StartMicrosoftApps(microSoftApp types.TMicrosoftApps) error {
-	runner, err := new(LinuxRunner).newRunner()
-	if err != nil {
-		return err
-	}
+// 	err = self.runner.StartMicrosoftApps(runner, microSoftApp)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	err = self.client.StartMicrosoftApps(runner, microSoftApp)
-	if err != nil {
-		return err
-	}
+// 	routeMessage := types.TLoadRoute{
+// 		Route: "/tests/2",
+// 	}
+// 	message := types.NewMessage(routeMessage)
 
-	routeMessage := types.TLoadRoute{
-		Route: "/tests/2",
-	}
-	message := types.NewMessage(routeMessage)
-	
-	self.send <- message
+// 	self.send <- message
 
-	return nil
-}
-
+// 	return nil
+// }
 
 func (self *App) openWv() {
 	self.webview = webview.New(build_mode == "DEV")
@@ -197,14 +146,6 @@ func (self *App) prepareEnv() {
 		self.webview.Navigate(url)
 	}
 
-	if runtime.GOOS != windows {
-		return
-	}
-
-	err := self.runner.killExplorer()
+	err := self.runner.SetupEnv()
 	self.notifyErr(err)
-	self.state.explorer_killed = err == nil
-
-	// self.runner.disableTitlebar()
-	self.runner.fullscreenForegroundWindow()
 }

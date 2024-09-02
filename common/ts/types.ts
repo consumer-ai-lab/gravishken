@@ -1,15 +1,24 @@
 /* Do not change, this code is generated from Golang structs */
 
 
+export enum AppType {
+    TXT = 0,
+    DOCX = 1,
+    XLSX = 2,
+    PPTX = 3,
+}
 export enum Varient {
-    ExeNotFound = 0,
-    UserLogin = 1,
-    LoadRoute = 2,
-    ReloadUi = 3,
-    Err = 4,
+    Err = 0,
+    ExeNotFound = 1,
+    UserLogin = 2,
+    LoadRoute = 3,
+    ReloadUi = 4,
     GetTest = 5,
-    MicrosoftApps = 6,
+    OpenApp = 6,
     Unknown = 7,
+}
+export interface TErr {
+    Message: string;
 }
 export interface Message {
     Typ: Varient;
@@ -30,6 +39,9 @@ export interface TLoadRoute {
 export interface TReloadUi {
 
 }
-export interface TErr {
-    Message: string;
+export interface TGetTest {
+    TestPassword: string;
+}
+export interface TOpenApp {
+    Typ: AppType;
 }

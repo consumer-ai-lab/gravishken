@@ -1,27 +1,27 @@
 import React, { useState } from 'react';
-import { File, FileText, NotepadText } from 'lucide-react';
+import { File, FileText, NotepadText, Sheet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { server } from '@common/server';
 import * as types from '@common/types';
 
 const apps = [
-  { name: 'NotePad', icon: NotepadText, color: 'text-green-600' },
-  { name: 'PowerPoint', icon: File, color: 'text-orange-600' },
-  { name: 'Word', icon: FileText, color: 'text-blue-600' },
+  { name: 'NotePad', icon: NotepadText, color: 'text-green-600', typ: types.AppType.TXT },
+  { name: 'PowerPoint', icon: File, color: 'text-orange-600', typ: types.AppType.PPTX },
+  { name: 'Word', icon: FileText, color: 'text-blue-600', typ: types.AppType.DOCX },
+  { name: 'Excel', icon: Sheet, color: 'text-blue-600', typ: types.AppType.XLSX },
 ];
 
 const OfficeAppSwitcher = () => {
   const [activeApp, setActiveApp] = useState(apps[0].name);
 
-  const handleStartTest = (appName: string) => {
+  const handleStartTest = (app: typeof apps[0]) => {
     console.log("Starting test with testPassword:");
-    setActiveApp(appName);
+    setActiveApp(app.name);
     server.send_message({
-        Typ: types.Varient.MicrosoftApps, 
+        Typ: types.Varient.OpenApp, 
         Val: {
-            AppName: appName,
-            Device: "linux"
+            Typ: app.typ,
         }
     });
 };
@@ -32,7 +32,7 @@ const OfficeAppSwitcher = () => {
         {apps.map((app) => (
           <Button
             key={app.name}
-            onClick={() => handleStartTest(app.name)}
+            onClick={() => handleStartTest(app)}
             variant={activeApp === app.name ? 'default' : 'outline'}
             className="flex items-center space-x-2"
           >
