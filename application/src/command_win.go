@@ -11,7 +11,6 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/go-vgo/robotgo"
 	"github.com/tailscale/win"
 )
 
@@ -177,7 +176,7 @@ func (self *Runner) FocusOpenApp() error {
 	}
 	log.Println("focusing app...")
 
-	_ = robotgo.SetForeg(self.state.hwnd)
+	_ = win.SetForegroundWindow(self.state.hwnd)
 	return nil
 }
 
@@ -239,7 +238,7 @@ func (self *Runner) open(exe string, file string) error {
 	}
 
 	// wait for app to open and assign the hwnd to self.state
-	fg := robotgo.GetHWND()
+	fg := win.GetForegroundWindow()
 	go (func() {
 		other := fg
 		timeout := time.After(time.Second * 30)
@@ -249,7 +248,7 @@ func (self *Runner) open(exe string, file string) error {
 				log.Println("ERROR: open app timeout")
 				return
 			default:
-				other = robotgo.GetHWND()
+				other = win.GetForegroundWindow()
 				time.Sleep(time.Millisecond * 50)
 			}
 		}
@@ -269,43 +268,40 @@ func (self *Runner) open(exe string, file string) error {
 	return err
 }
 
-var hwnd win.HWND
-
-// Callback function for EnumWindows
-func enumWindowsProc(hWnd win.HWND, lParam uintptr) uintptr {
-	var pid uint32
-	// Get the process ID associated with the window
-	win.GetWindowThreadProcessId(hWnd, &pid)
-	name, _ := robotgo.FindName(int(pid))
-	log.Printf("window process: %s %d\n", name, pid)
-
-	// Check if the PID matches
-	if pid == uint32(lParam) {
-		hwnd = hWnd // Store the HWND
-		return 0    // Stop enumeration
-	}
-	return 1 // Continue enumeration
+func (self *Runner) fullscreenForegroundWindow() {
+	fg := win.GetForegroundWindow()
+	_ = win.ShowWindow(fg, win.SW_MAXIMIZE)
 }
 
-// GetHWNDFromPID retrieves the HWND for a given PID
-func GetHWNDFromPID(pid int) (win.HWND, error) {
-	hwnd = 0 // Reset hwnd
-	enumWindows.Call(syscall.NewCallback(enumWindowsProc), uintptr(uint32(pid)))
-	if hwnd == 0 {
-		return 0, fmt.Errorf("no window found for PID %d", pid)
-	}
-	return hwnd, nil
-}
+// var hwnd win.HWND
+// func enumWindowsProc(hWnd win.HWND, lParam uintptr) uintptr {
+// 	var pid uint32
+// 	win.GetWindowThreadProcessId(hWnd, &pid)
+// 	name, _ := robotgo.FindName(int(pid))
+// 	log.Printf("window process: %s %d\n", name, pid)
+// 	if pid == uint32(lParam) {
+// 		hwnd = hWnd
+// 		return 0    // Stop enumeration
+// 	}
+// 	return 1 // Continue enumeration
+// }
+
+// func GetHWNDFromPID(pid int) (win.HWND, error) {
+// 	hwnd = 0 // Reset hwnd
+// 	enumWindows.Call(syscall.NewCallback(enumWindowsProc), uintptr(uint32(pid)))
+// 	if hwnd == 0 {
+// 		return 0, fmt.Errorf("no window found for PID %d", pid)
+// 	}
+// 	return hwnd, nil
+// }
 
 // func (self *Runner) fullscreenForegroundWindow() {
-
 // 	const (
 // 		SW_MAXIMIZE = 3
 // 		SW_SHOW     = 5
 // 	)
-
 // 	hwnd, _, _ := getForegroundWindow.Call()
-// 	showWindow.Call(hwnd, SW_MAXIMIZE)
+// 	showWindow.Call(hwnd, win.SW_MAXIMIZE)
 // 	setWindowPos.Call(hwnd, 0, 0, 0, 1920, 1080, 0)
 // }
 

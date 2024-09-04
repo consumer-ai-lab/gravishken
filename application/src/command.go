@@ -5,8 +5,6 @@ import (
 	types "common"
 	"fmt"
 	"os"
-
-	"github.com/go-vgo/robotgo"
 )
 
 const template_docx = "template.docx"
@@ -78,11 +76,6 @@ func (self *Runner) newTemplate(name string, dest string) error {
 
 	_, err = file.Write(contents)
 	return err
-}
-
-func (self *Runner) fullscreenForegroundWindow() {
-	pid := robotgo.GetPid()
-	robotgo.MaxWindow(pid)
 }
 
 // func (self *Runner) run(name string, args ...string) error {

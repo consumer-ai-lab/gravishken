@@ -9,6 +9,8 @@ import (
 	"log"
 	"os/exec"
 	"strings"
+
+	"github.com/go-vgo/robotgo"
 )
 
 func (self *Runner) disableTitlebar() {
@@ -39,6 +41,11 @@ func NewRunner(send chan<- types.Message) (*Runner, error) {
 	runner.paths.powerpoint = libre_impress_path
 
 	return runner, nil
+}
+
+func (self *Runner) fullscreenForegroundWindow() {
+	pid := robotgo.GetPid()
+	robotgo.MaxWindow(pid)
 }
 
 func (self *Runner) SetupEnv() error {
