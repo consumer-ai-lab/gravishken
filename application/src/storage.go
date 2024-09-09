@@ -6,6 +6,7 @@ import (
 	"sync"
 )
 
+// why is this needed in the application again?
 var dataStore sync.Map
 
 func AddDataToStore(user UserTest) {

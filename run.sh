@@ -12,13 +12,23 @@ export APP_PORT=6200
 export SERVER_PORT=6201
 export DEV_PORT=6202
 
+# TODO
+# export ADMIN_UI_PORT=6203
+
 export SERVER_URL="http://localhost:$SERVER_PORT/"
 export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT -X main.server_url=$SERVER_URL"
+
+
+if command -v bun >/dev/null; then
+  runner="bun"
+else
+  runner="npm"
+fi
 
 web-build() {
   cd $PROJECT_ROOT/frontend
 
-  bun run build
+  $runner run build
   if [[ -d ../application/dist ]]; then
     rm -rf ../application/dist
   fi
@@ -67,6 +77,12 @@ build-server() {
   go build -ldflags "$VARS" -o ../build/server ./src/.
 }
 
+admin-server() {
+  cd $PROJECT_ROOT/admin
+
+  $runner run dev
+}
+
 server() {
   cd $PROJECT_ROOT/backend
   source ./.env
@@ -79,7 +95,7 @@ server() {
 web-dev() {
   cd $PROJECT_ROOT/frontend
 
-  bun run dev
+  $runner run dev
 }
 
 app() {
@@ -90,6 +106,20 @@ app() {
 
   go build -ldflags "$VARS" -o ../build/gravtest ./src/.
   ../build/gravtest $@
+}
+
+setup() {
+  cd $PROJECT_ROOT/application
+  go mod tidy
+
+  cd $PROJECT_ROOT/backend
+  go mod tidy
+
+  cd $PROJECT_ROOT/admin
+  $runner i
+
+  cd $PROJECT_ROOT/frontend
+  $runner i
 }
 
 run() {
@@ -113,6 +143,12 @@ run() {
     ;;
     "build-server")
       build-server
+    ;;
+    "setup")
+      setup
+    ;;
+    "admin-server")
+      admin-server $@
     ;;
     "server")
       server $@
