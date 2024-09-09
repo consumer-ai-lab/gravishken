@@ -21,7 +21,7 @@ export default function TypingTest({
     testId,
     rollNumber,
     candidateName,
-    testPassword
+    testPassword,
 }: TypingTestProps) {
     const testime = 300;
     const [totalCharsTyped, setTotalCharsTyped] = useState(0);
@@ -38,12 +38,15 @@ export default function TypingTest({
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
+    console.log("Test Password inside typing : ", testPassword);
+
     const getTypingTestText = async () => {
         const response = await fetch(`http://localhost:6201/test/get_question_paper/${testPassword}`);
         const data = await response.json();
         setTypingTestText(data.questionPaper.typingTestText);
     };
 
+    
 
     useEffect(() => {
         getTypingTestText();
@@ -166,8 +169,7 @@ export default function TypingTest({
           </pre>
         );
       };
-    
-    console.log(typingTestText.split(''));
+
 
     return (
         <Card className="w-full max-w-8xl rounded-lg overflow-hidden mx-auto">
