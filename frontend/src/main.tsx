@@ -20,6 +20,19 @@ function WebSocketHandler() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  // TODO: some kinda progress bar of these
+  let timeout = 0;
+  const setErrorMessageDeffered = (msg: string, tout = 5000) => {
+    clearTimeout(timeout);
+
+    setErrorMessage(msg);
+
+    // @ts-ignore
+    timeout = setTimeout(() => {
+      setErrorMessage(null);
+    }, tout);
+  };
+
   useEffect(() => {
     let disable: (() => PromiseLike<void>)[] = [];
 
@@ -32,7 +45,7 @@ function WebSocketHandler() {
 
     server.server.add_callback(types.Varient.Err, async (res) => {
       console.error('Error from server:', res.Message);
-      setErrorMessage(res.Message);  
+      setErrorMessageDeffered(res.Message);  
     }).then(d => {
       disable.push(d);
     });

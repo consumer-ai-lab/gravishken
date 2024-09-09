@@ -68,5 +68,7 @@ func SetupRouter() *gin.Engine {
 	route.InitAuthRoutes(db, router)
 	// route.InitOtherRoutes(db, router)
 
+	AppRoutes(router)
+
 	return router
 }

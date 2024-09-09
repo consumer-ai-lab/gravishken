@@ -19,11 +19,11 @@ type App struct {
 	state struct {
 		webview_opened bool
 	}
-	jwt string
 }
 
 func (self *App) destroy() {
 	close(self.send)
+	self.client.destroy()
 
 	err := self.runner.RestoreEnv()
 	log.Println(err)
@@ -55,8 +55,8 @@ func newApp() (*App, error) {
 	return app, nil
 }
 
-func (self *App) login(user_login types.TUserLogin) error {
-	jwt, err := self.client.login(user_login)
+func (self *App) login(user_login *types.TUserLogin) error {
+	err := self.client.login(user_login)
 	if err != nil {
 		errorMessage := types.NewMessage(types.TErr{
 			Message: "Failed to log in user: " + err.Error(),
@@ -64,16 +64,13 @@ func (self *App) login(user_login types.TUserLogin) error {
 		self.send <- errorMessage
 		return err
 	}
-	self.jwt = jwt
-
-	routeMessage := types.TLoadRoute{
-		Route: "/instructions",
-	}
-	message := types.NewMessage(routeMessage)
-
-	self.send <- message
 
 	return nil
+}
+
+func (self *App) connect(user_login *types.TUserLogin) error {
+	err := self.client.connect(user_login.Username)
+	return err
 }
 
 func (self *App) startTest(testData types.TGetTest) error {
