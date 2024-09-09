@@ -80,7 +80,7 @@ func (self *App) maintainConnection(user_login *types.TUserLogin) {
 
 func (self *App) handleServerMessages() {
 	for {
-		msg, ok := <-self.recv
+		msg, ok := <-self.client.server.recv
 		if !ok {
 			return
 		}
