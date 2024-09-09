@@ -128,11 +128,7 @@ func (self *App) handleMessages() {
 				self.notifyErr(err)
 				continue
 			}
-			err = self.connect(val)
-			if err != nil {
-				self.notifyErr(err)
-				continue
-			}
+			self.maintainConnection(val)
 			routeMessage := types.TLoadRoute{
 				Route: "/instructions",
 			}
