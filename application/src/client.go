@@ -33,10 +33,15 @@ type Client struct {
 		ctx     context.Context
 		destroy context.CancelFunc
 	}
+
+	frontend struct {
+		send chan<- types.Message
+	}
 }
 
-func newClient() (*Client, error) {
+func newClient(send chan<- types.Message) (*Client, error) {
 	self := &Client{}
+	self.frontend.send = send
 
 	self.client = http.Client{}
 
@@ -54,6 +59,15 @@ func (self *Client) destroy() {
 	self.closeServerConn()
 	close(self.server.send)
 	self.exit.destroy()
+}
+
+func (self *Client) notifyErr(err error) {
+	if err != nil {
+		self.frontend.send <- types.NewMessage(types.TErr{
+			Message: fmt.Sprintf("Error: %s", err),
+		})
+		log.Printf("Error: %s\n", err)
+	}
 }
 
 func (self *Client) closeServerConn() {
@@ -125,7 +139,9 @@ func (self *Client) maintainConn(username string) {
 		// block till connection breaks
 		<-ctx.Done()
 
-		log.Println("server disconnected. trying reconnection in 5 seconds...")
+		msg := "server disconnected. trying reconnection in 5 seconds..."
+		self.notifyErr(fmt.Errorf(msg))
+		log.Println(msg)
 		select {
 		case <-self.exit.ctx.Done():
 			log.Println("terminating connection with server")

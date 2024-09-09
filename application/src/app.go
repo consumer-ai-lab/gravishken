@@ -42,7 +42,7 @@ func newApp() (*App, error) {
 	}
 	var err error
 
-	client, err := newClient()
+	client, err := newClient(app.send)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +69,6 @@ func (self *App) login(user_login *types.TUserLogin) error {
 	return nil
 }
 
-// TODO: notify user if connection fails
 func (self *App) maintainConnection(user_login *types.TUserLogin) {
 	if self.state.connection_started {
 		return

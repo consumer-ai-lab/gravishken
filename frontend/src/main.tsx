@@ -22,7 +22,7 @@ function WebSocketHandler() {
 
   // TODO: some kinda progress bar of these
   let timeout = 0;
-  const setErrorMessageDeffered = (msg: string, tout = 5000) => {
+  const setErrorMessageDeffered = (msg: string, tout = 6000) => {
     clearTimeout(timeout);
 
     setErrorMessage(msg);
