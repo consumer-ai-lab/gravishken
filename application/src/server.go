@@ -123,11 +123,22 @@ func (self *App) handleMessages() {
 				self.notifyErr(err)
 				continue
 			}
-			err = self.login(*val)
+			err = self.login(val)
 			if err != nil {
 				self.notifyErr(err)
 				continue
 			}
+			err = self.connect(val)
+			if err != nil {
+				self.notifyErr(err)
+				continue
+			}
+			routeMessage := types.TLoadRoute{
+				Route: "/instructions",
+			}
+			message := types.NewMessage(routeMessage)
+
+			self.send <- message
 		case types.GetTest:
 			val, err := types.Get[types.TGetTest](msg)
 			if err != nil {
