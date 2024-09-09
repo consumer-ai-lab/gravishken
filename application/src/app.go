@@ -17,7 +17,8 @@ type App struct {
 	client  *Client
 
 	state struct {
-		webview_opened bool
+		webview_opened     bool
+		connection_started bool
 	}
 }
 
@@ -68,9 +69,28 @@ func (self *App) login(user_login *types.TUserLogin) error {
 	return nil
 }
 
-func (self *App) connect(user_login *types.TUserLogin) error {
-	err := self.client.connect(user_login.Username)
-	return err
+// TODO: notify user if connection fails
+func (self *App) maintainConnection(user_login *types.TUserLogin) {
+	if self.state.connection_started {
+		return
+	}
+	self.state.connection_started = true
+	go self.client.maintainConn(user_login.Username)
+	go self.handleServerMessages()
+}
+
+func (self *App) handleServerMessages() {
+	for {
+		msg, ok := <-self.recv
+		if !ok {
+			return
+		}
+
+		switch msg.Typ {
+		default:
+			log.Printf("message type '%s' not handled ('%s')\n", msg.Typ.TSName(), msg.Val)
+		}
+	}
 }
 
 func (self *App) startTest(testData types.TGetTest) error {

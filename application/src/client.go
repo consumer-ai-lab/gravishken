@@ -5,6 +5,7 @@ import (
 	types "common"
 	TEST "common/models/test"
 	user "common/models/user"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -27,6 +28,11 @@ type Client struct {
 		send chan types.Message
 		recv chan types.Message
 	}
+
+	exit struct {
+		ctx     context.Context
+		destroy context.CancelFunc
+	}
 }
 
 func newClient() (*Client, error) {
@@ -37,16 +43,24 @@ func newClient() (*Client, error) {
 	self.server.send = make(chan types.Message, 100)
 	self.server.recv = make(chan types.Message, 100)
 
+	ctx, destroy := context.WithCancel(context.Background())
+	self.exit.ctx = ctx
+	self.exit.destroy = destroy
+
 	return self, nil
 }
 
 func (self *Client) destroy() {
 	self.closeServerConn()
+	close(self.server.send)
+	self.exit.destroy()
 }
 
 func (self *Client) closeServerConn() {
+	if self.server.conn == nil {
+		return
+	}
 	self.server.conn.Close()
-	close(self.server.send)
 }
 
 func (self *Client) login(user_login *types.TUserLogin) error {
@@ -97,8 +111,32 @@ func (self *Client) login(user_login *types.TUserLogin) error {
 	return nil
 }
 
-// TODO: check if this auto reconnects or reconnection has to be handled separately
-func (self *Client) connect(username string) error {
+func (self *Client) maintainConn(username string) {
+	for {
+		ctx, close := context.WithCancel(context.Background())
+
+		err := self.connect(username, ctx, close)
+
+		if err != nil {
+			log.Println(err)
+			close()
+		}
+
+		// block till connection breaks
+		<-ctx.Done()
+
+		log.Println("server disconnected. trying reconnection in 5 seconds...")
+		select {
+		case <-self.exit.ctx.Done():
+			log.Println("terminating connection with server")
+			return
+		case <-time.After(time.Second * 5):
+			continue
+		}
+	}
+}
+
+func (self *Client) connect(username string, exit context.Context, cancel context.CancelFunc) error {
 	// TODO: with jwt auth
 	url, err := url.Parse(server_url)
 	if err != nil {
@@ -115,22 +153,28 @@ func (self *Client) connect(username string) error {
 	self.server.conn = conn
 
 	go func() {
+		defer cancel()
 		for {
-			msg, ok := <-self.server.send
-			if !ok {
+			select {
+			case <-exit.Done():
 				return
-			}
-			log.Println(msg)
-			self.server.conn.SetWriteDeadline(time.Now().Add(time.Second * 5))
-			err := self.server.conn.WriteJSON(msg)
-			if err != nil {
-				log.Println(err)
-				return
+			case msg, ok := <-self.server.send:
+				if !ok {
+					return
+				}
+				log.Println(msg)
+				self.server.conn.SetWriteDeadline(time.Now().Add(time.Second * 5))
+				err := self.server.conn.WriteJSON(msg)
+				if err != nil {
+					log.Println(err)
+					return
+				}
+
 			}
 		}
 	}()
 	go func() {
-		defer close(self.server.recv)
+		defer cancel()
 		for {
 			var msg types.Message
 			err := self.server.conn.ReadJSON(&msg)
