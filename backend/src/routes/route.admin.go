@@ -76,6 +76,7 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 			ctx.JSON(500, gin.H{"error": "Invalid request body"})
 			return
 		}
+		fmt.Println("testModel: ", testModel)
 
 		allControllers.AddTestToDB(ctx, &testModel)
 	})
@@ -148,5 +149,19 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 			To:               userRequest.To,
 			ResultDownloaded: userRequest.ResultDownloaded,
 		}, userRequest.Username)
+	})
+
+	adminRoute.POST("/update_typing_test_text", func(ctx *gin.Context) {
+		var UpdateTypingTestTextRequest struct {
+			TypingTestText string `json:"typingTestText"`
+			TestPassword string `json:"testPassword"`
+		}
+
+		if err := ctx.ShouldBindJSON(&UpdateTypingTestTextRequest); err != nil {
+			ctx.JSON(500, gin.H{"error": "Invalid request body"})
+			return
+		}
+
+		allControllers.UpdateTypingTestText(ctx, UpdateTypingTestTextRequest.TypingTestText, UpdateTypingTestTextRequest.TestPassword)
 	})
 }

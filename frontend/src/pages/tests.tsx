@@ -8,7 +8,8 @@ export default function TestsPage() {
 
     const testData = {
         rollNumber: 12345,
-        candidateName: 'Yash Thombre'
+        candidateName: 'Yash Thombre',
+        testPassword: "securepassword123"
     };
 
 
@@ -20,6 +21,7 @@ export default function TestsPage() {
                         testId={testId}
                         rollNumber={testData.rollNumber}
                         candidateName={testData.candidateName}
+                        testPassword={testData.testPassword}
                     />
                 );
             default:

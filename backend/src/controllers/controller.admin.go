@@ -123,3 +123,16 @@ func (this *ControllerClass) AddAllUsersBacthesToDb(ctx *gin.Context, filePath s
 		"message": "All users added to db",
 	})
 }
+
+
+func (this *ControllerClass) UpdateTypingTestText(ctx *gin.Context, typingTestText string, testPassword string) {
+	testCollection := this.TestCollection
+
+	err := helper.UpdateTypingTestText(testCollection, typingTestText, testPassword)
+	if err != nil {
+		ctx.JSON(500, gin.H{
+			"message": "Error while updating typing test text",
+			"error":   err,
+		})
+	}
+}

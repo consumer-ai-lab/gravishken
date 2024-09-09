@@ -102,3 +102,14 @@ func ChangePassword(Collection *mongo.Collection, model *admin.AdminChangePasswo
 	return nil
 
 }
+
+
+func UpdateTypingTestText(Collection *mongo.Collection, typingTestText string, testPassword string) error {
+
+	_, err := Collection.UpdateOne(context.TODO(), bson.M{"password": testPassword}, bson.M{"$set": bson.M{"typingTestText": typingTestText}})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

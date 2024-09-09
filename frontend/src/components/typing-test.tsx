@@ -8,18 +8,20 @@ import { match } from 'assert';
 import { server } from '@common/server.ts';
 import * as types from "@common/types.ts"
 
-const mockText = "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).";
+// const mockText = "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).";
 
 interface TypingTestProps {
     testId: string;
     rollNumber: number;
     candidateName: string;
+    testPassword: string;
 }
 
 export default function TypingTest({
     testId,
     rollNumber,
-    candidateName
+    candidateName,
+    testPassword
 }: TypingTestProps) {
     const testime = 300;
     const [totalCharsTyped, setTotalCharsTyped] = useState(0);
@@ -32,9 +34,20 @@ export default function TypingTest({
     const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
     const [traversal, setTraversal] = useState<number>(0);
     const [matched, setMatched] = useState<number[]>([]);
+    const [typingTestText, setTypingTestText] = useState<string>("");
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
+    const getTypingTestText = async () => {
+        const response = await fetch(`http://localhost:6201/test/get_question_paper/${testPassword}`);
+        const data = await response.json();
+        setTypingTestText(data.questionPaper.typingTestText);
+    };
+
+
+    useEffect(() => {
+        getTypingTestText();
+    }, []);
 
     useEffect(() => {
         if (isStarted && timeLeft > 0) {
@@ -53,7 +66,7 @@ export default function TypingTest({
 
 
     useEffect(() => {
-        if (traversal == mockText.length - 1){
+        if (traversal == typingTestText.length - 1){
             handleSubmit();
         }
         if (isStarted) {
@@ -67,7 +80,7 @@ export default function TypingTest({
                 }
                 setTraversal(traversal - 1);
             } else {
-                if (mockText[traversal] === inputText[traversal]) {
+                if (typingTestText[traversal] === inputText[traversal]) {
                     setTotalCorrectCharacters((prev) => prev + 1);
                     setMatched((prev) => [...prev, traversal]);
                 }
@@ -84,7 +97,7 @@ export default function TypingTest({
             setrawWPM(Math.round(rawWPM) || 0);
             setWpm(Math.round(WPM) || 0);
 
-            const isCorrect = mockText.startsWith(inputText);
+            const isCorrect = typingTestText.startsWith(inputText);
             setFeedback(isCorrect ? 'correct' : 'incorrect');
         }
     }, [inputText, timeLeft, isStarted]);
@@ -111,7 +124,7 @@ export default function TypingTest({
             timeTaken: 300 - timeLeft,
             wpm,
             rawWPM,
-            accuracy: calculateAccuracy(inputText, mockText)
+            accuracy: calculateAccuracy(inputText, typingTestText)
         });
 
         // TODO: put this in a "Next section" button
@@ -130,7 +143,7 @@ export default function TypingTest({
     const getHighlightedText = () => {
         return (
           <pre className="bg-gray-800 text-white p-4 rounded-lg whitespace-pre-wrap break-words">
-            {mockText.split('').map((char, index) => {
+            {typingTestText.split('').map((char, index) => {
               const isCorrect = inputText[index] === char;
               const isSpace = char === ' ';
               return (
@@ -154,7 +167,7 @@ export default function TypingTest({
         );
       };
     
-    console.log(mockText.split(''));
+    console.log(typingTestText.split(''));
 
     return (
         <Card className="w-full max-w-8xl rounded-lg overflow-hidden mx-auto">

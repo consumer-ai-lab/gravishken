@@ -23,6 +23,7 @@ func main() {
 	if err != nil {
 		log.Fatalln("Error loading .env file")
 	}
+	log.Println("I am updated code..............")
 	log.Println("Loaded .env file")
 
 	port, ok := os.LookupEnv("SERVER_PORT")

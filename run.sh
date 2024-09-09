@@ -73,7 +73,7 @@ server() {
 
   export VARS="-X main.build_mode=$BUILD_MODE"
   go build -ldflags "$VARS" -o ../build/server ./src/.
-  ./build/server $@
+  ../build/server $@
 }
 
 web-dev() {
