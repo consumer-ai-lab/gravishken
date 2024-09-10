@@ -14,7 +14,7 @@ export default function LoginPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    console.log('Login submitted:', { username, userPassword, testPassword });
+    
 
     localStorage.setItem('username', username);
     localStorage.setItem('userPassword', userPassword);
@@ -28,6 +28,7 @@ export default function LoginPage() {
         TestCode: testPassword,
       }
     });
+    console.log('Login submitted:', { username, userPassword, testPassword });
   };
 
   const handleQuit = () => {

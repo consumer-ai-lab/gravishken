@@ -45,13 +45,15 @@ export default function TypingTest({
         const data = await response.json();
         setTypingTestText(data.questionPaper.typingTestText);
     };
-
-    
+ 
 
     useEffect(() => {
         getTypingTestText();
-    }, []);
+    }, [testPassword]);
 
+
+    // getTypingTestText();
+    
     useEffect(() => {
         if (isStarted && timeLeft > 0) {
             timerRef.current = setInterval(() => {
@@ -65,6 +67,7 @@ export default function TypingTest({
             if (timerRef.current) clearInterval(timerRef.current);
         };
     }, [isStarted, timeLeft]);
+
 
 
 
