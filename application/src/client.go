@@ -24,9 +24,10 @@ type Client struct {
 	jwt    string
 
 	server struct {
-		conn *websocket.Conn
-		send chan types.Message
-		recv chan types.Message
+		conn         *websocket.Conn
+		send         chan types.Message
+		recv         chan types.Message
+		conn_started bool
 	}
 
 	exit struct {
@@ -126,7 +127,6 @@ func (self *Client) login(user_login *types.TUserLogin) error {
 }
 
 func (self *Client) maintainConn(username string) {
-	
 	for {
 		ctx, close := context.WithCancel(context.Background())
 
@@ -161,13 +161,10 @@ func (self *Client) connect(username string, exit context.Context, cancel contex
 	}
 	url.Scheme = "ws"
 	url.Path = "/ws"
-	
-	// Add query parameters
+
 	q := url.Query()
 	q.Set("username", username)
 	url.RawQuery = q.Encode()
-
-	fmt.Println("Connection: ", url.String())
 
 	conn, _, err := websocket.DefaultDialer.Dial(url.String(), nil)
 	if err != nil {

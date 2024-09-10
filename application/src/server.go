@@ -32,7 +32,7 @@ func (self *App) serve() {
 				ws.SetWriteDeadline(time.Now().Add(time.Second * 5))
 				err := ws.WriteJSON(msg)
 				if err != nil {
-					log.Println(err)
+					log.Println("frontend ws closed :/", err)
 					return
 				}
 			}
@@ -44,6 +44,7 @@ func (self *App) serve() {
 		defer close()
 
 		go func() {
+			defer close()
 			for {
 				select {
 				case <-ctx.Done():
@@ -54,7 +55,7 @@ func (self *App) serve() {
 				var msg types.Message
 				err := ws.ReadJSON(&msg)
 				if err != nil {
-					log.Println(err)
+					log.Println("frontend ws closed 2 :/", err)
 					return
 				}
 				self.recv <- msg
@@ -154,12 +155,13 @@ func (self *App) handleMessages() {
 				self.notifyErr(err)
 				continue
 			}
+
 			self.maintainConnection(val)
+
 			routeMessage := types.TLoadRoute{
 				Route: "/instructions",
 			}
 			message := types.NewMessage(routeMessage)
-
 			self.send <- message
 		case types.GetTest:
 			val, err := types.Get[types.TGetTest](msg)

@@ -83,9 +83,15 @@ func (self *App) maintainConnection(user_login *types.TUserLogin) {
 
 func (self *App) handleServerMessages() {
 	for {
-		msg, ok := <-self.client.server.recv
-		if !ok {
+		var msg types.Message
+		var ok bool
+		select {
+		case <-self.exitCtx.Done():
 			return
+		case msg, ok = <-self.client.server.recv:
+			if !ok {
+				return
+			}
 		}
 
 		switch msg.Typ {
