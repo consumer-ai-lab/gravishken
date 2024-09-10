@@ -9,12 +9,8 @@ export default function LoginPage() {
   const [userPassword, setUserPassword] = useState('');
   const [testPassword, setTestPassword] = useState('');
 
-
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    
 
     localStorage.setItem('username', username);
     localStorage.setItem('userPassword', userPassword);
@@ -42,7 +38,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-blue-700 flex flex-col lg:flex-row items-center justify-around p-4">
 
       <div className="text-white mb-8 lg:mb-0 lg:mr-8 text-center lg:text-left">
-        <img src="./src/assets/WCL_LOGO.png" alt="Coal India Logo" className="w-24 h-24 mx-auto lg:mx-0 mb-4" />
+        <img src="/WCL_LOGO.png" alt="Coal India Logo" className="w-24 h-24 mx-auto lg:mx-0 mb-4" />
         <h1 className="text-3xl font-bold mb-2">Welcome to</h1>
         <h2 className="text-2xl font-semibold mb-2">Western Coalfields Limited (WCL)</h2>
         <h3 className="text-xl">Computer Aptitude Test</h3>

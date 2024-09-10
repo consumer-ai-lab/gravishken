@@ -108,7 +108,7 @@ func (self *App) startTest(testData types.TGetTest) error {
 		return err
 	}
 
-	fmt.Println("Question paper: ", questionPaper)
+	log.Println("Question paper: ", questionPaper)
 
 	routeMessage := types.TLoadRoute{
 		Route: "/tests/1",
