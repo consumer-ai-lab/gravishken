@@ -8,6 +8,7 @@ import { match } from 'assert';
 import { server } from '@common/server.ts';
 import * as types from "@common/types.ts"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useTest } from '@/components/TestContext';
 
 interface TypingTestProps {
     testId: string;
@@ -22,6 +23,7 @@ export default function TypingTest({
     candidateName,
     testPassword,
 }: TypingTestProps) {
+    const { setIsTestActive } = useTest();
     const testime = 300;
     const [totalCharsTyped, setTotalCharsTyped] = useState(0);
     const [totalCorrectCharacters, setTotalCorrectCharacters] = useState(0);
@@ -111,6 +113,7 @@ export default function TypingTest({
 
     const handleStart = () => {
         setIsStarted(true);
+        setIsTestActive(true);
         setTimeout(() => {
             if (textareaRef.current) {
                 textareaRef.current.focus();  
@@ -124,6 +127,7 @@ export default function TypingTest({
     const confirmSubmit = () => {
         if (timerRef.current) clearInterval(timerRef.current);
         setIsStarted(false);
+        setIsTestActive(false);
         setIsSubmitted(true);
         setShowConfirmDialog(false);
         console.log('TotalCharsTyped:', totalCharsTyped);

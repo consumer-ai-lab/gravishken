@@ -6,6 +6,7 @@ import {
   Outlet,
   RouterProvider,
   useNavigate,
+  useLocation,
 } from "react-router-dom";
 import './index.css';
 import InstructionsPage from './pages/instructions';
@@ -15,6 +16,7 @@ import EndPage from './pages/end';
 import * as server from "@common/server.ts";
 import * as types from "@common/types.ts";
 import { Alert, AlertDescription, AlertTitle } from './components/ui/alert';
+import { TestProvider } from '@/components/TestContext';
 
 function WebSocketHandler() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -84,8 +86,12 @@ const router = createBrowserRouter([
         element: <InstructionsPage />,
       },
       {
+        path: "/tests",
+        element: <TestProvider><TestsPage /></TestProvider>
+      },
+      {
         path: "/tests/:testId",
-        element: <TestsPage />
+        element: <TestProvider><TestsPage /></TestProvider>
       },
       {
         path: "/end",

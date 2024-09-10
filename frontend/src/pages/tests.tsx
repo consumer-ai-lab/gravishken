@@ -5,6 +5,7 @@ import TypingTest from "@/components/typing-test";
 import { Button } from "@/components/ui/button";
 import * as types from "@common/types";
 import { UserIcon } from 'lucide-react';
+import { useTest } from '@/components/TestContext';
 
 const testList = [
     { id: '1', name: 'Typing Test' },
@@ -108,28 +109,27 @@ export default function TestsPage() {
         };
     }, [isResizing, handleMouseMove, handleMouseUp]);
 
+    const { isTestActive } = useTest();
+
     const renderTestContent = () => {
-        switch (testId) {
-            case undefined:
-                return (<>
-                    TODO: all tests
-                    </>)
-            case '1':
+        const effectiveTestId = testId || '1'; // Default to '1' if testId is undefined
+        const selectedTest = testList.find(test => test.id === effectiveTestId);
+
+        if (selectedTest) {
+            if (selectedTest.id === '1') {
                 return (
                     <TypingTest
-                        testId={testId}
+                        testId={selectedTest.id}
                         rollNumber={testData.rollNumber}
                         candidateName={testData.candidateName}
                         testPassword={testData.testPassword}
                     />
                 );
-            default:
-                const selectedTest = testList.find(test => test.id === testId);
-                return selectedTest ? (
-                    <TestSelector test={selectedTest} />
-                ) : (
-                    <div>Test not found</div>
-                );
+            } else {
+                return <TestSelector test={selectedTest} />;
+            }
+        } else {
+            return <div>Test not found</div>;
         }
     };
 
@@ -156,9 +156,10 @@ export default function TestsPage() {
                     {testList.map((test) => (
                         <Button
                             key={test.id}
-                            onClick={() => navigate(`/tests/${test.id}`)}
-                            variant={testId === test.id ? 'default' : 'outline'}
-                            className="w-full mb-2 justify-start text-left whitespace-normal"
+                            onClick={() => !isTestActive && navigate(`/tests/${test.id}`)}
+                            variant={(testId || '1') === test.id ? 'default' : 'outline'}
+                            className={`w-full mb-2 justify-start text-left whitespace-normal ${isTestActive ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            disabled={isTestActive}
                         >
                             <span className="truncate">{test.name}</span>
                         </Button>
