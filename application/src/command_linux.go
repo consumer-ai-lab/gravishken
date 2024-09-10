@@ -3,187 +3,160 @@
 package main
 
 import (
-	"bytes"
 	types "common"
 	"fmt"
-	"log"
 	"os/exec"
-	"strings"
 
 	"github.com/go-vgo/robotgo"
 )
 
-func (self *Runner) disableTitlebar() {
-	// empty (for conditional compilation)
-}
-
-const libre_office_path = "/usr/bin/libreoffice"      // Excel equivalent in Linux
-const text_editor_path = "/usr/bin/gnome-text-editor" // Notepad equivalent in Linux
-const libre_impress_path = "/usr/bin/ooimpress"       // PowerPoint equivalent in Linux
-
-const kill_cmd = "kill -9"
-
 type Runner struct {
+	send  chan<- types.Message
 	paths struct {
 		kill       string
 		excel      string
 		notepad    string
 		powerpoint string
+		word       string
+	}
+	state struct {
+		running_typ types.AppType
+		running_app *exec.Cmd
+		file        string
+		pid         int
 	}
 }
 
 func NewRunner(send chan<- types.Message) (*Runner, error) {
-	runner := &Runner{}
+	runner := &Runner{
+		send: send,
+	}
 
-	runner.paths.kill = kill_cmd
-	runner.paths.excel = libre_office_path
-	runner.paths.notepad = text_editor_path
-	runner.paths.powerpoint = libre_impress_path
+	var err error
+	runner.paths.kill = "kill"
+	runner.paths.excel, err = exec.LookPath("libreoffice")
+	if err != nil {
+		send <- types.NewMessage(types.TExeNotFound{
+			Name:   "libreoffice",
+			ErrMsg: fmt.Sprintf("%s", err),
+		})
+		err = nil
+	}
+	runner.paths.notepad, err = exec.LookPath("gedit")
+	if err != nil {
+		send <- types.NewMessage(types.TExeNotFound{
+			Name:   "gedit",
+			ErrMsg: fmt.Sprintf("%s", err),
+		})
+		err = nil
+	}
+	runner.paths.powerpoint = runner.paths.excel
+	runner.paths.word = runner.paths.excel
 
 	return runner, nil
 }
 
-func (self *Runner) fullscreenForegroundWindow() {
-	pid := robotgo.GetPid()
-	robotgo.MaxWindow(pid)
-}
-
 func (self *Runner) SetupEnv() error {
+	self.fullscreenForegroundWindow()
 	return nil
 }
+
 func (self *Runner) RestoreEnv() error {
 	return nil
 }
+
 func (self *Runner) OpenApp(typ types.AppType, file string) error {
+	if self.isOpen() {
+		return fmt.Errorf("an app is already running")
+	}
+	self.resetState()
+
+	self.state.running_typ = typ
+	self.state.file = file
+
+	var cmd *exec.Cmd
+
+	switch typ {
+	case types.XLSX:
+		cmd = exec.Command(self.paths.excel, "--calc", file)
+	case types.TXT:
+		cmd = exec.Command(self.paths.notepad, file)
+	case types.PPTX:
+		cmd = exec.Command(self.paths.powerpoint, "--impress", file)
+	case types.DOCX:
+		cmd = exec.Command(self.paths.word, "--writer", file)
+	default:
+		return fmt.Errorf("unsupported app type")
+	}
+
+	err := cmd.Start()
+	if err != nil {
+		return err
+	}
+
+	self.state.running_app = cmd
+	self.state.pid = cmd.Process.Pid
+
 	return nil
 }
+
 func (self *Runner) KillApp() error {
+	if self.state.running_app == nil {
+		return nil
+	}
+
+	err := self.state.running_app.Process.Kill()
+	if err != nil {
+		return err
+	}
+
+	self.resetState()
 	return nil
 }
-func (self *Runner) FocusOpenApp() error {
-	return nil
-}
+
 func (self *Runner) FocusOrOpenApp(typ types.AppType, file string) error {
+	if self.isOpen() && self.state.running_typ == typ {
+		return self.FocusOpenApp()
+	} else {
+		return self.OpenApp(typ, file)
+	}
+}
+
+func (self *Runner) FocusOpenApp() error {
+	if self.state.pid == 0 {
+		return fmt.Errorf("no app is currently open")
+	}
+
+	err := robotgo.ActivePid(self.state.pid)
+	if err != nil {
+		return fmt.Errorf("failed to focus app: %v", err)
+	}
+
+	self.fullscreenForegroundWindow()
 	return nil
 }
 
-func (self *Runner) killTasks(pids []string) error {
-	for _, pid := range pids {
-		cmd := self.paths.kill + " " + pid
-		err := exec.Command("sh", "-c", cmd).Run()
-		if err != nil {
-			return err
+func (self *Runner) fullscreenForegroundWindow() {
+	if self.state.pid == 0 {
+		return
+	}
+
+	robotgo.MaxWindow(self.state.pid)
+}
+
+func (self *Runner) resetState() {
+	self.state.file = ""
+	self.state.pid = 0
+	self.state.running_app = nil
+	self.state.running_typ = 0
+}
+
+func (self *Runner) isOpen() bool {
+	app := self.state.running_app
+	if app != nil {
+		if app.ProcessState == nil || !app.ProcessState.Exited() {
+			return true
 		}
-		log.Printf("Killed process with PID %s", pid)
 	}
-	return nil
+	return false
 }
-
-func (self *Runner) findPIDs(processName string) ([]string, error) {
-	cmd := exec.Command("sh", "-c", fmt.Sprintf("pgrep -f %s", processName))
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	err := cmd.Run()
-	if err != nil {
-		return nil, err
-	}
-
-	pids := strings.Split(strings.TrimSpace(out.String()), "\n")
-	if len(pids) == 0 || pids[0] == "" {
-		return nil, fmt.Errorf("process not found")
-	}
-
-	return pids, nil
-}
-
-func (self *Runner) killLibreOffice() error {
-	pids, err := self.findPIDs("libreoffice")
-	if err != nil {
-		return fmt.Errorf("error finding LibreOffice process: %v", err)
-	}
-
-	err = self.killTasks(pids)
-	if err != nil {
-		return fmt.Errorf("error killing LibreOffice process: %v", err)
-	}
-
-	log.Printf("LibreOffice processes killed successfully")
-	return nil
-}
-
-func (self *Runner) runLibreOffice() error {
-	// Create a new command to run LibreOffice
-	cmd := exec.Command(self.paths.excel)
-
-	// Start the command (don't use cmd.Wait, let it run in the background)
-	err := cmd.Start()
-	if err != nil {
-		return err
-	}
-
-	log.Println("LibreOffice started successfully")
-	return nil
-}
-
-func (self *Runner) runNotepad() error {
-	cmd := exec.Command(self.paths.notepad)
-
-	err := cmd.Start()
-	if err != nil {
-		return err
-	}
-
-	log.Println("Notepad started successfully")
-	return nil
-}
-
-func (self *Runner) runPowerPoint() error {
-	cmd := exec.Command(self.paths.powerpoint)
-
-	err := cmd.Start()
-	if err != nil {
-		return err
-	}
-
-	log.Println("PowerPoint started successfully")
-	return nil
-}
-
-// func (runner *Runner) StartMicrosoftApps(microsftApp types.TMicrosoftApps) error {
-
-// 	switch microsftApp.AppName {
-// 	case "Word":
-// 		runner.runLibreOffice()
-// 	case "NotePad":
-// 		runner.runNotepad()
-// 	case "PowerPoint":
-// 		runner.runPowerPoint()
-// 	default:
-// 		return fmt.Errorf("Invalid Microsoft App")
-// 	}
-
-// 	return nil
-
-// }
-
-// func TestLinux() {
-// 	runner, err := newRunner()
-// 	if err != nil {
-// 		log.Fatalf("Failed to initialize LinuxRunner: %v", err)
-// 	}
-
-// 	// Run LibreOffice
-// 	err = runner.runLibreOffice()
-// 	if err != nil {
-// 		log.Fatalf("Failed to start LibreOffice: %v", err)
-// 	}
-
-// 	// Sleep for 15 seconds
-// 	time.Sleep(10 * time.Second)
-
-// 	// Kill LibreOffice
-// 	err = runner.killLibreOffice()
-// 	if err != nil {
-// 		log.Fatalf("Failed to kill LibreOffice: %v", err)
-// 	}
-// }
