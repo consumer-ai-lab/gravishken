@@ -28,6 +28,9 @@ export type Message = {
     Typ: types.Varient.OpenApp,
     Val: types.TOpenApp,
 } | {
+    Typ: types.Varient.QuitApp,
+    Val: types.TQuitApp,
+} | {
     Typ: types.Varient.Unknown,
     Val: unknown,
 }
@@ -109,10 +112,14 @@ export class Server {
             case types.Varient.LoadRoute:
             case types.Varient.Err:
             case types.Varient.GetTest:
-            case types.Varient.OpenApp:
                 break;
             case types.Varient.ReloadUi:
                 window.location.href = "/";
+                break;
+            case types.Varient.OpenApp:
+            case types.Varient.QuitApp:
+                // redirect this message back to the app :|
+                this.send_message(msg);
                 break;
             case types.Varient.Unknown:
             case types.Varient.UserLogin: {

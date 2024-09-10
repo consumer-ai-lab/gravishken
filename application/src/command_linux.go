@@ -5,8 +5,8 @@ package main
 import (
 	types "common"
 	"fmt"
-	"os/exec"
 	"log"
+	"os/exec"
 
 	"github.com/go-vgo/robotgo"
 )
@@ -71,6 +71,7 @@ func (self *Runner) OpenApp(typ types.AppType, file string) error {
 		return fmt.Errorf("an app is already running")
 	}
 	self.resetState()
+	defer self.resetState()
 
 	self.state.running_typ = typ
 	self.state.file = file
@@ -104,7 +105,6 @@ func (self *Runner) OpenApp(typ types.AppType, file string) error {
 		log.Printf("Command finished with error: %v", err)
 	}
 
-	self.resetState()
 	return err
 }
 

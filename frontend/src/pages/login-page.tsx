@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { UserIcon, KeyIcon, LockOpenIcon } from 'lucide-react';
+import { UserIcon, KeyIcon, LockOpenIcon, XCircle } from 'lucide-react';
 import { server } from '@common/server';
 import * as types from '@common/types';
-
+import { Button } from '@/components/ui/button';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -16,7 +16,6 @@ export default function LoginPage() {
 
     console.log('Login submitted:', { username, userPassword, testPassword });
 
-    // Store data in localStorage
     localStorage.setItem('username', username);
     localStorage.setItem('userPassword', userPassword);
     localStorage.setItem('testPassword', testPassword);
@@ -28,6 +27,13 @@ export default function LoginPage() {
         Password: userPassword,
         TestCode: testPassword,
       }
+    });
+  };
+
+  const handleQuit = () => {
+    server.send_message({
+      Typ: types.Varient.QuitApp,
+      Val: {}
     });
   };
 
@@ -90,12 +96,23 @@ export default function LoginPage() {
               />
             </div>
           </div>
-          <button
-            type="submit"
-            className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out"
-          >
-            LOGIN
-          </button>
+          <div className="flex justify-between">
+            <button
+              type="submit"
+              className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out"
+            >
+              LOGIN
+            </button>
+            <Button
+              type="button"
+              onClick={handleQuit}
+              variant="destructive"
+              className="flex items-center"
+            >
+              <XCircle className="mr-2" size={16} />
+              Quit
+            </Button>
+          </div>
         </form>
       </div>
     </div>

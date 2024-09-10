@@ -20,6 +20,8 @@ func (self *App) serve() {
 
 		for {
 			select {
+			case <-self.exitCtx.Done():
+				return
 			case <-ctx.Done():
 				return
 			case msg, ok := <-self.send:
@@ -37,18 +39,33 @@ func (self *App) serve() {
 		}
 	}
 
-	handleMessages := func(ws *websocket.Conn, close context.CancelFunc) {
+	handleMessages := func(ws *websocket.Conn, ctx context.Context, close context.CancelFunc) {
 		defer ws.Close()
+		defer close()
 
-		for {
-			var msg types.Message
-			err := ws.ReadJSON(&msg)
-			if err != nil {
-				log.Println(err)
-				close()
-				return
+		go func() {
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case <-time.After(time.Millisecond * 1):
+					//
+				}
+				var msg types.Message
+				err := ws.ReadJSON(&msg)
+				if err != nil {
+					log.Println(err)
+					return
+				}
+				self.recv <- msg
 			}
-			self.recv <- msg
+		}()
+
+		select {
+		case <-ctx.Done():
+			return
+		case <-self.exitCtx.Done():
+			return
 		}
 	}
 
@@ -71,7 +88,7 @@ func (self *App) serve() {
 
 		log.Println("new conn")
 		go handleClient(ws, ctx)
-		handleMessages(ws, close)
+		handleMessages(ws, ctx, close)
 	}
 
 	mux := http.NewServeMux()
@@ -97,16 +114,25 @@ func (self *App) serve() {
 		panic("invalid BUILD_MODE")
 	}
 
-	log.Printf("Starting application on port %s...\n", port)
-	err := http.ListenAndServe(fmt.Sprintf("localhost:%s", port), mux)
-	log.Fatal(err)
+	go func() {
+		log.Printf("Starting application on port %s...\n", port)
+		err := http.ListenAndServe(fmt.Sprintf("localhost:%s", port), mux)
+		log.Fatal(err)
+	}()
+	<-self.exitCtx.Done()
 }
 
 func (self *App) handleMessages() {
 	for {
-		msg, ok := <-self.recv
-		if !ok {
+		var msg types.Message
+		var ok bool
+		select {
+		case <-self.exitCtx.Done():
 			return
+		case msg, ok = <-self.recv:
+			if !ok {
+				return
+			}
 		}
 
 		switch msg.Typ {
@@ -163,6 +189,8 @@ func (self *App) handleMessages() {
 				err = self.runner.FocusOrOpenApp(val.Typ, dest)
 				self.notifyErr(err)
 			})()
+		case types.QuitApp:
+			self.exitFn()
 		case types.Err:
 			val, err := types.Get[types.TErr](msg)
 			if err != nil {
