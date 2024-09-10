@@ -7,8 +7,7 @@ import { PlayCircle, StopCircle, Send } from 'lucide-react';
 import { match } from 'assert';
 import { server } from '@common/server.ts';
 import * as types from "@common/types.ts"
-
-// const mockText = "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface TypingTestProps {
     testId: string;
@@ -37,6 +36,8 @@ export default function TypingTest({
     const [typingTestText, setTypingTestText] = useState<string>("");
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+    const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+    const [isSubmitted, setIsSubmitted] = useState(false);
 
     console.log("Test Password inside typing : ", testPassword);
 
@@ -117,11 +118,16 @@ export default function TypingTest({
         }, 0);  
     };
     const handleSubmit = () => {
+        setShowConfirmDialog(true);
+    };
+
+    const confirmSubmit = () => {
         if (timerRef.current) clearInterval(timerRef.current);
         setIsStarted(false);
+        setIsSubmitted(true);
+        setShowConfirmDialog(false);
         console.log('TotalCharsTyped:', totalCharsTyped);
         console.log('TotalCorrectCharacters:', totalCorrectCharacters);
-
 
         console.log('Submitting results:', {
             testId,
@@ -220,7 +226,7 @@ export default function TypingTest({
             <CardFooter className="flex justify-between">
                 <Button
                     onClick={handleStart}
-                    disabled={isStarted}
+                    disabled={isStarted || isSubmitted}
                     className="bg-green-600 hover:bg-green-700"
                 >
                     {isStarted ? <StopCircle className="mr-2" /> : <PlayCircle className="mr-2" />}
@@ -228,11 +234,27 @@ export default function TypingTest({
                 </Button>
                 <Button
                     onClick={handleSubmit}
-                    disabled={!isStarted}
+                    disabled={!isStarted || isSubmitted}
                     className="bg-blue-600 hover:bg-blue-700"
                 >
                     <Send className="mr-2" /> Submit
                 </Button>
+                <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Confirm Submission</DialogTitle>
+                            <DialogDescription>
+                                Are you sure you want to submit your typing test?
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                            <Button onClick={() => setShowConfirmDialog(false)}>Cancel</Button>
+                            <Button onClick={confirmSubmit} className="bg-blue-600 hover:bg-blue-700">
+                                Confirm
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </CardFooter>
         </Card>
     );
