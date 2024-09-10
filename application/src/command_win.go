@@ -137,6 +137,7 @@ func (self *Runner) OpenApp(typ types.AppType, file string) error {
 	} else {
 		self.resetState()
 	}
+	defer self.resetState()
 
 	self.state.running_typ = typ
 	self.state.file = file

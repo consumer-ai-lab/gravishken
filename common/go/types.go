@@ -33,6 +33,7 @@ const (
 	ReloadUi
 	GetTest
 	OpenApp
+	QuitApp
 	Unknown // NOTE: keep this as the last constant here.
 )
 
@@ -52,6 +53,8 @@ func (self Varient) TSName() string {
 		return "GetTest"
 	case OpenApp:
 		return "OpenApp"
+	case QuitApp:
+		return "QuitApp"
 	default:
 		return "Unknown"
 	}
@@ -72,6 +75,8 @@ func varientFromName(typ string) Varient {
 		return GetTest
 	case "OpenApp":
 		return OpenApp
+	case "QuitApp":
+		return QuitApp
 	default:
 		return Unknown
 	}
@@ -136,6 +141,8 @@ type TOpenApp struct {
 	Typ AppType
 }
 
+type TQuitApp struct{}
+
 func NewMessage(typ interface{}) Message {
 	name := reflect.TypeOf(typ).Name()[1:]
 	varient := varientFromName(name)
@@ -181,6 +188,7 @@ func DumpTypes(dir string) {
 		Add(TReloadUi{}).
 		Add(TGetTest{}).
 		Add(TOpenApp{}).
+		Add(TQuitApp{}).
 		AddEnum([]AppType{TXT, DOCX, XLSX, PPTX}).
 		AddEnum(allVarients)
 

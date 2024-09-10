@@ -2,6 +2,7 @@ package main
 
 import (
 	types "common"
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -16,6 +17,9 @@ type App struct {
 	webview webview.WebView
 	client  *Client
 
+	exitCtx context.Context
+	exitFn  context.CancelFunc
+
 	state struct {
 		webview_opened     bool
 		connection_started bool
@@ -28,16 +32,15 @@ func (self *App) destroy() {
 
 	err := self.runner.RestoreEnv()
 	log.Println(err)
-
-	if self.state.webview_opened {
-		self.webview.Destroy()
-	}
 }
 
 func newApp() (*App, error) {
+	ctx, cancel := context.WithCancel(context.Background())
 	app := &App{
 		send:    make(chan types.Message, 100),
 		recv:    make(chan types.Message, 100),
+		exitCtx: ctx,
+		exitFn:  cancel,
 		webview: nil,
 	}
 	var err error
@@ -136,10 +139,22 @@ func (self *App) startTest(testData types.TGetTest) error {
 func (self *App) openWv() {
 	self.webview = webview.New(build_mode == "DEV")
 	self.state.webview_opened = true
+
+	// this will make wait() return
+	go func() {
+		<-self.exitCtx.Done()
+		self.webview.Terminate()
+		self.webview.Destroy()
+	}()
 }
 
+// must be called from the main thread :/
 func (self *App) wait() {
-	self.webview.Run()
+	if self.state.webview_opened {
+		self.webview.Run()
+	} else {
+		<-self.exitCtx.Done()
+	}
 }
 
 func (self *App) notifyErr(err error) {

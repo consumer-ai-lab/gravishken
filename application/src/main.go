@@ -58,7 +58,8 @@ func main() {
 			defer app.destroy()
 			go app.handleMessages()
 			app.send <- types.NewMessage(types.TReloadUi{})
-			app.serve()
+			go app.serve()
+			app.wait()
 		},
 	})
 	command.AddCommand(&cobra.Command{

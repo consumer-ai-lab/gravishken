@@ -15,7 +15,8 @@ export enum Varient {
     ReloadUi = 4,
     GetTest = 5,
     OpenApp = 6,
-    Unknown = 7,
+    QuitApp = 7,
+    Unknown = 8,
 }
 export interface TErr {
     Message: string;
@@ -44,4 +45,7 @@ export interface TGetTest {
 }
 export interface TOpenApp {
     Typ: AppType;
+}
+export interface TQuitApp {
+
 }
