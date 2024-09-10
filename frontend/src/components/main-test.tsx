@@ -5,54 +5,107 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { server } from '@common/server';
 import * as types from '@common/types';
 
-const apps = [
-  { name: 'NotePad', icon: NotepadText, color: 'text-green-600', typ: types.AppType.TXT },
-  { name: 'PowerPoint', icon: File, color: 'text-orange-600', typ: types.AppType.PPTX },
-  { name: 'Word', icon: FileText, color: 'text-blue-600', typ: types.AppType.DOCX },
-  { name: 'Excel', icon: Sheet, color: 'text-blue-600', typ: types.AppType.XLSX },
-];
-
-const OfficeAppSwitcher = () => {
-  const [activeApp, setActiveApp] = useState(apps[0].name);
-
-  const handleStartTest = (app: typeof apps[0]) => {
-    console.log("Starting test with testPassword:");
-    setActiveApp(app.name);
-    server.send_message({
-        Typ: types.Varient.OpenApp, 
-        Val: {
-            Typ: app.typ,
-        }
-    });
+const appIcons = {
+  [types.AppType.TXT]: { icon: NotepadText, color: 'text-green-600' },
+  [types.AppType.PPTX]: { icon: File, color: 'text-orange-600' },
+  [types.AppType.DOCX]: { icon: FileText, color: 'text-blue-600' },
+  [types.AppType.XLSX]: { icon: Sheet, color: 'text-green-600' },
 };
 
+interface Test {
+  id: string;
+  name: string;
+  description: string;
+  apps: types.AppType[];
+}
+
+const mockTests: Test[] = [
+  {
+    id: '1',
+    name: 'Basic Office Skills',
+    description: 'Test your skills in Word, Excel, and PowerPoint.',
+    apps: [types.AppType.DOCX, types.AppType.XLSX, types.AppType.PPTX],
+  },
+  {
+    id: '2',
+    name: 'Advanced Word Processing',
+    description: 'Demonstrate your advanced Microsoft Word skills.',
+    apps: [types.AppType.DOCX],
+  },
+  // Add more mock tests as needed
+];
+
+const TestSelector = () => {
+  const [selectedTest, setSelectedTest] = useState<Test | null>(null);
+
+  const handleOpenApp = (appType: types.AppType) => {
+    server.send_message({
+      Typ: types.Varient.OpenApp,
+      Val: { Typ: appType },
+    });
+  };
+
+  const handleSubmitWork = () => {
+    console.log('Submitting work for test:', selectedTest?.name);
+    // Implement submission logic here
+  };
+
   return (
-    <div className="p-4">
-      <div className="flex space-x-4 mb-4">
-        {apps.map((app) => (
+    <div className="flex p-4 h-full">
+      <div className="w-1/3 pr-4 overflow-y-auto">
+        <h2 className="text-xl font-bold mb-4">Available Tests</h2>
+        {mockTests.map((test) => (
           <Button
-            key={app.name}
-            onClick={() => handleStartTest(app)}
-            variant={activeApp === app.name ? 'default' : 'outline'}
-            className="flex items-center space-x-2"
+            key={test.id}
+            onClick={() => setSelectedTest(test)}
+            variant={selectedTest?.id === test.id ? 'default' : 'outline'}
+            className="w-full mb-2 justify-start"
           >
-            <app.icon className={`h-5 w-5 ${app.color}`} />
-            <span>{app.name}</span>
+            {test.name}
           </Button>
         ))}
       </div>
-      <Card className='border-2 border-black'>
-        <CardHeader>
-          <CardTitle>Active App: {activeApp}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-96 flex items-center justify-center text-gray-500">
-            {activeApp} content would be displayed here
+      <div className="w-2/3 pl-4">
+        {selectedTest ? (
+          <Card className="h-full flex flex-col">
+            <CardHeader>
+              <CardTitle>{selectedTest.name}</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-grow">
+              <p className="mb-4">{selectedTest.description}</p>
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold mb-2">Associated Apps:</h3>
+                <div className="flex space-x-2">
+                  {selectedTest.apps.map((appType) => {
+                    const { icon: Icon, color } = appIcons[appType];
+                    return (
+                      <Button
+                        key={appType}
+                        onClick={() => handleOpenApp(appType)}
+                        className="flex items-center space-x-2"
+                      >
+                        <Icon className={`h-5 w-5 ${color}`} />
+                        <span>{types.AppType[appType]}</span>
+                      </Button>
+                    );
+                  })}
+                </div>
+              </div>
+            </CardContent>
+            <div className="p-4 border-t">
+              <Button onClick={handleSubmitWork} className="w-full">
+                Submit Work
+              </Button>
+            </div>
+          </Card>
+        ) : (
+          <div className="h-full flex items-center justify-center text-gray-500">
+            Select a test to view details
           </div>
-        </CardContent>
-      </Card>
+        )}
+      </div>
     </div>
   );
 };
 
-export default OfficeAppSwitcher;
+export default TestSelector;
