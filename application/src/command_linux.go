@@ -6,6 +6,7 @@ import (
 	types "common"
 	"fmt"
 	"os/exec"
+	"log"
 
 	"github.com/go-vgo/robotgo"
 )
@@ -89,15 +90,22 @@ func (self *Runner) OpenApp(typ types.AppType, file string) error {
 		return fmt.Errorf("unsupported app type")
 	}
 
+	self.state.running_app = cmd
+
 	err := cmd.Start()
 	if err != nil {
 		return err
 	}
 
-	self.state.running_app = cmd
 	self.state.pid = cmd.Process.Pid
 
-	return nil
+	err = cmd.Wait()
+	if err != nil {
+		log.Printf("Command finished with error: %v", err)
+	}
+
+	self.resetState()
+	return err
 }
 
 func (self *Runner) KillApp() error {
