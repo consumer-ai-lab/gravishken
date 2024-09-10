@@ -46,6 +46,20 @@ type ClientsCtx struct {
 	mutex   sync.Mutex
 }
 
+func (self *ClientsCtx) addClient(name string) *Client {
+	val, ok := self.clients.Load(name)
+	if !ok {
+		client := &Client{
+			send: make(chan types.Message),
+			recv: make(chan types.Message),
+		}
+		self.set(name, client)
+		return client
+	}
+	client, _ := val.(*Client)
+	return client
+}
+
 func (self *ClientsCtx) set(name string, client *Client) int64 {
 	self.mutex.Lock()
 	defer self.mutex.Unlock()
@@ -57,6 +71,7 @@ func (self *ClientsCtx) set(name string, client *Client) int64 {
 
 	return id
 }
+
 func (self *ClientsCtx) get(name string) (*Client, error) {
 	self.mutex.Lock()
 	defer self.mutex.Unlock()
@@ -71,6 +86,8 @@ func (self *ClientsCtx) get(name string) (*Client, error) {
 	}
 	return client, nil
 }
+
+// don't yeet clients from memory. push messages in them as they will be sent to user after reconnection
 func (self *ClientsCtx) remove(name string, tempId int64) {
 	self.mutex.Lock()
 	defer self.mutex.Unlock()
@@ -85,7 +102,10 @@ func (self *ClientsCtx) remove(name string, tempId int64) {
 	}
 	if client.tempId != tempId {
 		self.clients.Store(name, client)
+		return
 	}
+
+	client.Close()
 }
 
 func AppRoutes(route *gin.Engine) {
@@ -149,19 +169,12 @@ func AppRoutes(route *gin.Engine) {
 
 		ctx, cancel := context.WithCancel(context.Background())
 
-		client := Client{
-			send: make(chan types.Message),
-			recv: make(chan types.Message),
-		}
-		defer client.Close()
-
-		tempId := state.set(username, &client)
-		defer state.remove(username, tempId)
+		client := state.addClient(username)
 
 		log.Println("new conn")
 		go client.handleMessages()
-		go handleClient(ws, ctx, &client)
-		handleMessages(ws, cancel, &client)
+		go handleClient(ws, ctx, client)
+		handleMessages(ws, cancel, client)
 	}
 
 	route.GET("/ws", wsHandler)
