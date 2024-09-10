@@ -132,11 +132,6 @@ export default function TypingTest({
             rawWPM,
             accuracy: calculateAccuracy(inputText, typingTestText)
         });
-
-        // TODO: put this in a "Next section" button
-        server.send_message({Typ: types.Varient.LoadRoute, Val: {
-            Route: "/tests/2"
-        }});
     };
 
     const calculateAccuracy = (input:string, original:string) => {
