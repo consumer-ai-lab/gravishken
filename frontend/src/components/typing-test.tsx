@@ -178,11 +178,7 @@ export default function TypingTest({
         <Card className="w-full max-w-8xl rounded-lg overflow-hidden mx-auto">
             <CardHeader className="bg-blue-600 text-white">
                 <div className="flex justify-between items-center">
-                    <CardTitle>WCL Recruitment Test - Typing Speed</CardTitle>
-                    <div className="text-sm">
-                        <div>Roll Number: {rollNumber}</div>
-                        <div>Name: {candidateName}</div>
-                    </div>
+                    <CardTitle>Typing Test</CardTitle>
                 </div>
             </CardHeader>
             <CardContent className="space-y-4 pt-6">
