@@ -113,7 +113,7 @@ func (this *ControllerClass) AddAllUsersBacthesToDb(ctx *gin.Context, filePath s
 			Password:     data["password"],
 			TestPassword: batch_passwords[data["slot"]],
 			Batch:        data["slot"],
-			Tests:        User.UserTest{},
+			Tests:        User.UserSubmission{},
 		}
 
 		helper.Add_Model_To_DB(userCollection, &user)
@@ -123,7 +123,6 @@ func (this *ControllerClass) AddAllUsersBacthesToDb(ctx *gin.Context, filePath s
 		"message": "All users added to db",
 	})
 }
-
 
 func (this *ControllerClass) UpdateTypingTestText(ctx *gin.Context, typingTestText string, testPassword string) {
 	testCollection := this.TestCollection

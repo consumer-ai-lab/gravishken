@@ -16,10 +16,10 @@ type User struct {
 	Password     string             `bson:"password" json:"password" binding:"required"`
 	TestPassword string             `bson:"testPassword" json:"testPassword" binding:"required"`
 	Batch        string             `bson:"batch" json:"batch" binding:"required"`
-	Tests        UserTest           `bson:"tests" json:"tests,omitempty"`
+	Tests        UserSubmission     `bson:"tests" json:"tests,omitempty"`
 }
 
-type UserTest struct {
+type UserSubmission struct {
 	TestID                    primitive.ObjectID `bson:"test" json:"test"`
 	StartTime                 time.Time          `bson:"startTime" json:"startTime"`
 	EndTime                   time.Time          `bson:"endTime" json:"endTime"`
@@ -38,7 +38,7 @@ func (user *User) GetCollectionName() string {
 	return "users"
 }
 
-func (userTest *UserTest) GetCollectionName() string {
+func (userTest *UserSubmission) GetCollectionName() string {
 	return "user_tests"
 }
 

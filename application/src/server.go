@@ -97,9 +97,6 @@ func (self *App) serve() {
 	// TODO: more than 1 websocket client at the same time is not supported. maybe crash / don't accept the connection
 	mux.HandleFunc("/ws", serveWs)
 
-	// Add the new route to your server [added by kurve, just for testing]
-	mux.HandleFunc("/data", getDataFromStore)
-
 	if build_mode == "PROD" {
 		build, _ := fs.Sub(assets.Dist, "dist")
 		fileServer := http.FileServer(http.FS(build))
@@ -204,15 +201,6 @@ func (self *App) handleMessages() {
 			log.Printf("message of type '%s' cannot be handled here: '%s'\n", msg.Typ.TSName(), msg.Val)
 		case types.Unknown:
 			log.Printf("unknown message type received: '%s'\n", msg.Val)
-		// TODO:
-		// case types.UserTestSomethingSomething:
-		// 	user, err := types.Get[UserTest](msg)
-		// 	if err != nil {
-		// 		log.Println(err)
-		// 		continue
-		// 	}
-		// 	AddDataToStore(*user)
-		// 	log.Println("Added data to the store:", user)
 		default:
 			log.Printf("message type '%s' not handled ('%s')\n", msg.Typ.TSName(), msg.Val)
 		}
