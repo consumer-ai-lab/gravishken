@@ -28,6 +28,7 @@ type Varient int
 const (
 	Err Varient = iota
 	ExeNotFound
+	Quit
 	UserLogin
 	LoadRoute
 	ReloadUi
@@ -43,6 +44,8 @@ func (self Varient) TSName() string {
 		return "Err"
 	case ExeNotFound:
 		return "ExeNotFound"
+	case Quit:
+		return "Quit"
 	case UserLogin:
 		return "UserLogin"
 	case LoadRoute:
@@ -65,6 +68,8 @@ func varientFromName(typ string) Varient {
 		return Err
 	case "ExeNotFound":
 		return ExeNotFound
+	case "Quit":
+		return Quit
 	case "UserLogin":
 		return UserLogin
 	case "ReloadUi":
@@ -95,6 +100,9 @@ type Message struct {
 type TExeNotFound struct {
 	Name   string
 	ErrMsg string
+}
+
+type TQuit struct {
 }
 
 type TUserLogin struct {
@@ -183,6 +191,7 @@ func DumpTypes(dir string) {
 		Add(TErr{}).
 		Add(Message{}).
 		Add(TExeNotFound{}).
+		Add(TQuit{}).
 		Add(TUserLogin{}).
 		Add(TLoadRoute{}).
 		Add(TReloadUi{}).

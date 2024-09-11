@@ -13,6 +13,9 @@ export type Message = {
     Typ: types.Varient.UserLogin,
     Val: types.TUserLogin,
 } | {
+    Typ: types.Varient.Quit,
+    Val: types.TQuit,
+} | {
     Typ: types.Varient.LoadRoute,
     Val: types.TLoadRoute,
 } | {
@@ -116,6 +119,7 @@ export class Server {
             case types.Varient.ReloadUi:
                 window.location.href = "/";
                 break;
+            case types.Varient.Quit:
             case types.Varient.OpenApp:
             case types.Varient.QuitApp:
                 // redirect this message back to the app :|
