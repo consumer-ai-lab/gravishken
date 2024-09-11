@@ -11,7 +11,7 @@ const testList = [
     { id: '1', name: 'Typing Test' },
     { id: '2', name: 'Basic Office Skills', description: 'Test your skills in Word, Excel, and PowerPoint.', apps: [types.AppType.DOCX, types.AppType.XLSX, types.AppType.PPTX] },
     { id: '3', name: 'Advanced Word Processing', description: 'Demonstrate your advanced Microsoft Word skills.', apps: [types.AppType.DOCX] },
-    // Add more tests as needed
+    { id: '4', name: 'NotePad test', description: 'Demonstrate your notepad skills.', apps: [types.AppType.TXT] },
 ];
 
 export default function TestsPage() {
