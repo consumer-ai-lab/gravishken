@@ -16,12 +16,12 @@ interface TestSelectorProps {
   test: {
     id: string;
     name: string;
-    description: string;
-    apps: types.AppType[];
+    description?: string;
+    apps?: types.AppType[];
   };
 }
 
-const TestSelector: React.FC<TestSelectorProps> = ({ test }) => {
+const TestSelector: React.FC<TestSelectorProps> = ({ test }: TestSelectorProps) => {
   const handleOpenApp = (appType: types.AppType) => {
     server.send_message({
       Typ: types.Varient.OpenApp,
@@ -44,7 +44,7 @@ const TestSelector: React.FC<TestSelectorProps> = ({ test }) => {
         <div className="mb-4">
           <h3 className="text-lg font-semibold mb-2">Associated Apps:</h3>
           <div className="flex space-x-2 mb-4">
-            {test.apps.map((appType) => {
+            {test.apps!.map((appType) => {
               const { icon: Icon, color } = appIcons[appType];
               return (
                 <Button
