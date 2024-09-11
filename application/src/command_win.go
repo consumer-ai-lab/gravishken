@@ -12,6 +12,7 @@ import (
 	"unsafe"
 
 	"github.com/tailscale/win"
+	"golang.org/x/sys/windows/registry"
 )
 
 var (
@@ -83,7 +84,7 @@ func NewRunner(send chan<- types.Message) (*Runner, error) {
 		})
 		err = nil
 	}
-	runner.paths.word, err = exec.LookPath(word)
+	runner.paths.word, err = findMicrosoftExe(word)
 	if err != nil {
 		send <- types.NewMessage(types.TExeNotFound{
 			Name:   word,
@@ -91,7 +92,7 @@ func NewRunner(send chan<- types.Message) (*Runner, error) {
 		})
 		err = nil
 	}
-	runner.paths.excel, err = exec.LookPath(excel)
+	runner.paths.excel, err = findMicrosoftExe(excel)
 	if err != nil {
 		send <- types.NewMessage(types.TExeNotFound{
 			Name:   excel,
@@ -99,7 +100,7 @@ func NewRunner(send chan<- types.Message) (*Runner, error) {
 		})
 		err = nil
 	}
-	runner.paths.powerpoint, err = exec.LookPath(powerpoint)
+	runner.paths.powerpoint, err = findMicrosoftExe(powerpoint)
 	if err != nil {
 		send <- types.NewMessage(types.TExeNotFound{
 			Name:   powerpoint,
@@ -272,6 +273,21 @@ func (self *Runner) open(exe string, file string) error {
 func (self *Runner) fullscreenForegroundWindow() {
 	fg := win.GetForegroundWindow()
 	_ = win.ShowWindow(fg, win.SW_MAXIMIZE)
+}
+
+func findMicrosoftExe(name string) (string, error) {
+	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\`+name, registry.QUERY_VALUE)
+	if err != nil {
+		return "", err
+	}
+	defer k.Close()
+
+	s, _, err := k.GetStringValue("")
+	if err != nil {
+		return "", err
+	}
+
+	return s, err
 }
 
 // var hwnd win.HWND
