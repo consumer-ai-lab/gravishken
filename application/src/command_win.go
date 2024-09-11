@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
+	"strings"
 	"syscall"
 	"time"
 	"unsafe"
@@ -240,21 +241,24 @@ func (self *Runner) open(exe string, file string) error {
 	}
 
 	// wait for app to open and assign the hwnd to self.state
-	fg := win.GetForegroundWindow()
 	go (func() {
-		other := fg
 		timeout := time.After(time.Second * 30)
-		for fg == other {
+		for {
+			hwnd := win.GetForegroundWindow()
+			title, _ := getWindowTitle(hwnd)
+			if strings.Contains(title, tmp_prefix) {
+				self.state.hwnd = hwnd
+				break
+			}
+
 			select {
 			case <-timeout:
 				log.Println("ERROR: open app timeout")
 				return
 			default:
-				other = win.GetForegroundWindow()
 				time.Sleep(time.Millisecond * 50)
 			}
 		}
-		self.state.hwnd = other
 	})()
 
 	// cmd := exec.Command(self.paths.explorer, file)
@@ -288,6 +292,22 @@ func findMicrosoftExe(name string) (string, error) {
 	}
 
 	return s, err
+}
+
+func getWindowTitle(hwnd win.HWND) (string, error) {
+	win := win.GetForegroundWindow()
+
+	// NOTE: error returned by these calls is never nil (i might be wrong, but that is what i see)
+	length, _, _ := getWindowTextLength.Call(uintptr(win))
+	if length == 0 {
+		return "", fmt.Errorf("could not get title")
+	}
+
+	buf := make([]uint16, length+1)
+	_, _, _ = getWindowText.Call(uintptr(win), uintptr(unsafe.Pointer(&buf[0])), uintptr(length+1))
+
+	title := syscall.UTF16ToString(buf)
+	return title, nil
 }
 
 // var hwnd win.HWND

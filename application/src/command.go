@@ -11,10 +11,12 @@ const template_docx = "template.docx"
 const template_xlsx = "template.xlsx"
 const template_pptx = "template.pptx"
 const template_txt = "template.txt"
-const tmp_docx = "tmp_*.docx"
-const tmp_xlsx = "tmp_*.xlsx"
-const tmp_pptx = "tmp_*.pptx"
-const tmp_txt = "tmp_*.txt"
+
+const tmp_prefix = "gravtmp"
+const tmp_docx = "gravtmp_*.docx"
+const tmp_xlsx = "gravtmp_*.xlsx"
+const tmp_pptx = "gravtmp_*.pptx"
+const tmp_txt = "gravtmp_*.txt"
 
 type IRunner interface {
 	SetupEnv() error
