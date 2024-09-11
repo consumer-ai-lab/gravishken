@@ -133,6 +133,8 @@ func (self *App) handleMessages() {
 			}
 		}
 
+		log.Println(msg.Typ.TSName(), msg)
+
 		switch msg.Typ {
 		case types.LoadRoute:
 			val, err := types.Get[types.TLoadRoute](msg)
@@ -188,8 +190,10 @@ func (self *App) handleMessages() {
 				err = self.runner.FocusOrOpenApp(val.Typ, dest)
 				self.notifyErr(err)
 			})()
-		case types.QuitApp:
+		case types.Quit:
 			self.exitFn()
+		case types.QuitApp:
+			self.runner.KillApp()
 		case types.Err:
 			val, err := types.Get[types.TErr](msg)
 			if err != nil {

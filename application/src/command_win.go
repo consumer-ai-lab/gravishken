@@ -12,20 +12,22 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/go-vgo/robotgo"
 	"github.com/tailscale/win"
 	"golang.org/x/sys/windows/registry"
 )
 
 var (
-	user32              = syscall.NewLazyDLL("user32.dll")
-	getForegroundWindow = user32.NewProc("GetForegroundWindow")
-	setWindowLong       = user32.NewProc("SetWindowLongW")
-	getWindowLong       = user32.NewProc("GetWindowLongW")
-	showWindow          = user32.NewProc("ShowWindow")
-	setWindowPos        = user32.NewProc("SetWindowPos")
-	enumWindows         = user32.NewProc("EnumWindows")
-	getWindowText       = user32.NewProc("GetWindowTextW")
-	getWindowTextLength = user32.NewProc("GetWindowTextLengthW")
+	user32                  = syscall.NewLazyDLL("user32.dll")
+	getForegroundWindow     = user32.NewProc("GetForegroundWindow")
+	setWindowLong           = user32.NewProc("SetWindowLongW")
+	getWindowLong           = user32.NewProc("GetWindowLongW")
+	showWindow              = user32.NewProc("ShowWindow")
+	setWindowPos            = user32.NewProc("SetWindowPos")
+	enumWindows             = user32.NewProc("EnumWindows")
+	getWindowText           = user32.NewProc("GetWindowTextW")
+	getWindowTextLength     = user32.NewProc("GetWindowTextLengthW")
+	procGetMessageExtraInfo = user32.NewProc("GetMessageExtraInfo")
 )
 
 const (
@@ -52,7 +54,8 @@ type Runner struct {
 		notepad    string
 		powerpoint string
 	}
-	state struct {
+	webview_hwnd win.HWND
+	state        struct {
 		running_typ types.AppType
 		running_app *exec.Cmd
 		file        string
@@ -158,7 +161,7 @@ func (self *Runner) OpenApp(typ types.AppType, file string) error {
 }
 
 func (self *Runner) KillApp() error {
-	if self.state.running_app != nil {
+	if self.state.running_app == nil {
 		return nil
 	}
 
@@ -180,6 +183,172 @@ func (self *Runner) FocusOpenApp() error {
 	log.Println("focusing app...")
 
 	_ = win.SetForegroundWindow(self.state.hwnd)
+	return nil
+}
+
+func (self *Runner) waitForFocusApp(timeout_sec int) error {
+	timeout := time.After(time.Second * 30)
+
+	fg := win.GetForegroundWindow()
+	for fg != self.state.hwnd {
+		select {
+		case <-timeout:
+			log.Println()
+			return fmt.Errorf("ERROR: open app timeout")
+		default:
+			time.Sleep(time.Millisecond * 50)
+		}
+
+		fg = win.GetForegroundWindow()
+	}
+
+	return nil
+}
+
+func (self *Runner) sendCtrlS() {
+	// VK_S := uint16(win.VkKeyScan('s'))
+	// _ = win.SendMessage(self.state.hwnd, win.WM_KEYDOWN, win.VK_LCONTROL, 0)
+	// _ = win.SendMessage(self.state.hwnd, win.WM_KEYUP, VK_S, 0)
+
+	// _ = win.SendMessage(self.state.hwnd, win.WM_KEYUP, VK_S, 0)
+	// _ = win.SendMessage(self.state.hwnd, win.WM_KEYUP, win.VK_LCONTROL, 0)
+
+	// text := "Hello, World!"
+	// textPtr, _ := syscall.UTF16PtrFromString(text)
+	// ptr := uintptr(unsafe.Pointer(textPtr))
+	// _ = win.PostMessage(self.state.hwnd, win.WM_CHAR, ptr, 0)
+
+	// {
+	// 	k1, _, _ := procGetMessageExtraInfo.Call()
+	// 	k2, _, _ := procGetMessageExtraInfo.Call()
+	// 	inputs := []win.KEYBD_INPUT{
+	// 		{
+	// 			Type: win.INPUT_KEYBOARD,
+	// 			Ki: win.KEYBDINPUT{
+	// 				WVk:         win.VK_CONTROL,
+	// 				WScan:       0,
+	// 				DwFlags:     0,
+	// 				Time:        0,
+	// 				DwExtraInfo: k2,
+	// 			},
+	// 		},
+	// 		{
+	// 			Type: win.INPUT_KEYBOARD,
+	// 			Ki: win.KEYBDINPUT{
+	// 				WVk:         0,
+	// 				WScan:       's',
+	// 				DwFlags:     win.KEYEVENTF_UNICODE,
+	// 				Time:        0,
+	// 				DwExtraInfo: k1,
+	// 			},
+	// 		},
+	// 		// {
+	// 		// 	Type: win.INPUT_KEYBOARD,
+	// 		// 	Ki: win.KEYBDINPUT{
+	// 		// 		WVk:         0,
+	// 		// 		WScan:       's',
+	// 		// 		DwFlags:     win.KEYEVENTF_UNICODE | win.KEYEVENTF_KEYUP,
+	// 		// 		Time:        0,
+	// 		// 		DwExtraInfo: k2,
+	// 		// 	},
+	// 		// },
+	// 		// {
+	// 		// 	Type: win.INPUT_KEYBOARD,
+	// 		// 	Ki: win.KEYBDINPUT{
+	// 		// 		WVk:         win.VK_CONTROL,
+	// 		// 		WScan:       0,
+	// 		// 		DwFlags:     win.KEYEVENTF_KEYUP,
+	// 		// 		Time:        0,
+	// 		// 		DwExtraInfo: 0,
+	// 		// 	},
+	// 		// },
+	// 	}
+
+	// 	log.Println(inputs)
+
+	// 	// Send the input
+	// 	num := win.SendInput(uint32(len(inputs)), unsafe.Pointer(&inputs[0]), int32(unsafe.Sizeof(win.KEYBDINPUT{})))
+	// 	log.Println(num)
+
+	// 	time.Sleep(time.Millisecond * 100)
+	// }
+	// {
+	// 	// k1, _, _ := procGetMessageExtraInfo.Call()
+	// 	// k2, _, _ := procGetMessageExtraInfo.Call()
+	// 	k3, _, _ := procGetMessageExtraInfo.Call()
+	// 	k4, _, _ := procGetMessageExtraInfo.Call()
+	// 	inputs := []win.KEYBD_INPUT{
+	// 		// {
+	// 		// 	Type: win.INPUT_KEYBOARD,
+	// 		// 	Ki: win.KEYBDINPUT{
+	// 		// 		WVk:         win.VK_CONTROL,
+	// 		// 		WScan:       0,
+	// 		// 		DwFlags:     0,
+	// 		// 		Time:        0,
+	// 		// 		DwExtraInfo: k1,
+	// 		// 	},
+	// 		// },
+	// 		// {
+	// 		// 	Type: win.INPUT_KEYBOARD,
+	// 		// 	Ki: win.KEYBDINPUT{
+	// 		// 		WVk:         0,
+	// 		// 		WScan:       's',
+	// 		// 		DwFlags:     win.KEYEVENTF_UNICODE,
+	// 		// 		Time:        0,
+	// 		// 		DwExtraInfo: k2,
+	// 		// 	},
+	// 		// },
+	// 		{
+	// 			Type: win.INPUT_KEYBOARD,
+	// 			Ki: win.KEYBDINPUT{
+	// 				WVk:         0,
+	// 				WScan:       's',
+	// 				DwFlags:     win.KEYEVENTF_UNICODE | win.KEYEVENTF_KEYUP,
+	// 				Time:        0,
+	// 				DwExtraInfo: k3,
+	// 			},
+	// 		},
+	// 		{
+	// 			Type: win.INPUT_KEYBOARD,
+	// 			Ki: win.KEYBDINPUT{
+	// 				WVk:         win.VK_CONTROL,
+	// 				WScan:       0,
+	// 				DwFlags:     win.KEYEVENTF_KEYUP,
+	// 				Time:        0,
+	// 				DwExtraInfo: k4,
+	// 			},
+	// 		},
+	// 	}
+
+	// 	log.Println(inputs)
+
+	// 	// Send the input
+	// 	num := win.SendInput(uint32(len(inputs)), unsafe.Pointer(&inputs[0]), int32(unsafe.Sizeof(win.KEYBDINPUT{})))
+	// 	log.Println(num)
+	// }
+
+	// text := "Hello, World!"
+	// textPtr, _ := syscall.UTF16PtrFromString(text)
+	// ptr := uintptr(unsafe.Pointer(textPtr))
+	// _ = win.SendMessage(self.state.hwnd, win.WM_SETTEXT, 0, ptr)
+
+	// robotgo.TypeStr("Hello, World!")
+	robotgo.KeyTap("s", "ctrl")
+	robotgo.KeyTap("s", "ctrl")
+}
+
+func (self *Runner) forceSaveInApp() error {
+	err := self.FocusOpenApp()
+	if err != nil {
+		return err
+	}
+	err = self.waitForFocusApp(30)
+	if err != nil {
+		return err
+	}
+	self.sendCtrlS()
+	log.Println("ctrl s sent")
+
 	return nil
 }
 

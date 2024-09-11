@@ -10,13 +10,14 @@ export enum AppType {
 export enum Varient {
     Err = 0,
     ExeNotFound = 1,
-    UserLogin = 2,
-    LoadRoute = 3,
-    ReloadUi = 4,
-    GetTest = 5,
-    OpenApp = 6,
-    QuitApp = 7,
-    Unknown = 8,
+    Quit = 2,
+    UserLogin = 3,
+    LoadRoute = 4,
+    ReloadUi = 5,
+    GetTest = 6,
+    OpenApp = 7,
+    QuitApp = 8,
+    Unknown = 9,
 }
 export interface TErr {
     Message: string;
@@ -28,6 +29,9 @@ export interface Message {
 export interface TExeNotFound {
     Name: string;
     ErrMsg: string;
+}
+export interface TQuit {
+
 }
 export interface TUserLogin {
     Username: string;
