@@ -63,7 +63,7 @@ func (this *ControllerClass) AdminChangePasswordHandler(ctx *gin.Context, adminM
 	})
 }
 
-func (this *ControllerClass) AddTestToDB(ctx *gin.Context, test *Test.Test) {
+func (this *ControllerClass) AddTestToDB(ctx *gin.Context, test *Test.BatchTests) {
 	testCollection := this.TestCollection
 	err := helper.Add_Model_To_DB(testCollection, test)
 

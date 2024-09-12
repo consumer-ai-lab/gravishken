@@ -19,6 +19,15 @@ export enum Varient {
     QuitApp = 8,
     Unknown = 9,
 }
+export enum FileType {
+    PPTX = "pptx",
+    DOCX = "docx",
+    XLSX = "xlsx",
+}
+export enum TestType {
+    FileTest = "file",
+    TypingTest = "typing",
+}
 export interface TErr {
     Message: string;
 }
@@ -52,4 +61,79 @@ export interface TOpenApp {
 }
 export interface TQuitApp {
 
+}
+export interface Time {
+
+}
+export interface UserSubmission {
+    test: number[];
+    startTime: Time;
+    endTime: Time;
+    elapsedTime: number;
+    submissionReceived: boolean;
+    readingElapsedTime: number;
+    readingSubmissionReceived: boolean;
+    submissionFolderId: string;
+    mergedFileId: string;
+    wpm: number;
+    wpmNormal: number;
+    resultDownloaded: boolean;
+}
+export interface User {
+    id?: number[];
+    name: string;
+    username: string;
+    password: string;
+    testPassword: string;
+    batch: string;
+    tests?: UserSubmission;
+}
+
+export interface UserBatchRequestData {
+    From: number;
+    To: number;
+    ResultDownloaded: boolean;
+}
+export interface UserLoginRequest {
+    username: string;
+    password: string;
+    testPassword: string;
+}
+export interface UserUpdateRequest {
+    username: string;
+    property: string;
+    value: string[];
+}
+export interface Test {
+    testId: number[];
+    testType: TestType;
+    fileType?: FileType;
+    typingTestText?: string;
+}
+export interface BatchTests {
+    batchId: number[];
+    tests: Test[];
+    testDuration: number;
+    password: string;
+    startTime: Time;
+    endTime: Time;
+}
+
+export interface Admin {
+    id?: number[];
+    username: string;
+    password: string;
+    token: string[];
+}
+export interface AdminChangePassword {
+    username: string;
+    newPassword: string;
+}
+export interface AdminRequest {
+    username: string;
+    token: string;
+}
+export interface Batch {
+    id?: number[];
+    batchName: string;
 }
