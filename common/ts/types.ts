@@ -12,12 +12,13 @@ export enum Varient {
     ExeNotFound = 1,
     Quit = 2,
     UserLogin = 3,
-    LoadRoute = 4,
-    ReloadUi = 5,
-    GetTest = 6,
-    OpenApp = 7,
-    QuitApp = 8,
-    Unknown = 9,
+    WarnUser = 4,
+    LoadRoute = 5,
+    ReloadUi = 6,
+    GetTest = 7,
+    OpenApp = 8,
+    QuitApp = 9,
+    Unknown = 10,
 }
 export enum FileType {
     PPTX = "pptx",
@@ -46,6 +47,9 @@ export interface TUserLogin {
     Username: string;
     Password: string;
     TestCode: string;
+}
+export interface TWarnUser {
+    Message: string;
 }
 export interface TLoadRoute {
     Route: string;

@@ -52,6 +52,13 @@ function WebSocketHandler() {
       disable.push(d);
     });
 
+    server.server.add_callback(types.Varient.WarnUser, async (res) => {
+      console.error('Warning to the user:', res.Message);
+      setErrorMessageDeffered(res.Message);  
+    }).then(d => {
+      disable.push(d);
+    });
+
     return () => {
       for (let fn of disable) {
         fn();

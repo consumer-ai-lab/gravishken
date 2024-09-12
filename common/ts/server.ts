@@ -19,6 +19,9 @@ export type Message = {
     Typ: types.Varient.LoadRoute,
     Val: types.TLoadRoute,
 } | {
+    Typ: types.Varient.WarnUser,
+    Val: types.TWarnUser,
+} | {
     Typ: types.Varient.ReloadUi,
     Val: types.TReloadUi,
 } | {
@@ -114,6 +117,7 @@ export class Server {
             case types.Varient.ExeNotFound:
             case types.Varient.LoadRoute:
             case types.Varient.Err:
+            case types.Varient.WarnUser:
             case types.Varient.GetTest:
                 break;
             case types.Varient.ReloadUi:
