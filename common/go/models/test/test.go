@@ -9,21 +9,62 @@ import (
 type FileType string
 
 const (
-	PDF FileType = "pdf"
-	DOC FileType = "doc"
-	TXT FileType = "txt"
+	PPTX FileType = "pptx"
+	DOCX FileType = "docx"
+	XLSX FileType = "xlsx"
 )
 
-type Test struct {
-	ID             primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	FileType       FileType           `bson:"fileType" json:"fileType" binding:"required"`
-	TimeSlot       time.Time          `bson:"timeSlot" json:"timeSlot" binding:"required"`
-	Password       string             `bson:"password" json:"password" binding:"required"`
-	DriveID        string             `bson:"driveId,omitempty" json:"driveId,omitempty"`
-	TypingTestText string             `bson:"typingTestText" json:"typingTestText"`
-	BatchNumber    string             `bson:"batch" json:"batch" binding:"required"`
+func (self FileType) TSName() string {
+	switch self {
+	case DOCX:
+		return "DOCX"
+	case XLSX:
+		return "XLSX"
+	case PPTX:
+		return "PPTX"
+	default:
+		return "Unknown"
+	}
 }
 
-func (test *Test) GetCollectionName() string {
+type TestType string
+
+const (
+	TypingTest TestType = "typing"
+	FileTest   TestType = "file"
+)
+
+func (self TestType) TSName() string {
+	switch self {
+	case TypingTest:
+		return "TypingTest"
+	case FileTest:
+		return "FileTest"
+	default:
+		return "Unknown"
+	}
+}
+
+type BatchTests struct {
+	BatchId      primitive.ObjectID `bson:"batchId" json:"batchId"`
+	Tests        []Test             `bson:"tests" json:"tests"`
+	TestDuration int                `bson:"testDuration" json:"testDuration"`
+	Password     string             `bson:"password" json:"password" binding:"required"`
+	StartTime    time.Time          `bson:"startTime" json:"startTime"`
+	EndTime      time.Time          `bson:"endTime" json:"endTime"`
+}
+
+type Test struct {
+	TestId   primitive.ObjectID `bson:"testId" json:"testId"`
+	TestType TestType           `bson:"testType" json:"testType"`
+
+	// application tests
+	FileType FileType `bson:"fileType,omitempty" json:"fileType,omitempty"`
+
+	// typing test
+	TypingTestText string `bson:"typingTestText,omitempty" json:"typingTestText,omitempty"`
+}
+
+func (test *BatchTests) GetCollectionName() string {
 	return "tests"
 }

@@ -1,10 +1,10 @@
 package route
 
 import (
+	"common/models/admin"
 	Batch "common/models/batch"
 	Test "common/models/test"
 	User "common/models/user"
-	"common/models/admin"
 	"fmt"
 	"server/src/controllers"
 
@@ -69,8 +69,8 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 	})
 
 	adminRoute.POST("/add_test", func(ctx *gin.Context) {
-		
-		var testModel Test.Test
+
+		var testModel Test.BatchTests
 
 		if err := ctx.ShouldBindJSON(&testModel); err != nil {
 			ctx.JSON(500, gin.H{"error": "Invalid request body"})
@@ -89,7 +89,6 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 			return
 		}
 
-		
 		allControllers.UpdateUserData(ctx, &userUpdateRequest)
 
 	})
@@ -154,7 +153,7 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 	adminRoute.POST("/update_typing_test_text", func(ctx *gin.Context) {
 		var UpdateTypingTestTextRequest struct {
 			TypingTestText string `json:"typingTestText"`
-			TestPassword string `json:"testPassword"`
+			TestPassword   string `json:"testPassword"`
 		}
 
 		if err := ctx.ShouldBindJSON(&UpdateTypingTestTextRequest); err != nil {

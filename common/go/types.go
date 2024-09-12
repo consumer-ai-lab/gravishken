@@ -1,6 +1,10 @@
 package types
 
 import (
+	"common/models/admin"
+	"common/models/batch"
+	"common/models/test"
+	"common/models/user"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -200,6 +204,21 @@ func DumpTypes(dir string) {
 		Add(TQuitApp{}).
 		AddEnum([]AppType{TXT, DOCX, XLSX, PPTX}).
 		AddEnum(allVarients)
+
+	converter = converter.
+		Add(user.User{}).
+		Add(user.UserSubmission{}).
+		Add(user.UserBatchRequestData{}).
+		Add(user.UserLoginRequest{}).
+		Add(user.UserUpdateRequest{}).
+		Add(test.BatchTests{}).
+		Add(test.Test{}).
+		Add(admin.Admin{}).
+		Add(admin.AdminChangePassword{}).
+		Add(admin.AdminRequest{}).
+		Add(batch.Batch{}).
+		AddEnum([]test.FileType{test.PPTX, test.DOCX, test.XLSX}).
+		AddEnum([]test.TestType{test.FileTest, test.TypingTest})
 
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {
