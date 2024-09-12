@@ -4,6 +4,7 @@ package main
 
 import (
 	types "common"
+	"context"
 	"fmt"
 	"log"
 	"os/exec"
@@ -54,6 +55,7 @@ type Runner struct {
 		notepad    string
 		powerpoint string
 	}
+	send         chan<- types.Message
 	webview_hwnd win.HWND
 	state        struct {
 		running_typ types.AppType
@@ -66,6 +68,7 @@ type Runner struct {
 
 func NewRunner(send chan<- types.Message) (*Runner, error) {
 	runner := &Runner{}
+	runner.send = send
 
 	var err error
 	runner.paths.cmd, err = exec.LookPath(cmd)
@@ -124,6 +127,7 @@ func (self *Runner) SetupEnv() error {
 	self.explorer_killed = true
 	self.disableTitlebar()
 	self.fullscreenForegroundWindow()
+	self.webview_hwnd = win.GetForegroundWindow()
 	return err
 }
 
@@ -401,6 +405,33 @@ func (self *Runner) kill(name string) error {
 	return err
 }
 
+// TODO: this is MEGA bad if the test app opens a window
+func (self *Runner) preventDistractions(ctx context.Context) {
+	for {
+		time.Sleep(time.Millisecond * 100)
+
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			hwnd := win.GetForegroundWindow()
+			title, _ := getWindowTitle(hwnd)
+			log.Println(title)
+			if hwnd == self.webview_hwnd {
+				continue
+			}
+			if hwnd == self.state.hwnd {
+				continue
+			}
+
+			log.Println("bad window detected")
+			_ = win.SetForegroundWindow(self.webview_hwnd)
+			_ = win.PostMessage(hwnd, win.WM_CLOSE, 0, 0)
+			self.send <- types.NewMessage(types.TWarnUser{Message: "Unknown open application detected. Please do not open any other application during test"})
+		}
+	}
+}
+
 func (self *Runner) open(exe string, file string) error {
 	if exe == "" {
 		return fmt.Errorf("executable unspecified")
@@ -408,6 +439,9 @@ func (self *Runner) open(exe string, file string) error {
 	if file == "" {
 		return fmt.Errorf("file path unspecified")
 	}
+
+	ctx, close := context.WithCancel(context.Background())
+	defer close()
 
 	// wait for app to open and assign the hwnd to self.state
 	go (func() {
@@ -417,6 +451,7 @@ func (self *Runner) open(exe string, file string) error {
 			title, _ := getWindowTitle(hwnd)
 			if strings.Contains(title, tmp_prefix) {
 				self.state.hwnd = hwnd
+				go self.preventDistractions(ctx)
 				break
 			}
 
