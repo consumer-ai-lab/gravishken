@@ -57,6 +57,7 @@ type Runner struct {
 	}
 	send         chan<- types.Message
 	webview_hwnd win.HWND
+	this_pid     uint32
 	state        struct {
 		running_typ types.AppType
 		running_app *exec.Cmd
@@ -128,6 +129,7 @@ func (self *Runner) SetupEnv() error {
 	self.disableTitlebar()
 	self.fullscreenForegroundWindow()
 	self.webview_hwnd = win.GetForegroundWindow()
+	_ = win.GetWindowThreadProcessId(self.webview_hwnd, &self.this_pid)
 	return err
 }
 
@@ -405,7 +407,7 @@ func (self *Runner) kill(name string) error {
 	return err
 }
 
-// TODO: this is MEGA bad if the test app opens a window
+// TODO: disallow alt + tab
 func (self *Runner) preventDistractions(ctx context.Context) {
 	for {
 		time.Sleep(time.Millisecond * 100)
@@ -416,17 +418,32 @@ func (self *Runner) preventDistractions(ctx context.Context) {
 		default:
 			hwnd := win.GetForegroundWindow()
 			title, _ := getWindowTitle(hwnd)
+			child := win.GetParent(hwnd)
+			var pid uint32
+			_ = win.GetWindowThreadProcessId(hwnd, &pid)
 			log.Println(title)
-			if hwnd == self.webview_hwnd {
+			if hwnd == self.webview_hwnd || child == self.webview_hwnd {
 				continue
 			}
 			if hwnd == self.state.hwnd {
 				continue
 			}
+			// this check allows any windows created within the same process
+			if child == self.state.hwnd {
+				continue
+			}
+
+			// NOTE: this allows user to create/open new windows from the currently open app
+			// if pid == uint32(self.state.running_app.Process.Pid) || pid == self.this_pid {
+			// 	continue
+			// }
 
 			log.Println("bad window detected")
 			_ = win.SetForegroundWindow(self.webview_hwnd)
-			_ = win.PostMessage(hwnd, win.WM_CLOSE, 0, 0)
+			_ = win.BringWindowToTop(self.webview_hwnd)
+			_ = win.ShowWindow(hwnd, win.SW_SHOWMINIMIZED)
+			_ = win.SetWindowPos(hwnd, 1, 0, 0, 0, 0, win.SWP_NOMOVE|win.SWP_NOSIZE)
+			// _ = win.PostMessage(hwnd, win.WM_CLOSE, 0, 0)
 			self.send <- types.NewMessage(types.TWarnUser{Message: "Unknown open application detected. Please do not open any other application during test"})
 		}
 	}
