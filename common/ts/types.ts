@@ -20,14 +20,11 @@ export enum Varient {
     QuitApp = 9,
     Unknown = 10,
 }
-export enum FileType {
-    PPTX = "pptx",
-    DOCX = "docx",
-    XLSX = "xlsx",
-}
 export enum TestType {
-    FileTest = "file",
     TypingTest = "typing",
+    DocxTest = "docx",
+    ExcelTest = "excel",
+    WordTest = "word",
 }
 export interface TErr {
     Message: string;
@@ -85,7 +82,6 @@ export interface UserSubmission {
 }
 export interface User {
     id?: number[];
-    name: string;
     username: string;
     password: string;
     testPassword: string;
@@ -109,29 +105,16 @@ export interface UserUpdateRequest {
     value: string[];
 }
 export interface Test {
-    testId: number[];
-    testType: TestType;
-    fileType?: FileType;
-    typingTestText?: string;
+    id?: number[];
+    type: TestType;
+    duration: number;
+    file?: string;
+    typingText?: string;
 }
-export interface BatchTests {
-    batchId: number[];
-    tests: Test[];
-    testDuration: number;
-    password: string;
-    startTime: Time;
-    endTime: Time;
-}
-
 export interface Admin {
     id?: number[];
     username: string;
     password: string;
-    token: string[];
-}
-export interface AdminChangePassword {
-    username: string;
-    newPassword: string;
 }
 export interface AdminRequest {
     username: string;
@@ -139,5 +122,6 @@ export interface AdminRequest {
 }
 export interface Batch {
     id?: number[];
-    batchName: string;
+    name: string;
+    tests: string[];
 }

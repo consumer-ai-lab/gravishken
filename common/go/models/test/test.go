@@ -13,6 +13,22 @@ const (
 	WordTest   TestType = "word"
 )
 
+func (self TestType) TSName() string {
+	switch self {
+	case TypingTest:
+		return "TypingTest"
+	case DocxTest:
+		return "DocxTest"
+	case ExcelTest:
+		return "ExcelTest"
+	case WordTest:
+		return "WordTest"
+	default:
+		return "Unknown"
+	}
+}
+
+
 type Test struct {
 	ID         primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
 	Type       TestType           `bson:"type" json:"type"`

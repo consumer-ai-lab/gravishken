@@ -6,6 +6,8 @@ import (
 	route "server/src/routes"
 
 	helmet "github.com/danielkov/gin-helmet"
+	types "common"
+	"path/filepath"
 	"github.com/joho/godotenv"
 
 	"log"
@@ -25,6 +27,15 @@ func main() {
 	}
 	log.Println("I am updated code..............")
 	log.Println("Loaded .env file")
+
+	if build_mode == "DEV" {
+		root, ok := os.LookupEnv("PROJECT_ROOT")
+		if !ok {
+			panic("'PROJECT_ROOT' not set")
+		}
+		ts_dir := filepath.Join(root, "common", "ts")
+		types.DumpTypes(ts_dir)
+	}
 
 	port, ok := os.LookupEnv("SERVER_PORT")
 	if !ok {
