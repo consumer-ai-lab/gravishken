@@ -11,7 +11,6 @@ import (
 
 type User struct {
 	ID           primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	Name         string             `bson:"name" json:"name" binding:"required"`
 	Username     string             `bson:"username" json:"username" binding:"required"`
 	Password     string             `bson:"password" json:"password" binding:"required"`
 	TestPassword string             `bson:"testPassword" json:"testPassword" binding:"required"`

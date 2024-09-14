@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-
 	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/mongo"
 )
