@@ -11,6 +11,7 @@ import UpdateUserData from './components/UpdateUserData'
 import GetBatchwiseData from './components/GetBatchwiseData'
 import IncreaseTestTime from './components/IncreaseTestTime'
 import SetUserData from './components/SetUserData'
+import Login from './components/login'
 
 const router = createBrowserRouter([
   {
@@ -47,6 +48,10 @@ const router = createBrowserRouter([
       },
     ],
   },
+  {
+    path:'/login',
+    element:<Login/>
+  }
 ])
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
