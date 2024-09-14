@@ -9,11 +9,11 @@ import (
 func TestRoutes(allControllers *controllers.ControllerClass, route *gin.Engine){
 	testRoute := route.Group("/test")
 
-	testRoute.GET("/get_question_paper/:password", func(ctx *gin.Context) {
+	testRoute.GET("/get_question_paper/:batch_name", func(ctx *gin.Context) {
 		
-		password := ctx.Param("password")
+		batch_name := ctx.Param("batch_name")
 
-		questionPaper, err := allControllers.GetQuestionPaperHandler(ctx, password)
+		questionPaper, err := allControllers.GetQuestionPaperHandler(ctx, batch_name)
 		if err != nil {
 			ctx.JSON(500, gin.H{
 				"message": "Error while fetching question paper",

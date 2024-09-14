@@ -213,20 +213,18 @@ func DumpTypes(dir string) {
 		AddEnum([]AppType{TXT, DOCX, XLSX, PPTX}).
 		AddEnum(allVarients)
 
-	converter = converter.
+		converter = converter.
 		Add(user.User{}).
 		Add(user.UserSubmission{}).
 		Add(user.UserBatchRequestData{}).
 		Add(user.UserLoginRequest{}).
 		Add(user.UserUpdateRequest{}).
-		Add(test.BatchTests{}).
 		Add(test.Test{}).
 		Add(admin.Admin{}).
-		Add(admin.AdminChangePassword{}).
 		Add(admin.AdminRequest{}).
 		Add(batch.Batch{}).
-		AddEnum([]test.FileType{test.PPTX, test.DOCX, test.XLSX}).
-		AddEnum([]test.TestType{test.FileTest, test.TypingTest})
+		AddEnum([]test.TestType{test.TypingTest, test.DocxTest, test.ExcelTest, test.WordTest})
+
 
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {

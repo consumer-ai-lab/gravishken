@@ -3,7 +3,7 @@ package route
 import (
 	"common/models/admin"
 	Batch "common/models/batch"
-	Test "common/models/test"
+	// Test "common/models/test"
 	User "common/models/user"
 	"fmt"
 	"server/src/controllers"
@@ -35,16 +35,6 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 		allControllers.AdminRegisterHandler(ctx, &adminModel)
 	})
 
-	// change password not working properly
-	adminRoute.POST("/changepassword", func(ctx *gin.Context) {
-		var adminModel admin.AdminChangePassword
-		if err := ctx.ShouldBindJSON(&adminModel); err != nil {
-			ctx.JSON(400, gin.H{"error": "Invalid request body"})
-			return
-		}
-
-		allControllers.AdminChangePasswordHandler(ctx, &adminModel)
-	})
 
 	adminRoute.POST("/add_all_users", func(ctx *gin.Context) {
 		var FilePathRequest struct {
@@ -70,15 +60,15 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 
 	adminRoute.POST("/add_test", func(ctx *gin.Context) {
 
-		var testModel Test.BatchTests
+		// var testModel Test.BatchTests
 
-		if err := ctx.ShouldBindJSON(&testModel); err != nil {
-			ctx.JSON(500, gin.H{"error": "Invalid request body"})
-			return
-		}
-		fmt.Println("testModel: ", testModel)
+		// if err := ctx.ShouldBindJSON(&testModel); err != nil {
+		// 	ctx.JSON(500, gin.H{"error": "Invalid request body"})
+		// 	return
+		// }
+		// fmt.Println("testModel: ", testModel)
 
-		allControllers.AddTestToDB(ctx, &testModel)
+		// allControllers.AddTestToDB(ctx, &testModel)
 	})
 
 	adminRoute.POST("/update_user_data", func(ctx *gin.Context) {

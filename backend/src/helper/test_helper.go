@@ -1,34 +1,47 @@
 package helper
 
 import (
-	TEST "common/models/test"
+	"common/models/batch"
+	"common/models/test"
 	"context"
 	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func GetQuestionPaper(Collection *mongo.Collection, password string) (TEST.BatchTests, error) {
-	var questionPaper TEST.BatchTests
-
-	err := Collection.FindOne(context.TODO(), bson.M{"password": password}).Decode(&questionPaper)
-
+func GetTestsByBatch(batchCollection *mongo.Collection, testCollection *mongo.Collection, batchName string) ([]test.Test, error) {
+	var batchDoc batch.Batch
+	err := batchCollection.FindOne(context.TODO(), bson.M{"name": batchName}).Decode(&batchDoc)
 	if err != nil {
-		return TEST.BatchTests{}, err
+		return nil, fmt.Errorf("error finding batch: %v", err)
 	}
-	return questionPaper, nil
+
+	var tests []test.Test
+	cursor, err := testCollection.Find(context.TODO(), bson.M{"_id": bson.M{"$in": batchDoc.Tests}})
+	if err != nil {
+		return nil, fmt.Errorf("error finding tests: %v", err)
+	}
+	defer cursor.Close(context.TODO())
+
+	err = cursor.All(context.TODO(), &tests)
+	if err != nil {
+		return nil, fmt.Errorf("error decoding tests: %v", err)
+	}
+
+	return tests, nil
 }
 
-func GetQuestionPaperByBatchNumber(Collection *mongo.Collection, batchNumber string) (TEST.BatchTests, error) {
-	var questionPaper TEST.BatchTests
-
-	fmt.Println("Inside getQuestionPaperByBatchNumber and batch number: ", batchNumber)
-
-	err := Collection.FindOne(context.TODO(), bson.M{"batch": batchNumber}).Decode(&questionPaper)
-
+func GetTestByID(testCollection *mongo.Collection, testID primitive.ObjectID) (*test.Test, error) {
+	var testDoc test.Test
+	err := testCollection.FindOne(context.TODO(), bson.M{"_id": testID}).Decode(&testDoc)
 	if err != nil {
-		return TEST.BatchTests{}, err
+		if err == mongo.ErrNoDocuments {
+			return nil, fmt.Errorf("test not found")
+		}
+		return nil, fmt.Errorf("error finding test: %v", err)
 	}
-	return questionPaper, nil
+	return &testDoc, nil
 }
+
