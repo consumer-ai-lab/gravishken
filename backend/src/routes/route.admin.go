@@ -2,21 +2,33 @@ package route
 
 import (
 	"common/models/admin"
-	Batch "common/models/batch"
-	// Test "common/models/test"
-	User "common/models/user"
-	"server/src/helper"
+	"common/models/batch"
+
+	"common/models/user"
+	"context"
 	"fmt"
 	"server/src/controllers"
-	"context"
+	"server/src/middleware"
+	"server/src/types"
+
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) {
-	adminRoute := route.Group("/admin")
+	unauthenticatedAdminRoutes := route.Group("/admin")
 
-	adminRoute.POST("/login", func(ctx *gin.Context) {
+	unauthenticatedAdminRoutes.POST("/register", func(ctx *gin.Context) {
+		var adminModel admin.Admin
+		if err := ctx.ShouldBindJSON(&adminModel); err != nil {
+			ctx.JSON(400, gin.H{"error": "Invalid request body"})
+			return
+		}
+
+		allControllers.AdminRegisterHandler(ctx, &adminModel)
+	})
+
+	unauthenticatedAdminRoutes.POST("/login", func(ctx *gin.Context) {
 		var adminModel admin.Admin
 		fmt.Println("Admin login route")
 		if err := ctx.ShouldBindJSON(&adminModel); err != nil {
@@ -27,28 +39,22 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 		allControllers.AdminLoginHandler(ctx, &adminModel)
 	})
 
-	adminRoute.GET("/auth-status", func(ctx *gin.Context) {
-		
-		token, err := ctx.Cookie("admin_token")
-		if err != nil {
-			ctx.JSON(401, gin.H{
-				"isAuthenticated": false,
-				"error":           "No token found",
+	authenticatedAdminRoutes := route.Group("/admin")
+	authenticatedAdminRoutes.Use(middleware.AdminJWTAuthMiddleware(allControllers.AdminCollection))
+
+	authenticatedAdminRoutes.GET("/auth-status", func(ctx *gin.Context) {
+		anyclaims, ok := ctx.Get("claims")
+		if !ok {
+			ctx.JSON(500, gin.H{
+				"isAuthenticated": true,
+				"error":           "Error fetching admin info",
 			})
 			return
 		}
-	
-		isValid, username, err := helper.ValidateAdminToken(token)
-		if err != nil || !isValid {
-			ctx.JSON(401, gin.H{
-				"isAuthenticated": false,
-				"error":           "Invalid token",
-			})
-			return
-		}
-	
+		claims, ok := anyclaims.(*types.Claims)
+
 		var adminInfo admin.Admin
-		err = allControllers.AdminCollection.FindOne(context.TODO(), bson.M{"username": username}).Decode(&adminInfo)
+		err := allControllers.AdminCollection.FindOne(context.TODO(), bson.M{"username": claims.Username}).Decode(&adminInfo)
 		if err != nil {
 			ctx.JSON(500, gin.H{
 				"isAuthenticated": true,
@@ -56,28 +62,17 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 			})
 			return
 		}
-	
+
 		// Remove sensitive information
 		adminInfo.Password = ""
-	
+
 		ctx.JSON(200, gin.H{
 			"isAuthenticated": true,
 			"adminInfo":       adminInfo,
 		})
 	})
 
-	adminRoute.POST("/register", func(ctx *gin.Context) {
-		var adminModel admin.Admin
-		if err := ctx.ShouldBindJSON(&adminModel); err != nil {
-			ctx.JSON(400, gin.H{"error": "Invalid request body"})
-			return
-		}
-
-		allControllers.AdminRegisterHandler(ctx, &adminModel)
-	})
-
-
-	adminRoute.POST("/add_all_users", func(ctx *gin.Context) {
+	authenticatedAdminRoutes.POST("/add_all_users", func(ctx *gin.Context) {
 		var FilePathRequest struct {
 			FilePath string `json:"filePath" binding:"required"`
 		}
@@ -89,8 +84,8 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 		allControllers.AddAllUsersBacthesToDb(ctx, FilePathRequest.FilePath)
 	})
 
-	adminRoute.POST("/add_batch", func(ctx *gin.Context) {
-		var batchData Batch.Batch
+	authenticatedAdminRoutes.POST("/add_batch", func(ctx *gin.Context) {
+		var batchData batch.Batch
 		if err := ctx.ShouldBindJSON(&batchData); err != nil {
 			ctx.JSON(400, gin.H{"error": "Invalid request body"})
 			return
@@ -99,7 +94,7 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 		allControllers.AddBatchToDB(ctx, &batchData)
 	})
 
-	adminRoute.POST("/add_test", func(ctx *gin.Context) {
+	authenticatedAdminRoutes.POST("/add_test", func(ctx *gin.Context) {
 
 		// var testModel Test.BatchTests
 
@@ -112,8 +107,8 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 		// allControllers.AddTestToDB(ctx, &testModel)
 	})
 
-	adminRoute.POST("/update_user_data", func(ctx *gin.Context) {
-		var userUpdateRequest User.UserUpdateRequest
+	authenticatedAdminRoutes.POST("/update_user_data", func(ctx *gin.Context) {
+		var userUpdateRequest user.UserUpdateRequest
 
 		if err := ctx.ShouldBindJSON(&userUpdateRequest); err != nil {
 			ctx.JSON(500, gin.H{"error": "Invalid request body"})
@@ -124,7 +119,7 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 
 	})
 
-	adminRoute.POST("/increase_test_time", func(ctx *gin.Context) {
+	authenticatedAdminRoutes.POST("/increase_test_time", func(ctx *gin.Context) {
 		var requestData struct {
 			Param          string   `json:"param"`
 			Username       []string `json:"username"`
@@ -144,7 +139,7 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 
 	})
 
-	adminRoute.POST("/get_batchwise_data", func(ctx *gin.Context) {
+	authenticatedAdminRoutes.POST("/get_batchwise_data", func(ctx *gin.Context) {
 		var batchData struct {
 			Param       string `json:"param"`
 			BatchNumber string `json:"batchNumber"`
@@ -160,7 +155,7 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 
 	})
 
-	adminRoute.POST("/set_user_data", func(ctx *gin.Context) {
+	authenticatedAdminRoutes.POST("/set_user_data", func(ctx *gin.Context) {
 		var userRequest struct {
 			Username         string `json:"username"`
 			Param            string `json:"param"`
@@ -174,14 +169,14 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 			return
 		}
 
-		allControllers.SetUserData(ctx, userRequest.Param, &User.UserBatchRequestData{
+		allControllers.SetUserData(ctx, userRequest.Param, &user.UserBatchRequestData{
 			From:             userRequest.From,
 			To:               userRequest.To,
 			ResultDownloaded: userRequest.ResultDownloaded,
 		}, userRequest.Username)
 	})
 
-	adminRoute.POST("/update_typing_test_text", func(ctx *gin.Context) {
+	authenticatedAdminRoutes.POST("/update_typing_test_text", func(ctx *gin.Context) {
 		var UpdateTypingTestTextRequest struct {
 			TypingTestText string `json:"typingTestText"`
 			TestPassword   string `json:"testPassword"`

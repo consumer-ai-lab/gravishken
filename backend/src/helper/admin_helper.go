@@ -32,7 +32,7 @@ func RegisterAdmin(Collection *mongo.Collection, Admin types.ModelInterface) err
 func AdminLogin(Collection *mongo.Collection, Admin types.ModelInterface) (string, error) {
 	username := Admin.(*admin.Admin).Username
 	password := Admin.(*admin.Admin).Password
-	secretKey := []byte("TODO:add-a-secret-key-from-env") 
+	secretKey := []byte("TODO:add-a-secret-key-from-env")
 
 	var user admin.Admin
 	err := Collection.FindOne(context.TODO(), bson.M{"username": username}).Decode(&user)
@@ -68,7 +68,7 @@ func AdminLogin(Collection *mongo.Collection, Admin types.ModelInterface) (strin
 	return tokenString, nil
 }
 
-func ValidateAdminToken(tokenString string) (bool, string, error) {
+func ValidateAdminToken(tokenString string) (*types.Claims, error) {
 	secretKey := []byte("TODO:add-a-secret-key-from-env") // Use the same secret key as in AdminLogin
 
 	token, err := jwt.ParseWithClaims(tokenString, &types.Claims{}, func(token *jwt.Token) (interface{}, error) {
@@ -79,16 +79,15 @@ func ValidateAdminToken(tokenString string) (bool, string, error) {
 	})
 
 	if err != nil {
-		return false, "", fmt.Errorf("error parsing token: %v", err)
+		return nil, fmt.Errorf("error parsing token: %v", err)
 	}
 
 	if claims, ok := token.Claims.(*types.Claims); ok && token.Valid {
-		return true, claims.Username, nil
+		return claims, nil
 	}
 
-	return false, "", fmt.Errorf("invalid token")
+	return nil, fmt.Errorf("invalid token")
 }
-
 
 func UpdateTypingTestText(collection *mongo.Collection, testID string, typingText string) error {
 	_, err := collection.UpdateOne(

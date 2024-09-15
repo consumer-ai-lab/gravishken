@@ -7,8 +7,10 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	"strings"
 
 	types "common"
+	"server/src/auth"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
@@ -154,10 +156,28 @@ func AppRoutes(route *gin.Engine) {
 	}
 
 	wsHandler := func(c *gin.Context) {
-		c.Request.ParseForm()
-		username := c.Request.FormValue("username")
-		if len(username) == 0 {
-			c.JSON(400, gin.H{"error": "username query param not found"})
+		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" {
+			c.JSON(401, gin.H{"error": "Authorization header is required"})
+			return
+		}
+
+		bearerToken := strings.Split(authHeader, " ")
+		if len(bearerToken) != 2 || strings.ToLower(bearerToken[0]) != "bearer" {
+			c.JSON(401, gin.H{"error": "Invalid authorization header format"})
+			return
+		}
+		token := bearerToken[1]
+
+		claims, err := auth.VerifyJWT(token)
+		if err != nil {
+			c.JSON(401, gin.H{"error": "Invalid or expired token"})
+			return
+		}
+
+		username, ok := claims["username"].(string)
+		if !ok {
+			c.JSON(401, gin.H{"error": "Username not found in token"})
 			return
 		}
 

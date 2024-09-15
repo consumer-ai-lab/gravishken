@@ -72,12 +72,12 @@ func (self *App) login(user_login *types.TUserLogin) error {
 	return nil
 }
 
-func (self *App) maintainConnection(user_login *types.TUserLogin) {
+func (self *App) maintainConnection() {
 	if self.state.connection_started {
 		return
 	}
 	self.state.connection_started = true
-	go self.client.maintainConn(user_login.Username)
+	go self.client.maintainConn()
 	go self.handleServerMessages()
 }
 

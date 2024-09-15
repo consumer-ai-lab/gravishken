@@ -2,9 +2,9 @@ package route
 
 import (
 	User "common/models/user"
-	"server/src/controllers"
-
 	"github.com/gin-gonic/gin"
+	"server/src/controllers"
+	middleware "server/src/middleware"
 )
 
 func UserRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) {
@@ -18,5 +18,11 @@ func UserRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) 
 		}
 
 		allControllers.UserLoginHandler(ctx, &userModel)
+	})
+
+	authenticated := userRoute.Group("/")
+	authenticated.Use(middleware.UserJWTAuthMiddleware(allControllers.UserCollection))
+
+	authenticated.POST("/some_protected_route", func(ctx *gin.Context) {
 	})
 }

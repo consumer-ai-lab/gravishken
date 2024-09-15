@@ -126,11 +126,11 @@ func (self *Client) login(user_login *types.TUserLogin) error {
 	return nil
 }
 
-func (self *Client) maintainConn(username string) {
+func (self *Client) maintainConn() {
 	for {
 		ctx, close := context.WithCancel(context.Background())
 
-		err := self.connect(username, ctx, close)
+		err := self.connect(ctx, close)
 
 		if err != nil {
 			log.Println(err)
@@ -153,8 +153,7 @@ func (self *Client) maintainConn(username string) {
 	}
 }
 
-func (self *Client) connect(username string, exit context.Context, cancel context.CancelFunc) error {
-	// TODO: with jwt auth
+func (self *Client) connect(exit context.Context, cancel context.CancelFunc) error {
 	url, err := url.Parse(server_url)
 	if err != nil {
 		return err
@@ -162,11 +161,10 @@ func (self *Client) connect(username string, exit context.Context, cancel contex
 	url.Scheme = "ws"
 	url.Path = "/ws"
 
-	q := url.Query()
-	q.Set("username", username)
-	url.RawQuery = q.Encode()
+	header := http.Header{}
+	header.Add("Authorization", "Bearer "+self.jwt)
 
-	conn, _, err := websocket.DefaultDialer.Dial(url.String(), nil)
+	conn, _, err := websocket.DefaultDialer.Dial(url.String(), header)
 	if err != nil {
 		return err
 	}
@@ -218,6 +216,7 @@ func (self *Client) getTest(testData types.TGetTest) (TEST.Test, error) {
 	}
 	req.Header.Set("content-type", "application/json")
 	req.Header.Set("test_code", test_code)
+	req.Header.Set("Authorization", "Bearer "+self.jwt)
 
 	resp, err := self.client.Do(req)
 	if err != nil {
