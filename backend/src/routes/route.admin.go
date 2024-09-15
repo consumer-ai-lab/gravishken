@@ -5,10 +5,12 @@ import (
 	Batch "common/models/batch"
 	// Test "common/models/test"
 	User "common/models/user"
+	"server/src/helper"
 	"fmt"
 	"server/src/controllers"
-
+	"context"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) {
@@ -23,6 +25,45 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 		}
 
 		allControllers.AdminLoginHandler(ctx, &adminModel)
+	})
+
+	adminRoute.GET("/auth-status", func(ctx *gin.Context) {
+		
+		token, err := ctx.Cookie("admin_token")
+		if err != nil {
+			ctx.JSON(401, gin.H{
+				"isAuthenticated": false,
+				"error":           "No token found",
+			})
+			return
+		}
+	
+		isValid, username, err := helper.ValidateAdminToken(token)
+		if err != nil || !isValid {
+			ctx.JSON(401, gin.H{
+				"isAuthenticated": false,
+				"error":           "Invalid token",
+			})
+			return
+		}
+	
+		var adminInfo admin.Admin
+		err = allControllers.AdminCollection.FindOne(context.TODO(), bson.M{"username": username}).Decode(&adminInfo)
+		if err != nil {
+			ctx.JSON(500, gin.H{
+				"isAuthenticated": true,
+				"error":           "Error fetching admin info",
+			})
+			return
+		}
+	
+		// Remove sensitive information
+		adminInfo.Password = ""
+	
+		ctx.JSON(200, gin.H{
+			"isAuthenticated": true,
+			"adminInfo":       adminInfo,
+		})
 	})
 
 	adminRoute.POST("/register", func(ctx *gin.Context) {

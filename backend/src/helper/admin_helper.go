@@ -68,6 +68,26 @@ func AdminLogin(Collection *mongo.Collection, Admin types.ModelInterface) (strin
 	return tokenString, nil
 }
 
+func ValidateAdminToken(tokenString string) (bool, string, error) {
+	secretKey := []byte("TODO:add-a-secret-key-from-env") // Use the same secret key as in AdminLogin
+
+	token, err := jwt.ParseWithClaims(tokenString, &types.Claims{}, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return secretKey, nil
+	})
+
+	if err != nil {
+		return false, "", fmt.Errorf("error parsing token: %v", err)
+	}
+
+	if claims, ok := token.Claims.(*types.Claims); ok && token.Valid {
+		return true, claims.Username, nil
+	}
+
+	return false, "", fmt.Errorf("invalid token")
+}
 
 
 func UpdateTypingTestText(collection *mongo.Collection, testID string, typingText string) error {

@@ -2,6 +2,8 @@ package main
 
 import (
 	"os"
+	"strings"
+	"time"
 	config "server/config"
 	route "server/src/routes"
 
@@ -66,13 +68,23 @@ func SetupRouter() *gin.Engine {
 	} else {
 		panic("invalid BUILD_MODE")
 	}
+	
+	allowOrigins := getEnvOrDefault("CORS_ALLOW_ORIGINS", "https://solid-succotash-gwjp9pr7r59265g-3000.app.github.dev")
+    allowMethods := getEnvOrDefault("CORS_ALLOW_METHODS", "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS")
+    allowHeaders := getEnvOrDefault("CORS_ALLOW_HEADERS", "Origin,Content-Length,Content-Type,Authorization")
+    allowCredentials := getEnvOrDefault("CORS_ALLOW_CREDENTIALS", "true") == "true"
+    maxAge := 12 * 60 * 60 // 12 hours
 
-	router.Use(cors.New(cors.Config{
-		AllowOrigins:  []string{"*"},
-		AllowMethods:  []string{"*"},
-		AllowHeaders:  []string{"*"},
-		AllowWildcard: true,
-	}))
+    router.Use(cors.New(cors.Config{
+        AllowOrigins:     strings.Split(allowOrigins, ","),
+        AllowMethods:     strings.Split(allowMethods, ","),
+        AllowHeaders:     strings.Split(allowHeaders, ","),
+        AllowCredentials: allowCredentials,
+        MaxAge:           time.Duration(maxAge) * time.Second,
+        AllowWildcard:    true,
+        AllowWebSockets:  true,
+        AllowFiles:       true,
+    }))
 	router.Use(helmet.Default())
 	router.Use(gzip.Gzip(gzip.BestCompression))
 
@@ -82,4 +94,13 @@ func SetupRouter() *gin.Engine {
 	AppRoutes(router)
 
 	return router
+}
+
+
+func getEnvOrDefault(key, fallback string) string {
+	value, exists := os.LookupEnv(key)
+	if !exists {
+		return fallback
+	}
+	return value
 }

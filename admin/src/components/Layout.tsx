@@ -1,28 +1,61 @@
-import React from 'react';
-import Navbar from './Navbar';
-import Cookies from "js-cookie"
-import { Navigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { useToast } from "@/hooks/use-toast"
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children }) => {
+export default function Layout({ children }:LayoutProps) {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const hasAdminCookie = Cookies.get('admin_data') !== undefined;
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_BASE_URL}/admin/auth-status`, {
+          withCredentials: true,
+        });
 
-  if (!hasAdminCookie) {
+        
+        if (response.data.isAuthenticated) {
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+          navigate('/login');
+        }
+      } catch (error) {
+        console.error('Authentication check failed:', error);
+        setIsAuthenticated(false);
+        toast({
+          variant: "destructive",
+          title: "Authentication Failed",
+          description: "Please log in again.",
+        });
+        navigate('/login');
+      }
+    };
+
+    checkAuthStatus();
+  }, [navigate, toast]);
+
+
+
+ if (isAuthenticated === null) {
+    return <div>Loading...</div>;
+  }
+
+  if (isAuthenticated === false) {
     return <Navigate to="/login" replace />;
   }
 
   return (
     <div>
-      <Navbar />
       <main className="container mx-auto mt-8 px-4">
         {children}
       </main>
     </div>
   );
 };
-
-export default Layout;
