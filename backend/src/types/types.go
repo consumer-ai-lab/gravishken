@@ -17,7 +17,7 @@ var _ ModelInterface = (*admin.Admin)(nil)
 var _ ModelInterface = (*batch.Batch)(nil)
 var _ ModelInterface = (*user.User)(nil)
 var _ ModelInterface = (*user.UserSubmission)(nil)
-var _ ModelInterface = (*test.BatchTests)(nil)
+var _ ModelInterface = (*test.Test)(nil)
 
 // Define your JWT claims structure
 type Claims struct {

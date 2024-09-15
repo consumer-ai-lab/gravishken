@@ -2,7 +2,6 @@ package models
 
 import (
 	"os"
-
 	"go.mongodb.org/mongo-driver/mongo"
 )
 

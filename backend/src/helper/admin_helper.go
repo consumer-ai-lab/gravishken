@@ -32,7 +32,7 @@ func RegisterAdmin(Collection *mongo.Collection, Admin types.ModelInterface) err
 func AdminLogin(Collection *mongo.Collection, Admin types.ModelInterface) (string, error) {
 	username := Admin.(*admin.Admin).Username
 	password := Admin.(*admin.Admin).Password
-	secretKey := []byte("token")
+	secretKey := []byte("TODO:add-a-secret-key-from-env") 
 
 	var user admin.Admin
 	err := Collection.FindOne(context.TODO(), bson.M{"username": username}).Decode(&user)
@@ -45,9 +45,8 @@ func AdminLogin(Collection *mongo.Collection, Admin types.ModelInterface) (strin
 
 	// Compare the hashed password with the plaintext password
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
-
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("invalid credentials")
 	}
 
 	expirationTime := time.Now().Add(48 * time.Hour)
@@ -63,52 +62,42 @@ func AdminLogin(Collection *mongo.Collection, Admin types.ModelInterface) (strin
 
 	tokenString, err := token.SignedString(secretKey)
 	if err != nil {
-		fmt.Println("Error signing the token:", err)
-		return "", err
+		return "", fmt.Errorf("error signing the token: %v", err)
 	}
-
-	fmt.Println("Login successful")
 
 	return tokenString, nil
 }
 
-func ChangePassword(Collection *mongo.Collection, model *admin.AdminChangePassword) error {
+func ValidateAdminToken(tokenString string) (bool, string, error) {
+	secretKey := []byte("TODO:add-a-secret-key-from-env") // Use the same secret key as in AdminLogin
 
-	username := model.Username
-
-	var ADMIN admin.Admin
-	err := Collection.FindOne(context.TODO(), bson.M{"username": username}).Decode(&ADMIN)
-
-	if err != nil {
-		return err
-	}
-
-	password := ADMIN.Password
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	token, err := jwt.ParseWithClaims(tokenString, &types.Claims{}, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return secretKey, nil
+	})
 
 	if err != nil {
-		return err
+		return false, "", fmt.Errorf("error parsing token: %v", err)
 	}
 
-	ADMIN.Password = string(hashedPassword)
-
-	_, err = Collection.UpdateOne(context.TODO(), bson.M{"username": username}, bson.M{"$set": ADMIN})
-
-	if err != nil {
-		return err
+	if claims, ok := token.Claims.(*types.Claims); ok && token.Valid {
+		return true, claims.Username, nil
 	}
 
-	fmt.Println("Password changed successfully")
-	return nil
-
+	return false, "", fmt.Errorf("invalid token")
 }
 
 
-func UpdateTypingTestText(Collection *mongo.Collection, typingTestText string, testPassword string) error {
-
-	_, err := Collection.UpdateOne(context.TODO(), bson.M{"password": testPassword}, bson.M{"$set": bson.M{"typingTestText": typingTestText}})
+func UpdateTypingTestText(collection *mongo.Collection, testID string, typingText string) error {
+	_, err := collection.UpdateOne(
+		context.TODO(),
+		bson.M{"_id": testID, "type": "typing"},
+		bson.M{"$set": bson.M{"typingText": typingText}},
+	)
 	if err != nil {
-		return err
+		return fmt.Errorf("error updating typing test text: %v", err)
 	}
 
 	return nil

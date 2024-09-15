@@ -3,12 +3,14 @@ package route
 import (
 	"common/models/admin"
 	Batch "common/models/batch"
-	Test "common/models/test"
+	// Test "common/models/test"
 	User "common/models/user"
+	"server/src/helper"
 	"fmt"
 	"server/src/controllers"
-
+	"context"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) {
@@ -25,6 +27,45 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 		allControllers.AdminLoginHandler(ctx, &adminModel)
 	})
 
+	adminRoute.GET("/auth-status", func(ctx *gin.Context) {
+		
+		token, err := ctx.Cookie("admin_token")
+		if err != nil {
+			ctx.JSON(401, gin.H{
+				"isAuthenticated": false,
+				"error":           "No token found",
+			})
+			return
+		}
+	
+		isValid, username, err := helper.ValidateAdminToken(token)
+		if err != nil || !isValid {
+			ctx.JSON(401, gin.H{
+				"isAuthenticated": false,
+				"error":           "Invalid token",
+			})
+			return
+		}
+	
+		var adminInfo admin.Admin
+		err = allControllers.AdminCollection.FindOne(context.TODO(), bson.M{"username": username}).Decode(&adminInfo)
+		if err != nil {
+			ctx.JSON(500, gin.H{
+				"isAuthenticated": true,
+				"error":           "Error fetching admin info",
+			})
+			return
+		}
+	
+		// Remove sensitive information
+		adminInfo.Password = ""
+	
+		ctx.JSON(200, gin.H{
+			"isAuthenticated": true,
+			"adminInfo":       adminInfo,
+		})
+	})
+
 	adminRoute.POST("/register", func(ctx *gin.Context) {
 		var adminModel admin.Admin
 		if err := ctx.ShouldBindJSON(&adminModel); err != nil {
@@ -35,16 +76,6 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 		allControllers.AdminRegisterHandler(ctx, &adminModel)
 	})
 
-	// change password not working properly
-	adminRoute.POST("/changepassword", func(ctx *gin.Context) {
-		var adminModel admin.AdminChangePassword
-		if err := ctx.ShouldBindJSON(&adminModel); err != nil {
-			ctx.JSON(400, gin.H{"error": "Invalid request body"})
-			return
-		}
-
-		allControllers.AdminChangePasswordHandler(ctx, &adminModel)
-	})
 
 	adminRoute.POST("/add_all_users", func(ctx *gin.Context) {
 		var FilePathRequest struct {
@@ -70,15 +101,15 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 
 	adminRoute.POST("/add_test", func(ctx *gin.Context) {
 
-		var testModel Test.BatchTests
+		// var testModel Test.BatchTests
 
-		if err := ctx.ShouldBindJSON(&testModel); err != nil {
-			ctx.JSON(500, gin.H{"error": "Invalid request body"})
-			return
-		}
-		fmt.Println("testModel: ", testModel)
+		// if err := ctx.ShouldBindJSON(&testModel); err != nil {
+		// 	ctx.JSON(500, gin.H{"error": "Invalid request body"})
+		// 	return
+		// }
+		// fmt.Println("testModel: ", testModel)
 
-		allControllers.AddTestToDB(ctx, &testModel)
+		// allControllers.AddTestToDB(ctx, &testModel)
 	})
 
 	adminRoute.POST("/update_user_data", func(ctx *gin.Context) {
