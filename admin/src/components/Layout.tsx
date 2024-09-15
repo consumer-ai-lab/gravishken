@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, Outlet, useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast"
 
-interface LayoutProps {
-  children: React.ReactNode;
-}
 
-export default function Layout({ children }:LayoutProps) {
+
+export default function Layout() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -19,7 +17,7 @@ export default function Layout({ children }:LayoutProps) {
           withCredentials: true,
         });
 
-        
+
         if (response.data.isAuthenticated) {
           setIsAuthenticated(true);
         } else {
@@ -43,7 +41,7 @@ export default function Layout({ children }:LayoutProps) {
 
 
 
- if (isAuthenticated === null) {
+  if (isAuthenticated === null) {
     return <div>Loading...</div>;
   }
 
@@ -54,7 +52,7 @@ export default function Layout({ children }:LayoutProps) {
   return (
     <div>
       <main className="container mx-auto mt-8 px-4">
-        {children}
+        <Outlet />
       </main>
     </div>
   );

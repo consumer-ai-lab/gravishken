@@ -17,7 +17,7 @@ import Login from './components/login'
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Layout><Dashboard /></Layout>,
+    element: <Layout/>,
     children: [
       {
         path: "add-test",
