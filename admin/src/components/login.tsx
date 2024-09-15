@@ -19,7 +19,7 @@ export default function Login() {
                     withCredentials: true,
                 });
                 if(response.data.isAuthenticated){
-                    navigate("/");
+                    // navigate("/");
                 }
             } catch (err) {
                 console.log(err);

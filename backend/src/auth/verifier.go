@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"common/models/admin"
+	// "common/models/admin"
 	"common/models/user"
 	"errors"
 	"fmt"
@@ -33,27 +33,27 @@ func VerifyToken(tokenString string) (*jwt.Token, jwt.MapClaims, error) {
 
 // TokenVerifier verifies the validity of a token and checks if it is valid for a specific admin.
 // It takes the MongoDB collection for admin and a token string as input parameters.
-func TokenVerifier(Collection *mongo.Collection, tokenString string) (jwt.MapClaims, error) {
+// func TokenVerifier(Collection *mongo.Collection, tokenString string) (jwt.MapClaims, error) {
 
-	_, claims, err := VerifyToken(tokenString)
-	if err != nil {
-		return nil, err
-	}
+// 	_, claims, err := VerifyToken(tokenString)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	userName := claims["userName"].(string)
-	operator, err := admin.FindByUsername(Collection, userName)
-	if err != nil || operator == nil {
-		return nil, errors.New("operator not found")
-	}
+// 	userName := claims["userName"].(string)
+// 	operator, err := admin.FindByUsername(Collection, userName)
+// 	if err != nil || operator == nil {
+// 		return nil, errors.New("operator not found")
+// 	}
 
-	for _, t := range operator.Token {
-		if t == tokenString {
-			return claims, nil
-		}
-	}
+// 	for _, t := range operator.Token {
+// 		if t == tokenString {
+// 			return claims, nil
+// 		}
+// 	}
 
-	return nil, errors.New("token not valid for user")
-}
+// 	return nil, errors.New("token not valid for user")
+// }
 
 func ApplicationTokenVerifier(Collection *mongo.Collection, tokenString string) (jwt.MapClaims, error) {
 	_, claims, err := VerifyToken(tokenString)
@@ -102,12 +102,12 @@ func ValidRequestVerifier(Collection *mongo.Collection, tokenString, apiKey stri
 	return claims != nil && apiKeyResult, nil
 }
 
-func AuthenticateAdmin(Collection *mongo.Collection, Admin *admin.AdminRequest) bool {
-	token := Admin.Token
+// func AuthenticateAdmin(Collection *mongo.Collection, Admin *admin.AdminRequest) bool {
+// 	token := Admin.Token
 
-	verified, err := TokenVerifier(Collection, token)
-	fmt.Println(verified)
+// 	verified, err := TokenVerifier(Collection, token)
+// 	fmt.Println(verified)
 
-	return err == nil
+// 	return err == nil
 
-}
+// }

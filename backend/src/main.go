@@ -69,7 +69,7 @@ func SetupRouter() *gin.Engine {
 		panic("invalid BUILD_MODE")
 	}
 	
-	allowOrigins := getEnvOrDefault("CORS_ALLOW_ORIGINS", "https://solid-succotash-gwjp9pr7r59265g-3000.app.github.dev")
+	allowOrigins := getEnvOrDefault("CORS_ALLOW_ORIGINS", "https://solid-succotash-gwjp9pr7r59265g-3000.app.github.dev/")
     allowMethods := getEnvOrDefault("CORS_ALLOW_METHODS", "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS")
     allowHeaders := getEnvOrDefault("CORS_ALLOW_HEADERS", "Origin,Content-Length,Content-Type,Authorization")
     allowCredentials := getEnvOrDefault("CORS_ALLOW_CREDENTIALS", "true") == "true"
