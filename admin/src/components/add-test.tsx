@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { useDropzone,Accept } from 'react-dropzone';
+import { useDropzone, Accept } from 'react-dropzone';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import axios from "axios";
 import { X } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const testTypes = [
   { value: 'typing', label: 'Typing Test' },
@@ -21,8 +23,9 @@ export default function AddTest() {
   const [duration, setDuration] = useState('');
   const [typingText, setTypingText] = useState('');
   const [file, setFile] = useState<any>(null);
+  const { toast } = useToast()
 
-  const onDrop = useCallback((acceptedFiles:any) => {
+  const onDrop = useCallback((acceptedFiles: any) => {
     setFile(acceptedFiles[0]);
   }, []);
 
@@ -34,7 +37,7 @@ export default function AddTest() {
     multiple: false,
   });
 
-  const handleSubmit = (e:React.FormEvent<HTMLFormElement>) => {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     console.log({
       testType,
@@ -42,7 +45,37 @@ export default function AddTest() {
       typingText: testType === 'typing' ? typingText : undefined,
       file: testType !== 'typing' ? file : undefined,
     });
-    
+    const formData = new FormData();
+    formData.append('type', testType);
+    formData.append('duration', duration.toString());
+
+    if (typingText) {
+      formData.append('typingText', typingText);
+    }
+
+    if (file) {
+      formData.append('file', file);
+    }
+
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_BASE_URL}/test/add_test`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      toast({
+        title: "Test added",
+        description: "Successfully added the test!",
+      })
+
+    } catch (error) {
+      console.error('Error adding test:', error);
+      toast({
+        variant:"destructive",
+        title:"Failed to add",
+        description:"Test was not added due to some error on server, try again later."
+      })
+    }
   };
 
   const removeFile = () => {
@@ -101,9 +134,8 @@ export default function AddTest() {
                 <Label>Upload File</Label>
                 <div
                   {...getRootProps()}
-                  className={`h-32 border-2 border-dashed rounded-md p-4 text-center cursor-pointer transition-colors ${
-                    isDragActive ? 'border-primary bg-primary/10' : 'border-gray-300 hover:border-primary'
-                  }`}
+                  className={`h-32 border-2 border-dashed rounded-md p-4 text-center cursor-pointer transition-colors ${isDragActive ? 'border-primary bg-primary/10' : 'border-gray-300 hover:border-primary'
+                    }`}
                 >
                   <input {...getInputProps()} />
                   {isDragActive ? (
