@@ -44,7 +44,8 @@ func main() {
 		Use:   "test",
 		Short: "testing command",
 		Run: func(cmd *cobra.Command, args []string) {
-			panic("TODO")
+			// panic("TODO")
+			uritaOpenWv("http://localhost:3000")
 		},
 	})
 	command.AddCommand(&cobra.Command{

@@ -5,6 +5,11 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs:
@@ -28,7 +33,22 @@
         ];
       };
 
-      gravtest = pkgs.buildGoModule {
+      urita = pkgs.rustPlatform.buildRustPackage {
+        name = "urita";
+        src = ./urita;
+        cargoLock = {
+          lockFile = ./urita/Cargo.lock;
+        };
+
+        nativeBuildInputs = with pkgs; [
+          pkg-config
+        ];
+        buildInputs = with pkgs; [
+          webkitgtk_4_1
+          # libsoup
+        ];
+      };
+      gravishken = pkgs.buildGoModule {
         name = "gravtest";
         src = ./.;
         vendorHash = "";
@@ -36,78 +56,50 @@
         nativeBuildInputs = with pkgs; [
           pkg-config
           wrapGAppsHook3
+          bun
         ];
-        buildInputs = with pkgs; [
-          webkitgtk
-          glib
-          glib-networking
-        ];
+        buildInputs =
+          (with pkgs; [
+            # webkitgtk
+            glib
+            glib-networking
+            # gtk3
+
+            libpng
+            xclip
+            libxkbcommon
+            xorg.libXtst
+            xorg.libX11
+            xorg.libxcb
+            xorg.xkbutils
+            xorg.xcbutil
+          ])
+          ++ [
+            urita
+          ];
 
         # subPackages = [
         # ];
       };
 
       windows-pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux.pkgsCross.mingwW64;
+      rust-bin = inputs.rust-overlay.lib.mkRustBin {} windows-pkgs.buildPackages;
 
-      # - [fatal error: EventToken.h: No such file or directory](https://github.com/webview/webview/issues/1036)
-      # - [MinGW-w64 requirements](https://github.com/webview/webview?tab=readme-ov-file#mingw-w64-requirements)
-      # - [WinLibs - GCC+MinGW-w64 compiler for Windows](https://winlibs.com/#download-release)
-      winlibs = windows-pkgs.stdenv.mkDerivation {
-        name = "winlibs";
-        src = windows-pkgs.fetchzip {
-          url = "https://github.com/brechtsanders/winlibs_mingw/releases/download/14.2.0posix-18.1.8-12.0.0-ucrt-r1/winlibs-x86_64-posix-seh-gcc-14.2.0-llvm-18.1.8-mingw-w64ucrt-12.0.0-r1.zip";
-          sha256 = "sha256-xBRZ8NJmWXpvraaTpXBkd2QbhF5hR/8g/UBPwCd12hc=";
-        };
-
-        phases = ["installPhase"];
-        installPhase = ''
-          mkdir $out
-          cp -r $src/* $out/.
-        '';
-      };
-      mcfgthread = windows-pkgs.stdenv.mkDerivation {
-        name = "mcfgthread";
-        src = windows-pkgs.fetchurl {
-          url = "https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-mcfgthread-1.8.3-1-any.pkg.tar.zst";
-          sha256 = "sha256-ogfmo9utCtE2WpWtmPDuf+M6WIvpp1Xvxn+aqRu+nbs=";
-        };
-
-        nativeBuildInputs = [
-          pkgs.zstd
-        ];
-
-        phases = ["installPhase"];
-        installPhase = ''
-          mkdir $out
-          cp $src $out/src
-          cd $out
-
-          tar --zstd -xvf src
-          rm src
-          mv mingw64/* .
-          rmdir mingw64
-        '';
-      };
       windows-shell = windows-pkgs.mkShell {
         nativeBuildInputs = [
           windows-pkgs.buildPackages.pkg-config
-          windows-pkgs.openssl
-          winlibs
-          mcfgthread
+          rust-bin.stable.latest.minimal
         ];
 
         depsBuildBuild = [];
         buildInputs = [
-          windows-pkgs.buildPackages.pkg-config
-          windows-pkgs.openssl
-          windows-pkgs.windows.mingw_w64_pthreads
           windows-pkgs.windows.pthreads
-          winlibs
-          mcfgthread
         ];
 
         env = {
           CARGO_BUILD_TARGET = "x86_64-pc-windows-gnu";
+          CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER = "${windows-pkgs.stdenv.cc.targetPrefix}cc";
+
           DEV_SHELL = "WIN";
         };
       };
@@ -138,36 +130,21 @@
 
       env-packages = pkgs:
         (with pkgs; [
-          pkg-config
-
-          go
           # go-tools
           unstable.gopls
-          bun
+          unstable.rust-analyzer
+          unstable.rustfmt
 
           nodePackages_latest.typescript-language-server
           tailwindcss-language-server
-
-          webkitgtk
-          # gtk3
-          # glib-networking
-
-          libpng
-          xclip
-          libxkbcommon
-          xorg.libXtst
-          xorg.libX11
-          xorg.libxcb
-          xorg.xkbutils
-          xorg.xcbutil
         ])
         ++ (custom-commands pkgs);
       # stdenv = pkgs.clangStdenv;
       # stdenv = pkgs.gccStdenv;
     in {
       packages = {
-        default = gravtest;
-        inherit gravtest winlibs mcfgthread;
+        default = gravishken;
+        inherit gravishken urita;
       };
 
       devShells = {
@@ -178,7 +155,10 @@
             # inherit stdenv;
           } {
             nativeBuildInputs = (env-packages pkgs) ++ [fhs];
-            inputsFrom = [];
+            inputsFrom = [
+              gravishken
+              urita
+            ];
             shellHook = ''
               export PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 
