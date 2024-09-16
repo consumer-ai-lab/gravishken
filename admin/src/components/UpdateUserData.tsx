@@ -22,7 +22,7 @@ const UpdateUserData: React.FC = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:8081/admin/update_user_data', {
+      const response = await fetch(`${import.meta.env.SERVER_URL}/admin/update_user_data`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -8,7 +8,7 @@ const UpdateTypingTestText: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:6201/admin/update_typing_test_text', {
+      const response = await fetch(`${import.meta.env.SERVER_URL}/admin/update_typing_test_text`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

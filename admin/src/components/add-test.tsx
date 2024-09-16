@@ -58,7 +58,7 @@ export default function AddTest() {
     }
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_BASE_URL}/test/add_test`, formData, {
+      const response = await axios.post(`${import.meta.env.SERVER_URL}/test/add_test`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

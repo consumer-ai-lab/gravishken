@@ -1,18 +1,19 @@
 package auth
 
 import (
-	// "common/models/admin"
 	"common/models/user"
 	"errors"
 	"fmt"
 	"os"
+	"time"
+
 	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 var tokenKey = []byte("token")
 
-func VerifyToken(tokenString string) (*jwt.Token, jwt.MapClaims, error) {
+func VerifyJWT(tokenString string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("unexpected signing method")
@@ -21,42 +22,23 @@ func VerifyToken(tokenString string) (*jwt.Token, jwt.MapClaims, error) {
 	})
 
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		return token, claims, nil
+		if exp, ok := claims["exp"].(float64); ok {
+			if time.Now().Unix() > int64(exp) {
+				return nil, errors.New("token has expired")
+			}
+		}
+		return claims, nil
 	}
 
-	return nil, nil, errors.New("invalid token")
+	return nil, errors.New("invalid token")
 }
 
-// TokenVerifier verifies the validity of a token and checks if it is valid for a specific admin.
-// It takes the MongoDB collection for admin and a token string as input parameters.
-// func TokenVerifier(Collection *mongo.Collection, tokenString string) (jwt.MapClaims, error) {
-
-// 	_, claims, err := VerifyToken(tokenString)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	userName := claims["userName"].(string)
-// 	operator, err := admin.FindByUsername(Collection, userName)
-// 	if err != nil || operator == nil {
-// 		return nil, errors.New("operator not found")
-// 	}
-
-// 	for _, t := range operator.Token {
-// 		if t == tokenString {
-// 			return claims, nil
-// 		}
-// 	}
-
-// 	return nil, errors.New("token not valid for user")
-// }
-
 func ApplicationTokenVerifier(Collection *mongo.Collection, tokenString string) (jwt.MapClaims, error) {
-	_, claims, err := VerifyToken(tokenString)
+	claims, err := VerifyJWT(tokenString)
 	if err != nil {
 		return nil, err
 	}

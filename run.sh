@@ -15,7 +15,7 @@ export DEV_PORT=6202
 # TODO
 # export ADMIN_UI_PORT=6203
 
-export SERVER_URL="http://localhost:$SERVER_PORT/"
+export SERVER_URL="http://localhost:$SERVER_PORT"
 export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT -X main.server_url=$SERVER_URL"
 
 
@@ -33,6 +33,16 @@ web-build() {
     rm -rf ../application/dist
   fi
   cp -r ./dist ../application/.
+}
+
+admin-web-build() {
+  cd $PROJECT_ROOT/admin
+
+  $runner run build
+  if [[ -d ../backend/dist ]]; then
+    rm -rf ../backend/dist
+  fi
+  cp -r ./dist ../backend/.
 }
 
 # - [webview/webview](https://github.com/webview/webview?tab=readme-ov-file#windows)
@@ -55,6 +65,8 @@ build-windows-app() {
 }
 
 build-windows-server() {
+  admin-web-build
+
   cd $PROJECT_ROOT/backend
   source ./.env
 
@@ -68,16 +80,21 @@ build-windows-server() {
 }
 
 build-server() {
+  admin-web-build
+
   cd $PROJECT_ROOT/backend
   source ./.env
 
   export BUILD_MODE="PROD"
+  # export SERVER_URL=""
+
+  echo "NOTE: building with SERVER_URL as $SERVER_URL"
 
   export VARS="-X main.build_mode=$BUILD_MODE"
   go build -ldflags "$VARS" -o ../build/server ./src/.
 }
 
-admin-server() {
+admin-web-dev() {
   cd $PROJECT_ROOT/admin
 
   $runner run dev
@@ -86,6 +103,9 @@ admin-server() {
 server() {
   cd $PROJECT_ROOT/backend
   source ./.env
+
+  mkdir -p ./dist
+  touch ./dist/ignore
 
   export VARS="-X main.build_mode=$BUILD_MODE"
   go build -ldflags "$VARS" -o ../build/server ./src/.
@@ -135,6 +155,9 @@ run() {
     "web-build")
       web-build
     ;;
+    "admin-web-build")
+      admin-web-build
+    ;;
     "build-windows-app")
       build-windows-app
     ;;
@@ -147,8 +170,8 @@ run() {
     "setup")
       setup
     ;;
-    "admin-server")
-      admin-server $@
+    "admin-web-dev")
+      admin-web-dev $@
     ;;
     "server")
       server $@

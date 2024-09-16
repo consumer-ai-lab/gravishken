@@ -155,7 +155,7 @@ func (self *App) handleMessages() {
 				continue
 			}
 
-			self.maintainConnection(val)
+			self.maintainConnection()
 
 			routeMessage := types.TLoadRoute{
 				Route: "/instructions",

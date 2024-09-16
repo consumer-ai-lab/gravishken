@@ -276,7 +276,7 @@ func UserLogin(Collection *mongo.Collection, userRequest *User.UserLoginRequest)
 
 	// Generate JWT token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"username": user.Username,
+		"username": userRequest.Username,
 		"exp":      time.Now().Add(48 * time.Hour).Unix(),
 	})
 

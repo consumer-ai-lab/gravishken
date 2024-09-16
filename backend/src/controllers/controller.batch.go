@@ -1,13 +1,13 @@
 package controllers
 
 import (
-	Batch "common/models/batch"
+	"common/models/batch"
 	"server/src/helper"
 
 	"github.com/gin-gonic/gin"
 )
 
-func (this *ControllerClass) AddBatchToDB(ctx *gin.Context, batchData *Batch.Batch) {
+func (this *ControllerClass) AddBatchToDB(ctx *gin.Context, batchData *batch.Batch) {
 	testCollection := this.BatchCollection
 
 	err := helper.Add_Model_To_DB(testCollection, batchData)
@@ -25,11 +25,10 @@ func (this *ControllerClass) AddBatchToDB(ctx *gin.Context, batchData *Batch.Bat
 	})
 }
 
-
 func (this *ControllerClass) GetBatches(ctx *gin.Context) {
 	testCollection := this.BatchCollection
 
-	batchData, err := helper.Get_All_Models(testCollection, &Batch.Batch{})
+	batchData, err := helper.Get_All_Models(testCollection, &batch.Batch{})
 
 	if err != nil {
 		ctx.JSON(500, gin.H{

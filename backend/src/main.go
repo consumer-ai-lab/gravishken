@@ -1,15 +1,19 @@
 package main
 
 import (
+	"io/fs"
+	"net/http"
 	"os"
-	"strings"
-	"time"
+	assets "server"
 	config "server/config"
 	route "server/src/routes"
+	"strings"
+	"time"
 
-	helmet "github.com/danielkov/gin-helmet"
 	types "common"
 	"path/filepath"
+
+	helmet "github.com/danielkov/gin-helmet"
 	"github.com/joho/godotenv"
 
 	"log"
@@ -68,23 +72,23 @@ func SetupRouter() *gin.Engine {
 	} else {
 		panic("invalid BUILD_MODE")
 	}
-	
-	allowOrigins := getEnvOrDefault("CORS_ALLOW_ORIGINS", "https://solid-succotash-gwjp9pr7r59265g-3000.app.github.dev/")
-    allowMethods := getEnvOrDefault("CORS_ALLOW_METHODS", "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS")
-    allowHeaders := getEnvOrDefault("CORS_ALLOW_HEADERS", "Origin,Content-Length,Content-Type,Authorization")
-    allowCredentials := getEnvOrDefault("CORS_ALLOW_CREDENTIALS", "true") == "true"
-    maxAge := 12 * 60 * 60 // 12 hours
 
-    router.Use(cors.New(cors.Config{
-        AllowOrigins:     strings.Split(allowOrigins, ","),
-        AllowMethods:     strings.Split(allowMethods, ","),
-        AllowHeaders:     strings.Split(allowHeaders, ","),
-        AllowCredentials: allowCredentials,
-        MaxAge:           time.Duration(maxAge) * time.Second,
-        AllowWildcard:    true,
-        AllowWebSockets:  true,
-        AllowFiles:       true,
-    }))
+	allowOrigins := getEnvOrDefault("CORS_ALLOW_ORIGINS", "https://solid-succotash-gwjp9pr7r59265g-3000.app.github.dev/")
+	allowMethods := getEnvOrDefault("CORS_ALLOW_METHODS", "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS")
+	allowHeaders := getEnvOrDefault("CORS_ALLOW_HEADERS", "Origin,Content-Length,Content-Type,Authorization")
+	allowCredentials := getEnvOrDefault("CORS_ALLOW_CREDENTIALS", "true") == "true"
+	maxAge := 12 * 60 * 60 // 12 hours
+
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     strings.Split(allowOrigins, ","),
+		AllowMethods:     strings.Split(allowMethods, ","),
+		AllowHeaders:     strings.Split(allowHeaders, ","),
+		AllowCredentials: allowCredentials,
+		MaxAge:           time.Duration(maxAge) * time.Second,
+		AllowWildcard:    true,
+		AllowWebSockets:  true,
+		AllowFiles:       true,
+	}))
 	router.Use(helmet.Default())
 	router.Use(gzip.Gzip(gzip.BestCompression))
 
@@ -92,10 +96,28 @@ func SetupRouter() *gin.Engine {
 	// route.InitOtherRoutes(db, router)
 
 	AppRoutes(router)
+	AdminUiRoutes(router)
 
 	return router
 }
 
+func AdminUiRoutes(router *gin.Engine) {
+	if build_mode == "PROD" {
+		build, _ := fs.Sub(assets.Dist, "dist")
+		httpFS := http.FS(build)
+		router.NoRoute(gin.WrapH(http.FileServer(httpFS)))
+	} else if build_mode == "DEV" {
+		httpFS := http.Dir("dist")
+		fileServer := http.FileServer(httpFS)
+		noCacheFileServer := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate")
+			fileServer.ServeHTTP(w, r)
+		})
+		router.NoRoute(gin.WrapH(noCacheFileServer))
+	} else {
+		panic("invalid BUILD_MODE")
+	}
+}
 
 func getEnvOrDefault(key, fallback string) string {
 	value, exists := os.LookupEnv(key)

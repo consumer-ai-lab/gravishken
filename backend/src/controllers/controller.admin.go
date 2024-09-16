@@ -23,7 +23,7 @@ func (this *ControllerClass) AdminLoginHandler(ctx *gin.Context, adminModel *adm
 	}
 
 	// Set the token in a cookie
-	ctx.SetCookie("admin_token", token, 3600*48, "/", "", false, true)
+	ctx.SetCookie("auth_token", token, 3600*48, "/", "", false, true)
 
 	ctx.JSON(200, gin.H{
 		"message": "Admin logged in successfully",
@@ -47,7 +47,7 @@ func (this *ControllerClass) AdminRegisterHandler(ctx *gin.Context, adminModel *
 	})
 }
 
-func (this *ControllerClass) AdminChangePassword(ctx *gin.Context, ) {
+func (this *ControllerClass) AdminChangePassword(ctx *gin.Context) {
 	ctx.JSON(501, gin.H{
 		"message": "This route is not needed",
 	})
