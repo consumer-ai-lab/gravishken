@@ -58,23 +58,25 @@
           wrapGAppsHook3
           bun
         ];
-        buildInputs = (with pkgs; [
-          # webkitgtk
-          glib
-          glib-networking
-          # gtk3
+        buildInputs =
+          (with pkgs; [
+            # webkitgtk
+            glib
+            glib-networking
+            # gtk3
 
-          libpng
-          xclip
-          libxkbcommon
-          xorg.libXtst
-          xorg.libX11
-          xorg.libxcb
-          xorg.xkbutils
-          xorg.xcbutil
-        ]) ++ [
-          urita
-        ];
+            libpng
+            xclip
+            libxkbcommon
+            xorg.libXtst
+            xorg.libX11
+            xorg.libxcb
+            xorg.xkbutils
+            xorg.xcbutil
+          ])
+          ++ [
+            urita
+          ];
 
         # subPackages = [
         # ];
@@ -131,6 +133,7 @@
           # go-tools
           unstable.gopls
           unstable.rust-analyzer
+          unstable.rustfmt
 
           nodePackages_latest.typescript-language-server
           tailwindcss-language-server

@@ -1,5 +1,4 @@
-
-use std::{ffi::{c_char, CStr}, sync::Arc};
+use std::ffi::{c_char, CStr};
 
 use tao::event_loop::EventLoopBuilder;
 
@@ -50,7 +49,7 @@ fn wry_open(url: String) -> wry::Result<()> {
 
 #[no_mangle]
 pub extern "C" fn uritaOpenWv(url: *const c_char) -> bool {
-    let url = unsafe { CStr::from_ptr(url)};
+    let url = unsafe { CStr::from_ptr(url) };
     let url = url.to_string_lossy();
 
     match wry_open(url.into_owned()) {
