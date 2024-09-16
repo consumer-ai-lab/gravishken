@@ -50,7 +50,7 @@ export class Server {
 
     protected wait: Promise<void>;
     protected constructor() {
-        this.ws = new WebSocket(`ws://localhost:${6200}/${"ws"}`);
+        this.ws = new WebSocket(`ws://localhost:${import.meta.env.APP_PORT}/ws`);
 
         this.ws.addEventListener('message', async (e) => {
             let mesg: Message = JSON.parse(e.data);

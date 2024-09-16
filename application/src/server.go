@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/stretchr/testify/httptest"
+	"net/http/httptest"
 )
 
 func (self *App) serve() {

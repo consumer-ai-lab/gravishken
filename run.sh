@@ -30,6 +30,7 @@ web-build() {
 
   # replaced at runtime
   export SERVER_URL="%SERVER_URL%"
+  export APP_PORT="%APP_PORT%"
 
   $runner run build
   if [[ -d ../application/dist ]]; then
