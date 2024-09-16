@@ -18,7 +18,7 @@ fn wry_open(url: String) -> wry::Result<()> {
 
     let event_loop = EventLoopBuilder::new().with_any_thread(true).build();
     let window = WindowBuilder::new()
-        .with_title("Gravtest")
+        .with_title("gravishken")
         .build(&event_loop)
         .unwrap();
 

@@ -5,14 +5,13 @@ import (
 	"context"
 	"fmt"
 	"log"
-	// "os"
+	"os"
 )
 
 type App struct {
 	send   chan types.Message
 	recv   chan types.Message
 	runner IRunner
-	// webview webview.WebView
 	client *Client
 
 	exitCtx context.Context
@@ -39,7 +38,6 @@ func newApp() (*App, error) {
 		recv:    make(chan types.Message, 100),
 		exitCtx: ctx,
 		exitFn:  cancel,
-		// webview: nil,
 	}
 	var err error
 
@@ -118,47 +116,24 @@ func (self *App) startTest(testData types.TGetTest) error {
 	return nil
 }
 
-// here we have to start the microsoft word, excel, powerpoint application
-// func (self *App) StartMicrosoftApps(microSoftApp types.TMicrosoftApps) error {
-// 	runner, err := NewRunner()
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	err = self.runner.StartMicrosoftApps(runner, microSoftApp)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	routeMessage := types.TLoadRoute{
-// 		Route: "/tests/2",
-// 	}
-// 	message := types.NewMessage(routeMessage)
-
-// 	self.send <- message
-
-// 	return nil
-// }
-
 func (self *App) openWv() {
-	// self.webview = webview.New(build_mode == "DEV")
+	var url string
+	if build_mode == "DEV" {
+		url = fmt.Sprintf("http://localhost:%s/", os.Getenv("DEV_PORT"))
+	} else {
+		url = fmt.Sprintf("http://localhost:%s/", port)
+	}
 	self.state.webview_opened = true
 
-	// this will make wait() return
 	go func() {
-		<-self.exitCtx.Done()
-		// self.webview.Terminate()
-		// self.webview.Destroy()
+		uritaOpenWv(url)
+		self.exitFn()
 	}()
 }
 
 // must be called from the main thread :/
 func (self *App) wait() {
-	if self.state.webview_opened {
-		// self.webview.Run()
-	} else {
-		<-self.exitCtx.Done()
-	}
+	<-self.exitCtx.Done()
 }
 
 func (self *App) notifyErr(err error) {
@@ -171,16 +146,6 @@ func (self *App) notifyErr(err error) {
 }
 
 func (self *App) prepareEnv() {
-	// self.webview.SetTitle("gravishken")
-
-	if build_mode == "DEV" {
-		// url := fmt.Sprintf("http://localhost:%s/", os.Getenv("DEV_PORT"))
-		// self.webview.Navigate(url)
-	} else {
-		// url := fmt.Sprintf("http://localhost:%s/", port)
-		// self.webview.Navigate(url)
-	}
-
 	err := self.runner.SetupEnv()
 	self.notifyErr(err)
 }

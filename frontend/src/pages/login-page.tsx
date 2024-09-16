@@ -29,7 +29,7 @@ export default function LoginPage() {
 
   const handleQuit = () => {
     server.send_message({
-      Typ: types.Varient.QuitApp,
+      Typ: types.Varient.Quit,
       Val: {}
     });
   };
