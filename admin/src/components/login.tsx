@@ -48,7 +48,7 @@ export default function Login() {
                 description: "You have been logged in successfully.",
             })
 
-            navigate('/');
+            navigate('/dashboard');
 
 
         } catch (error) {
