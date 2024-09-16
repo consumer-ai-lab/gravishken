@@ -15,7 +15,7 @@ export DEV_PORT=6202
 # TODO
 # export ADMIN_UI_PORT=6203
 
-export SERVER_URL="http://localhost:$SERVER_PORT"
+export SERVER_URL="https://solid-succotash-gwjp9pr7r59265g-6201.app.github.dev"
 export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT -X main.server_url=$SERVER_URL"
 
 
