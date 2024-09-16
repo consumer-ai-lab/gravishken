@@ -12,7 +12,7 @@ import (
 
 func TestRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) {
 	testRoute := route.Group("/test")
-	testRoute.Use(middleware.UserJWTAuthMiddleware(allControllers.UserCollection))
+	testRoute.Use(middleware.AdminJWTAuthMiddleware(allControllers.UserCollection))
 
 	testRoute.POST("/add_test", func(ctx *gin.Context) {
 
@@ -91,6 +91,22 @@ func TestRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) 
 		ctx.JSON(200, gin.H{
 			"message":       "Question paper fetched successfully",
 			"questionPaper": questionPaper,
+		})
+	})
+
+	testRoute.GET("/get_all_tests", func(ctx *gin.Context) {
+		tests, err := allControllers.GetAllTests(ctx)
+		if err != nil {
+			ctx.JSON(500, gin.H{
+				"message": "Error while fetching tests",
+				"error":   err.Error(),
+			})
+			return
+		}
+
+		ctx.JSON(200, gin.H{
+			"message": "Tests fetched successfully",
+			"tests":   tests,
 		})
 	})
 }

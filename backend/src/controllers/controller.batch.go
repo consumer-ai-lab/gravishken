@@ -5,6 +5,7 @@ import (
 	"server/src/helper"
 
 	"github.com/gin-gonic/gin"
+
 )
 
 func (this *ControllerClass) AddBatchToDB(ctx *gin.Context, batchData *batch.Batch) {
@@ -43,3 +44,4 @@ func (this *ControllerClass) GetBatches(ctx *gin.Context) {
 		"data":    batchData,
 	})
 }
+
