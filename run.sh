@@ -29,10 +29,8 @@ web-build() {
   cd $PROJECT_ROOT/frontend
 
   # replaced at runtime
-  export SERVER_URL="%SERVER_URL%"
-  export APP_PORT="%APP_PORT%"
+  SERVER_URL="%SERVER_URL%" APP_PORT="%APP_PORT%" $runner run build
 
-  $runner run build
   if [[ -d ../application/dist ]]; then
     rm -rf ../application/dist
   fi
@@ -43,9 +41,8 @@ admin-web-build() {
   cd $PROJECT_ROOT/admin
 
   # replaced at runtime
-  export SERVER_URL="%SERVER_URL%"
+  SERVER_URL="%SERVER_URL%" $runner run build
 
-  $runner run build
   if [[ -d ../backend/dist ]]; then
     rm -rf ../backend/dist
   fi
@@ -87,6 +84,19 @@ build-windows-server() {
   echo "NOTE: building with SERVER_URL as $SERVER_URL"
 
   go build -ldflags "$VARS -H windowsgui" -o ../build/server.exe ./src/.
+}
+
+build-app() {
+  web-build
+  
+  cd $PROJECT_ROOT/application
+  export BUILD_MODE="PROD"
+  # export SERVER_URL=""
+  export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT -X main.server_url=$SERVER_URL"
+
+  echo "NOTE: building with SERVER_URL as $SERVER_URL"
+
+  go build -ldflags "$VARS" -o ../build/gravtest ./src/.
 }
 
 build-server() {
@@ -176,6 +186,9 @@ run() {
     ;;
     "build-server")
       build-server
+    ;;
+    "build-app")
+      build-app
     ;;
     "setup")
       setup
