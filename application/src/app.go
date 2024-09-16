@@ -5,17 +5,15 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
-
-	webview "github.com/thrombe/webview_go"
+	// "os"
 )
 
 type App struct {
-	send    chan types.Message
-	recv    chan types.Message
-	runner  IRunner
-	webview webview.WebView
-	client  *Client
+	send   chan types.Message
+	recv   chan types.Message
+	runner IRunner
+	// webview webview.WebView
+	client *Client
 
 	exitCtx context.Context
 	exitFn  context.CancelFunc
@@ -41,7 +39,7 @@ func newApp() (*App, error) {
 		recv:    make(chan types.Message, 100),
 		exitCtx: ctx,
 		exitFn:  cancel,
-		webview: nil,
+		// webview: nil,
 	}
 	var err error
 
@@ -143,21 +141,21 @@ func (self *App) startTest(testData types.TGetTest) error {
 // }
 
 func (self *App) openWv() {
-	self.webview = webview.New(build_mode == "DEV")
+	// self.webview = webview.New(build_mode == "DEV")
 	self.state.webview_opened = true
 
 	// this will make wait() return
 	go func() {
 		<-self.exitCtx.Done()
-		self.webview.Terminate()
-		self.webview.Destroy()
+		// self.webview.Terminate()
+		// self.webview.Destroy()
 	}()
 }
 
 // must be called from the main thread :/
 func (self *App) wait() {
 	if self.state.webview_opened {
-		self.webview.Run()
+		// self.webview.Run()
 	} else {
 		<-self.exitCtx.Done()
 	}
@@ -173,14 +171,14 @@ func (self *App) notifyErr(err error) {
 }
 
 func (self *App) prepareEnv() {
-	self.webview.SetTitle("gravishken")
+	// self.webview.SetTitle("gravishken")
 
 	if build_mode == "DEV" {
-		url := fmt.Sprintf("http://localhost:%s/", os.Getenv("DEV_PORT"))
-		self.webview.Navigate(url)
+		// url := fmt.Sprintf("http://localhost:%s/", os.Getenv("DEV_PORT"))
+		// self.webview.Navigate(url)
 	} else {
-		url := fmt.Sprintf("http://localhost:%s/", port)
-		self.webview.Navigate(url)
+		// url := fmt.Sprintf("http://localhost:%s/", port)
+		// self.webview.Navigate(url)
 	}
 
 	err := self.runner.SetupEnv()

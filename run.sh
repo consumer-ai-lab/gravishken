@@ -18,6 +18,9 @@ export DEV_PORT=6202
 export SERVER_URL="http://localhost:$SERVER_PORT"
 export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT -X main.server_url=$SERVER_URL"
 
+# for urita
+# - [Can't find .so in the same directory as the executable?](https://serverfault.com/questions/279068/cant-find-so-in-the-same-directory-as-the-executable)
+export CGO_LDFLAGS="-Wl,-rpath=\$ORIGIN"
 
 if command -v bun >/dev/null; then
   runner="bun"
@@ -53,6 +56,7 @@ admin-web-build() {
 #   - NOTE: install WebView2 runtime for < Windows 11
 # - [MAYBE: WebView2Loader.dll](https://github.com/webview/webview?tab=readme-ov-file#ms-webview2-loader)
 build-windows-app() {
+  build-urita
   web-build
   
   cd $PROJECT_ROOT/application
@@ -86,7 +90,23 @@ build-windows-server() {
   go build -ldflags "$VARS -H windowsgui" -o ../build/server.exe ./src/.
 }
 
+build-urita() {
+  cd $PROJECT_ROOT/urita
+
+  cargo build --release
+  if [[ -f ./target/release/liburita.so ]]; then
+    cp ./target/release/liburita.so ../build/.
+  fi
+  if [[ -f ./target/release/urita.dll ]]; then
+    cp ./target/release/urita.dll ../build/.
+  fi
+  if [[ -f ./target/x86_64-pc-windows-gnu/release/urita.dll ]]; then
+    cp ./target/x86_64-pc-windows-gnu/release/urita.dll ../build/.
+  fi
+}
+
 build-app() {
+  build-urita
   web-build
   
   cd $PROJECT_ROOT/application
@@ -186,6 +206,9 @@ run() {
     ;;
     "build-server")
       build-server
+    ;;
+    "build-urita")
+      build-urita
     ;;
     "build-app")
       build-app

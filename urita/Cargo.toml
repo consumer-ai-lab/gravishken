@@ -1,0 +1,15 @@
+[package]
+name = "urita"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "urita"
+crate-type = ["cdylib"]
+
+[dependencies]
+anyhow = "1.0.89"
+tao = "0.30.0"
+wry = "0.43.1"

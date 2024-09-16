@@ -5,6 +5,11 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs:
@@ -28,7 +33,22 @@
         ];
       };
 
-      gravtest = pkgs.buildGoModule {
+      urita = pkgs.rustPlatform.buildRustPackage {
+        name = "urita";
+        src = ./urita;
+        cargoLock = {
+          lockFile = ./urita/Cargo.lock;
+        };
+
+        nativeBuildInputs = with pkgs; [
+          pkg-config
+        ];
+        buildInputs = with pkgs; [
+          webkitgtk_4_1
+          # libsoup
+        ];
+      };
+      gravishken = pkgs.buildGoModule {
         name = "gravtest";
         src = ./.;
         vendorHash = "";
@@ -36,11 +56,24 @@
         nativeBuildInputs = with pkgs; [
           pkg-config
           wrapGAppsHook3
+          bun
         ];
-        buildInputs = with pkgs; [
-          webkitgtk
+        buildInputs = (with pkgs; [
+          # webkitgtk
           glib
           glib-networking
+          # gtk3
+
+          libpng
+          xclip
+          libxkbcommon
+          xorg.libXtst
+          xorg.libX11
+          xorg.libxcb
+          xorg.xkbutils
+          xorg.xcbutil
+        ]) ++ [
+          urita
         ];
 
         # subPackages = [
@@ -48,6 +81,7 @@
       };
 
       windows-pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux.pkgsCross.mingwW64;
+      rust-bin = inputs.rust-overlay.lib.mkRustBin {} windows-pkgs.buildPackages;
 
       # - [fatal error: EventToken.h: No such file or directory](https://github.com/webview/webview/issues/1036)
       # - [MinGW-w64 requirements](https://github.com/webview/webview?tab=readme-ov-file#mingw-w64-requirements)
@@ -91,23 +125,26 @@
       windows-shell = windows-pkgs.mkShell {
         nativeBuildInputs = [
           windows-pkgs.buildPackages.pkg-config
-          windows-pkgs.openssl
-          winlibs
-          mcfgthread
+          # windows-pkgs.openssl
+          # winlibs
+          # mcfgthread
+          rust-bin.stable.latest.minimal
         ];
 
         depsBuildBuild = [];
         buildInputs = [
-          windows-pkgs.buildPackages.pkg-config
-          windows-pkgs.openssl
-          windows-pkgs.windows.mingw_w64_pthreads
+          # windows-pkgs.buildPackages.pkg-config
+          # windows-pkgs.openssl
+          # windows-pkgs.windows.mingw_w64_pthreads
           windows-pkgs.windows.pthreads
-          winlibs
-          mcfgthread
+          # winlibs
+          # mcfgthread
         ];
 
         env = {
           CARGO_BUILD_TARGET = "x86_64-pc-windows-gnu";
+          CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER = "${windows-pkgs.stdenv.cc.targetPrefix}cc";
+
           DEV_SHELL = "WIN";
         };
       };
@@ -138,36 +175,20 @@
 
       env-packages = pkgs:
         (with pkgs; [
-          pkg-config
-
-          go
           # go-tools
           unstable.gopls
-          bun
+          unstable.rust-analyzer
 
           nodePackages_latest.typescript-language-server
           tailwindcss-language-server
-
-          webkitgtk
-          # gtk3
-          # glib-networking
-
-          libpng
-          xclip
-          libxkbcommon
-          xorg.libXtst
-          xorg.libX11
-          xorg.libxcb
-          xorg.xkbutils
-          xorg.xcbutil
         ])
         ++ (custom-commands pkgs);
       # stdenv = pkgs.clangStdenv;
       # stdenv = pkgs.gccStdenv;
     in {
       packages = {
-        default = gravtest;
-        inherit gravtest winlibs mcfgthread;
+        default = gravishken;
+        inherit gravishken winlibs mcfgthread urita;
       };
 
       devShells = {
@@ -178,7 +199,10 @@
             # inherit stdenv;
           } {
             nativeBuildInputs = (env-packages pkgs) ++ [fhs];
-            inputsFrom = [];
+            inputsFrom = [
+              gravishken
+              urita
+            ];
             shellHook = ''
               export PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 
