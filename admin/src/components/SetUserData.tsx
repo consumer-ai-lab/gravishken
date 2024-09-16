@@ -14,7 +14,7 @@ const SetUserData: React.FC = () => {
     setErrorMessage(null);
 
     try {
-      const response = await fetch('http://localhost:8081/admin/set_user_data', {
+      const response = await fetch(`${import.meta.env.SERVER_URL}/admin/set_user_data`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

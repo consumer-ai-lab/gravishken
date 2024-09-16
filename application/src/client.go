@@ -90,7 +90,7 @@ func (self *Client) login(user_login *types.TUserLogin) error {
 		return err
 	}
 
-	url := server_url + "user/login"
+	url := server_url + "/user/login"
 	log.Println(url, string(json_data))
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(json_data))
 	if err != nil {
@@ -209,7 +209,7 @@ func (self *Client) connect(exit context.Context, cancel context.CancelFunc) err
 
 func (self *Client) getTest(testData types.TGetTest) (TEST.Test, error) {
 	test_code := testData.TestPassword
-	url := server_url + "test/get_question_paper/" + test_code
+	url := server_url + "/test/get_question_paper/" + test_code
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return TEST.Test{}, err

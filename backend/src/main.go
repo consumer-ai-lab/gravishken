@@ -2,15 +2,15 @@ package main
 
 import (
 	"os"
-	"strings"
-	"time"
 	config "server/config"
 	route "server/src/routes"
+	"strings"
+	"time"
 
-	helmet "github.com/danielkov/gin-helmet"
 	types "common"
-	"path/filepath"
+	helmet "github.com/danielkov/gin-helmet"
 	"github.com/joho/godotenv"
+	"path/filepath"
 
 	"log"
 
@@ -95,7 +95,6 @@ func SetupRouter() *gin.Engine {
 
 	return router
 }
-
 
 func getEnvOrDefault(key, fallback string) string {
 	value, exists := os.LookupEnv(key)

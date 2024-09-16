@@ -15,7 +15,7 @@ export DEV_PORT=6202
 # TODO
 # export ADMIN_UI_PORT=6203
 
-export SERVER_URL="http://localhost:$SERVER_PORT/"
+export SERVER_URL="http://localhost:$SERVER_PORT"
 export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT -X main.server_url=$SERVER_URL"
 
 
@@ -72,6 +72,9 @@ build-server() {
   source ./.env
 
   export BUILD_MODE="PROD"
+  # export SERVER_URL=""
+
+  echo "NOTE: building with SERVER_URL as $SERVER_URL"
 
   export VARS="-X main.build_mode=$BUILD_MODE"
   go build -ldflags "$VARS" -o ../build/server ./src/.

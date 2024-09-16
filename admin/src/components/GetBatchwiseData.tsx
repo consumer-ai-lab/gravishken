@@ -13,7 +13,7 @@ const GetBatchwiseData: React.FC = () => {
     setData(null);
 
     try {
-      const response = await fetch(`http://localhost:8081/admin/get_batchwise_data?batch=${batchName}`);
+      const response = await fetch(`${import.meta.env.SERVER_URL}/admin/get_batchwise_data?batch=${batchName}`);
       if (!response.ok) {
         throw new Error('Failed to fetch batchwise data');
       }

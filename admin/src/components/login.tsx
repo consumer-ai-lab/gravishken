@@ -15,7 +15,7 @@ export default function Login() {
     useEffect(() => {
         const checkAuthStatus = async () => {
             try {
-                const response = await axios.get(`${import.meta.env.VITE_BACKEND_BASE_URL}/admin/auth-status`, {
+                const response = await axios.get(`${import.meta.env.SERVER_URL}/admin/auth-status`, {
                     withCredentials: true,
                 });
                 if(response.data.isAuthenticated){
@@ -32,11 +32,14 @@ export default function Login() {
         e.preventDefault();
 
         try {
-            const response = await axios.post(`${import.meta.env.VITE_BACKEND_BASE_URL}/admin/login`, {
+            const response = await axios.post(`${import.meta.env.SERVER_URL}/admin/login`, {
                 username,
                 password: userPassword
             }, {
-                withCredentials: true
+                withCredentials: true,
+                headers: {
+                    'Content-Type': 'application/json',
+                }
             });
 
             console.log('Login successful:', response.data);

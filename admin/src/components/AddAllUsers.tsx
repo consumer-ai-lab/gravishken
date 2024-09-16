@@ -29,7 +29,7 @@ const AddAllUsers: React.FC = () => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('http://localhost:8081/admin/add_all_users', {
+      const response = await fetch(`${import.meta.env.SERVER_URL}/admin/add_all_users`, {
         method: 'POST',
         body: formData,
       });

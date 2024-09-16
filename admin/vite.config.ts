@@ -11,6 +11,9 @@ export default defineConfig({
       "@common": path.resolve(__dirname, "../common/ts"),
     },
   },
+  define: {
+      "import.meta.env.SERVER_URL": `"${process.env.SERVER_URL}"`,
+  },
   server: {
     port: 3000,
   },
