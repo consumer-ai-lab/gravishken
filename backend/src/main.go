@@ -21,6 +21,9 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
+	"io"
+	"net/http/httptest"
+	"strconv"
 )
 
 // build time configuration. these get set using -ldflags in build script
@@ -102,21 +105,45 @@ func SetupRouter() *gin.Engine {
 }
 
 func AdminUiRoutes(router *gin.Engine) {
+	var contentReplacements = map[string]string{
+		"%SERVER_URL%": os.Getenv("SERVER_URL"),
+	}
+
+	var httpFS http.FileSystem
 	if build_mode == "PROD" {
 		build, _ := fs.Sub(assets.Dist, "dist")
-		httpFS := http.FS(build)
-		router.NoRoute(gin.WrapH(http.FileServer(httpFS)))
+		httpFS = http.FS(build)
 	} else if build_mode == "DEV" {
-		httpFS := http.Dir("dist")
-		fileServer := http.FileServer(httpFS)
-		noCacheFileServer := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate")
-			fileServer.ServeHTTP(w, r)
-		})
-		router.NoRoute(gin.WrapH(noCacheFileServer))
+		httpFS = http.Dir("dist")
 	} else {
 		panic("invalid BUILD_MODE")
 	}
+
+	fileServer := http.FileServer(httpFS)
+
+	modifiedFileServer := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Serve the file and capture its content
+		recorder := httptest.NewRecorder()
+		fileServer.ServeHTTP(recorder, r)
+
+		content := recorder.Body.String()
+
+		for oldString, newString := range contentReplacements {
+			content = strings.ReplaceAll(content, oldString, newString)
+		}
+
+		for k, v := range recorder.Header() {
+			w.Header()[k] = v
+		}
+		w.Header().Set("Content-Length", strconv.Itoa(len(content)))
+		if build_mode == "DEV" {
+			w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate")
+		}
+		w.WriteHeader(recorder.Code)
+		io.Copy(w, strings.NewReader(content))
+	})
+
+	router.NoRoute(gin.WrapH(modifiedFileServer))
 }
 
 func getEnvOrDefault(key, fallback string) string {

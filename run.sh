@@ -28,6 +28,10 @@ fi
 web-build() {
   cd $PROJECT_ROOT/frontend
 
+  # replaced at runtime
+  export SERVER_URL="%SERVER_URL%"
+  export APP_PORT="%APP_PORT%"
+
   $runner run build
   if [[ -d ../application/dist ]]; then
     rm -rf ../application/dist
@@ -37,6 +41,9 @@ web-build() {
 
 admin-web-build() {
   cd $PROJECT_ROOT/admin
+
+  # replaced at runtime
+  export SERVER_URL="%SERVER_URL%"
 
   $runner run build
   if [[ -d ../backend/dist ]]; then
@@ -75,6 +82,9 @@ build-windows-server() {
   export GOOS=windows
   export GOARCH=amd64
   export CGO_ENABLED=1
+  # export SERVER_URL=""
+
+  echo "NOTE: building with SERVER_URL as $SERVER_URL"
 
   go build -ldflags "$VARS -H windowsgui" -o ../build/server.exe ./src/.
 }

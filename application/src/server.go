@@ -4,14 +4,16 @@ import (
 	assets "app"
 	types "common"
 	"context"
-
 	"fmt"
 	"io/fs"
 	"log"
 	"net/http"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/gorilla/websocket"
+	"net/http/httptest"
 )
 
 func (self *App) serve() {
@@ -97,20 +99,46 @@ func (self *App) serve() {
 	// TODO: more than 1 websocket client at the same time is not supported. maybe crash / don't accept the connection
 	mux.HandleFunc("/ws", serveWs)
 
+	var contentReplacements = map[string]string{
+		"%SERVER_URL%": os.Getenv("SERVER_URL"),
+		"%APP_PORT%":   port,
+	}
+
+	var httpFS http.FileSystem
 	if build_mode == "PROD" {
 		build, _ := fs.Sub(assets.Dist, "dist")
-		fileServer := http.FileServer(http.FS(build))
-		mux.Handle("/", fileServer)
+		httpFS = http.FS(build)
 	} else if build_mode == "DEV" {
-		build := http.Dir("dist")
-		fileServer := http.FileServer(build)
-		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Add("cache-control", "no-store, no-cache, must-revalidate")
-			fileServer.ServeHTTP(w, r)
-		})
+		httpFS = http.Dir("dist")
 	} else {
 		panic("invalid BUILD_MODE")
 	}
+
+	fileServer := http.FileServer(httpFS)
+
+	modifiedFileServer := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Serve the file and capture its content
+		recorder := httptest.NewRecorder()
+		fileServer.ServeHTTP(recorder, r)
+
+		content := recorder.Body.String()
+
+		for oldString, newString := range contentReplacements {
+			content = strings.ReplaceAll(content, oldString, newString)
+		}
+
+		for k, v := range recorder.Header() {
+			w.Header()[k] = v
+		}
+		w.Header().Set("Content-Length", fmt.Sprintf("%d", len(content)))
+		if build_mode == "DEV" {
+			w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate")
+		}
+		w.WriteHeader(recorder.Code)
+		w.Write([]byte(content))
+	})
+
+	mux.Handle("/", modifiedFileServer)
 
 	go func() {
 		log.Printf("Starting application on port %s...\n", port)

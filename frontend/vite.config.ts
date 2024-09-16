@@ -13,6 +13,10 @@ export default defineConfig({
   server: {
       port: dev_port,
   },
+  define: {
+      "import.meta.env.SERVER_URL": `"${process.env.SERVER_URL}"`,
+      "import.meta.env.APP_PORT": `"${process.env.APP_PORT}"`,
+  },
   plugins: [react()],
   resolve: {
     alias: {
