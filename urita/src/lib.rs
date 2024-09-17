@@ -1,12 +1,10 @@
 use std::ffi::{c_char, CStr};
 
-use tao::event_loop::EventLoopBuilder;
-
 fn wry_open(url: String) -> wry::Result<()> {
     use tao::{
         event::{Event, StartCause, WindowEvent},
-        event_loop::ControlFlow,
-        window::WindowBuilder,
+        event_loop::{ControlFlow, EventLoopBuilder},
+        window::{Fullscreen, WindowBuilder},
     };
     use wry::WebViewBuilder;
 
@@ -18,6 +16,11 @@ fn wry_open(url: String) -> wry::Result<()> {
     let event_loop = EventLoopBuilder::new().with_any_thread(true).build();
     let window = WindowBuilder::new()
         .with_title("gravishken")
+        .with_fullscreen(Some(Fullscreen::Borderless(None)))
+        .with_decorations(false)
+        .with_closable(false)
+        .with_minimizable(false)
+        .with_focused(true)
         .build(&event_loop)
         .unwrap();
 

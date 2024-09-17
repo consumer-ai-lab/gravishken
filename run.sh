@@ -21,6 +21,7 @@ export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT -X main.serve
 # for urita
 # - [Can't find .so in the same directory as the executable?](https://serverfault.com/questions/279068/cant-find-so-in-the-same-directory-as-the-executable)
 export CGO_LDFLAGS="-Wl,-rpath=\$ORIGIN"
+export GOPROXY=direct # building on windows :/
 
 if command -v bun >/dev/null; then
   runner="bun"
@@ -29,7 +30,7 @@ else
 fi
 
 web-build() {
-  cd $PROJECT_ROOT/frontend
+  cd "$PROJECT_ROOT/frontend"
 
   # replaced at runtime
   SERVER_URL="%SERVER_URL%" APP_PORT="%APP_PORT%" $runner run build
@@ -41,7 +42,7 @@ web-build() {
 }
 
 admin-web-build() {
-  cd $PROJECT_ROOT/admin
+  cd "$PROJECT_ROOT/admin"
 
   # replaced at runtime
   SERVER_URL="%SERVER_URL%" $runner run build
@@ -59,7 +60,7 @@ build-windows-app() {
   build-urita
   web-build
   
-  cd $PROJECT_ROOT/application
+  cd "$PROJECT_ROOT/application"
   export BUILD_MODE="PROD"
   # export SERVER_URL=""
   export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT -X main.server_url=$SERVER_URL"
@@ -75,7 +76,7 @@ build-windows-app() {
 build-windows-server() {
   admin-web-build
 
-  cd $PROJECT_ROOT/backend
+  cd "$PROJECT_ROOT/backend"
   source ./.env
 
   export BUILD_MODE="PROD"
@@ -91,9 +92,12 @@ build-windows-server() {
 }
 
 build-urita() {
-  cd $PROJECT_ROOT/urita
+  cd "$PROJECT_ROOT/urita"
 
   cargo build --release
+
+  mkdir -p ../build
+
   if [[ -f ./target/release/liburita.so ]]; then
     cp ./target/release/liburita.so ../build/.
   fi
@@ -109,7 +113,7 @@ build-app() {
   build-urita
   web-build
   
-  cd $PROJECT_ROOT/application
+  cd "$PROJECT_ROOT/application"
   export BUILD_MODE="PROD"
   # export SERVER_URL=""
   export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT -X main.server_url=$SERVER_URL"
@@ -122,7 +126,7 @@ build-app() {
 build-server() {
   admin-web-build
 
-  cd $PROJECT_ROOT/backend
+  cd "$PROJECT_ROOT/backend"
   source ./.env
 
   export BUILD_MODE="PROD"
@@ -135,13 +139,13 @@ build-server() {
 }
 
 admin-web-dev() {
-  cd $PROJECT_ROOT/admin
+  cd "$PROJECT_ROOT/admin"
 
   $runner run dev
 }
 
 server() {
-  cd $PROJECT_ROOT/backend
+  cd "$PROJECT_ROOT/backend"
   source ./.env
 
   mkdir -p ./dist
@@ -153,13 +157,13 @@ server() {
 }
 
 web-dev() {
-  cd $PROJECT_ROOT/frontend
+  cd "$PROJECT_ROOT/frontend"
 
   $runner run dev
 }
 
 app() {
-  cd $PROJECT_ROOT/application
+  cd "$PROJECT_ROOT/application"
 
   mkdir -p ./dist
   touch ./dist/ignore
@@ -169,16 +173,16 @@ app() {
 }
 
 setup() {
-  cd $PROJECT_ROOT/application
+  cd "$PROJECT_ROOT/application"
   go mod tidy
 
-  cd $PROJECT_ROOT/backend
+  cd "$PROJECT_ROOT/backend"
   go mod tidy
 
-  cd $PROJECT_ROOT/admin
+  cd "$PROJECT_ROOT/admin"
   $runner i
 
-  cd $PROJECT_ROOT/frontend
+  cd "$PROJECT_ROOT/frontend"
   $runner i
 }
 
