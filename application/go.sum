@@ -54,8 +54,6 @@ github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsT
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 github.com/tailscale/win v0.0.0-20240403170916-6580b55d49ca h1:oYYp7AvemDkWtxmsgVSpcFxcHMv/2jjbOk5ZC16e77Y=
 github.com/tailscale/win v0.0.0-20240403170916-6580b55d49ca/go.mod h1:aMd4yDHLjbOuYP6fMxj1d9ACDQlSWwYztcpybGHCQc8=
-github.com/thrombe/webview_go v0.0.0-20240815142551-817262a41b45 h1:QMcjBnKts7vzcUMkAuTjAG0NLsob4hVZM91/ql2CW9w=
-github.com/thrombe/webview_go v0.0.0-20240815142551-817262a41b45/go.mod h1:t0Ga8R22pGEfl6Msnqsj2j9oaDfAPIImJ13LqDscP1E=
 github.com/tklauser/go-sysconf v0.3.12 h1:0QaGUFOdQaIVdPgfITYzaTegZvdCjmYO52cSFAEVmqU=
 github.com/tklauser/go-sysconf v0.3.12/go.mod h1:Ho14jnntGE1fpdOqQEEaiKRpvIavV0hSfmBq8nJbHYI=
 github.com/tklauser/numcpus v0.6.1 h1:ng9scYS7az0Bk4OZLvrNXNSAO2Pxr1XXRAPyjhIx+Fk=

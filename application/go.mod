@@ -7,7 +7,6 @@ require (
 	github.com/gorilla/websocket v1.5.3
 	github.com/spf13/cobra v1.8.1
 	github.com/tailscale/win v0.0.0-20240403170916-6580b55d49ca
-	github.com/thrombe/webview_go v0.0.0-20240815142551-817262a41b45
 	golang.org/x/sys v0.23.0
 )
 
