@@ -3,16 +3,22 @@ package route
 import (
 	"common/models/test"
 	"fmt"
+	"os"
 	"server/src/controllers"
+	"path/filepath"
 	"strconv"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"server/src/middleware"
+	"github.com/aws/aws-sdk-go/aws"
+    "github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+    "github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
 func TestRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) {
 	testRoute := route.Group("/test")
-	testRoute.Use(middleware.AdminJWTAuthMiddleware(allControllers.UserCollection))
+	// testRoute.Use(middleware.AdminJWTAuthMiddleware(allControllers.UserCollection))
 
 	testRoute.POST("/add_test", func(ctx *gin.Context) {
 
@@ -25,7 +31,7 @@ func TestRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) 
 		duration := ctx.Request.FormValue("duration")
 		typingText := ctx.Request.FormValue("typingText")
 
-		fmt.Println("textType: ", testType)
+		fmt.Println("testType: ", testType)
 		fmt.Println("duration: ", duration)
 		fmt.Println("typing text: ", typingText)
 
@@ -41,36 +47,54 @@ func TestRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) 
 			TypingText: typingText,
 		}
 
-		// file, header, err := ctx.Request.FormFile("file")
+		file, header, err := ctx.Request.FormFile("file")
+		if err != nil {
+			if err == http.ErrMissingFile {
+				
+				fmt.Println("No file uploaded, continuing without file")
+			} else {
+				ctx.JSON(400, gin.H{"error": "Error retrieving the file"})
+				return
+			}
+		}
+		if file != nil {
+			sess, err := session.NewSession(&aws.Config{
+				Region: aws.String("ap-south-1"),
+				Credentials: credentials.NewStaticCredentials(
+					os.Getenv("AWS_S3_ACCESS_KEY"),
+					os.Getenv("AWS_S3_ACCESS_KEY_SECRET"),
+					"",
+				),
+			})
+			if err != nil {
+				ctx.JSON(500, gin.H{"error": "Failed to create AWS session"})
+				return
+			}
 
-		if err == nil {
-			//TODO: Handle Image to AWS
-			// sess, err := session.NewSession(&aws.Config{
-			// 	Region: aws.String("us-east-2"),
-			// })
-			// if err != nil {
-			// 	ctx.JSON(500, gin.H{"error": "Failed to create AWS session"})
-			// 	return
-			// }
+			uploader := s3manager.NewUploader(sess)
 
-			// uploader := s3manager.NewUploader(sess)
+			filename := filepath.Base(header.Filename)
+			result, err := uploader.Upload(&s3manager.UploadInput{
+				Bucket: aws.String("collegeprojectbucket"),
+				Key:    aws.String(filename),
+				Body:   file,
+			})
 
-			// filename := filepath.Base(header.Filename)
-			// result, err := uploader.Upload(&s3manager.UploadInput{
-			// 	Bucket: aws.String("wclsubmission"),
-			// 	Key:    aws.String(filename),
-			// 	Body:   file,
-			// })
+			if err != nil {
+				ctx.JSON(500, gin.H{"error": "Failed to upload file to S3"})
+				return
+			}
 
-			// if err != nil {
-			// 	ctx.JSON(500, gin.H{"error": "Failed to upload file to S3"})
-			// 	return
-			// }
-
-			// testModel.File = result.Location
+			testModel.File = result.Location
 		}
 
-		allControllers.AddTestToDB(ctx, &testModel)
+
+		allControllers.AddTestToDB(ctx, &testModel);
+
+		if err != nil {
+			ctx.JSON(500, gin.H{"error": "Failed to add test to database"})
+			return
+		}
 
 		ctx.JSON(200, gin.H{"message": "Test added successfully", "test": testModel})
 	})
@@ -93,6 +117,20 @@ func TestRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) 
 			"questionPaper": questionPaper,
 		})
 	})
+
+	testRoute.GET("/test_types", func(ctx *gin.Context) {
+        testTypes := []string{
+            string(test.TypingTest),
+            string(test.DocxTest),
+            string(test.ExcelTest),
+            string(test.WordTest),
+        }
+
+        ctx.JSON(200, gin.H{
+            "message": "Test types fetched successfully",
+            "testTypes": testTypes,
+        })
+    })
 
 	testRoute.GET("/get_all_tests", func(ctx *gin.Context) {
 		tests, err := allControllers.GetAllTests(ctx)
