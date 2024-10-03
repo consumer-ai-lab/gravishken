@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { User } from '@common/types';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
@@ -18,7 +18,7 @@ export default function AddUser() {
 
   const handleSubmit = (event: any) => {
     event.preventDefault();
-    // Handle file upload logic here
+  
     console.log('File uploaded:', file);
   };
 

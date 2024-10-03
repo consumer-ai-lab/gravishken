@@ -7,11 +7,11 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { useToast } from '@/hooks/use-toast'
 import axios from 'axios'
 
-export default function AddBatch(){
+export default function AddBatch() {
 
   const [batchName, setBatchName] = useState('')
   const [selectedTests, setSelectedTests] = useState<string[]>([]);
-  const [availableTests,setAvailableTests] = useState<any[]>([]);
+  const [availableTests, setAvailableTests] = useState<any[]>([]);
   const { toast } = useToast()
 
   useEffect(() => {
@@ -32,8 +32,8 @@ export default function AddBatch(){
   }, []);
 
   const handleTestSelection = (testId: string) => {
-    setSelectedTests(prev => 
-      prev.includes(testId) 
+    setSelectedTests(prev =>
+      prev.includes(testId)
         ? prev.filter(id => id !== testId)
         : [...prev, testId]
     )
@@ -41,19 +41,21 @@ export default function AddBatch(){
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    
+
     try {
-      
-      const response = await axios.post(`${import.meta.env.SERVER_URL}/batch/add`, {
+
+      await axios.post(`${import.meta.env.SERVER_URL}/admin/add_batch`, {
         batchName,
         selectedTests
+      }, {
+        withCredentials: true,
       });
-     
+
       toast({
         title: "Batch added",
         description: "Successfully added the batch!",
       });
-     
+
       setBatchName('');
       setSelectedTests([]);
     } catch (error) {
@@ -65,7 +67,7 @@ export default function AddBatch(){
       })
     }
   }
- 
+
 
   return (
     <div className="w-full mx-auto p-4 space-y-6">
