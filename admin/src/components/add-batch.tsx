@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -10,15 +10,26 @@ import axios from 'axios'
 export default function AddBatch(){
 
   const [batchName, setBatchName] = useState('')
-  const [selectedTests, setSelectedTests] = useState<string[]>([])
+  const [selectedTests, setSelectedTests] = useState<string[]>([]);
+  const [availableTests,setAvailableTests] = useState<any[]>([]);
   const { toast } = useToast()
 
-  const availableTests = [
-    { id: '1', name: 'Typing Test 1' },
-    { id: '2', name: 'Docx Test 1' },
-    { id: '3', name: 'Excel Test 1' },
-    { id: '4', name: 'Word Test 1' },
-  ]
+  useEffect(() => {
+    const fetchTests = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.SERVER_URL}/test/get_all_tests`);
+        setAvailableTests(response.data.tests);
+      } catch (error) {
+        console.error('Error fetching tests:', error);
+        toast({
+          variant: "destructive",
+          title: "Failed to fetch tests",
+          description: "Unable to load available tests. Please try again later."
+        });
+      }
+    };
+    fetchTests();
+  }, []);
 
   const handleTestSelection = (testId: string) => {
     setSelectedTests(prev => 
@@ -33,14 +44,18 @@ export default function AddBatch(){
     
     try {
       
-      
+      const response = await axios.post(`${import.meta.env.SERVER_URL}/batch/add`, {
+        batchName,
+        selectedTests
+      });
+     
       toast({
         title: "Batch added",
         description: "Successfully added the batch!",
-      })
-      
-      setBatchName('')
-      setSelectedTests([])
+      });
+     
+      setBatchName('');
+      setSelectedTests([]);
     } catch (error) {
       console.error('Error adding batch:', error)
       toast({
@@ -80,7 +95,7 @@ export default function AddBatch(){
                       checked={selectedTests.includes(test.id)}
                       onCheckedChange={() => handleTestSelection(test.id)}
                     />
-                    <Label htmlFor={`test-${test.id}`}>{test.name}</Label>
+                    <Label htmlFor={`test-${test.id}`}>{test.type.charAt(0).toUpperCase() + test.type.slice(1)} Test</Label>
                   </div>
                 ))}
               </div>

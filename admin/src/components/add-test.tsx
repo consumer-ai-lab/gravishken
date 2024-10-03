@@ -28,27 +28,24 @@ export default function AddTest() {
 
 
   useEffect(() => {
+    const fetchTestTypes = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.SERVER_URL}/test/test_types`);
+        setTestTypes(response.data.testTypes.map((type:any) => ({ value: type, label: `${type.charAt(0).toUpperCase() + type.slice(1)} Test` })));
+        if (response.data.testTypes.length > 0) {
+          setTestType(response.data.testTypes[0]);
+        }
+      } catch (error) {
+        console.error('Error fetching test types:', error);
+        toast({
+          variant: "destructive",
+          title: "Failed to fetch test types",
+          description: "Unable to load test types. Please try again later."
+        });
+      }
+    };
     fetchTestTypes();
   }, []);
-
-  const fetchTestTypes = async () => {
-    try {
-      const response = await axios.get(`${import.meta.env.SERVER_URL}/test/test_types`);
-      setTestTypes(response.data.testTypes.map((type:any) => ({ value: type, label: `${type.charAt(0).toUpperCase() + type.slice(1)} Test` })));
-      if (response.data.testTypes.length > 0) {
-        setTestType(response.data.testTypes[0]);
-      }
-    } catch (error) {
-      console.error('Error fetching test types:', error);
-      toast({
-        variant: "destructive",
-        title: "Failed to fetch test types",
-        description: "Unable to load test types. Please try again later."
-      });
-    }
-  };
-
-
 
   const onDrop = useCallback((acceptedFiles: any) => {
     setFile(acceptedFiles[0]);
