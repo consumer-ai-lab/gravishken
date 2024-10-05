@@ -8,6 +8,8 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
+	"encoding/csv"
+	"io"
 	"strconv"
 	"net/http"
 	"server/src/controllers"
@@ -49,6 +51,8 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 		allControllers.AdminLoginHandler(ctx, &adminModel)
 	})
 
+	
+
 	authenticatedAdminRoutes := route.Group("/admin")
 	authenticatedAdminRoutes.Use(middleware.AdminJWTAuthMiddleware(allControllers.AdminCollection))
 
@@ -82,16 +86,65 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 		})
 	})
 
-	authenticatedAdminRoutes.POST("/add_all_users", func(ctx *gin.Context) {
-		var FilePathRequest struct {
-			FilePath string `json:"filePath" binding:"required"`
-		}
-
-		if err := ctx.ShouldBindJSON(&FilePathRequest); err != nil {
-			ctx.JSON(400, gin.H{"error": "Invalid request body"})
+	authenticatedAdminRoutes.POST("/add_users_from_csv", func(ctx *gin.Context) {
+		file, _, err := ctx.Request.FormFile("file")
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "File upload failed"})
 			return
 		}
-		allControllers.AddAllUsersBacthesToDb(ctx, FilePathRequest.FilePath)
+		defer file.Close()
+
+		reader := csv.NewReader(file)
+		var users []user.User
+
+		// Skip the header row
+		if _, err := reader.Read(); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid CSV format"})
+			return
+		}
+
+		for {
+			record, err := reader.Read()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": "Error reading CSV"})
+				return
+			}
+
+			if len(record) != 5 {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid CSV format"})
+				return
+			}
+
+			user := user.User{
+				ID:           primitive.NewObjectID(),
+				Username:     record[0],
+				Password:     record[1],
+				TestPassword: record[2],
+				Batch:        record[3],
+				Tests: user.UserSubmission{},
+			}
+			users = append(users, user)
+		}
+
+		// Insert users into the database
+		userInterfaces := make([]interface{}, len(users))
+		for i, u := range users {
+			userInterfaces[i] = u
+		}
+
+		// Insert users into the database
+		insertedResult, err := allControllers.UserCollection.InsertMany(context.Background(), userInterfaces)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert users"})
+			return
+		}
+
+		ctx.JSON(http.StatusOK, gin.H{
+			"message": fmt.Sprintf("Successfully added %d users", len(insertedResult.InsertedIDs)),
+		})
 	})
 
 	authenticatedAdminRoutes.POST("/add_batch", func(ctx *gin.Context) {
