@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"log"
 	"server/src/auth"
 	"server/src/helper"
 	"strings"
@@ -41,25 +42,36 @@ func UserJWTAuthMiddleware(userCollection *mongo.Collection) gin.HandlerFunc {
 
 func AdminJWTAuthMiddleware(userCollection *mongo.Collection) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		log.Println("Entering AdminJWTAuthMiddleware")
+
 		token, err := c.Cookie("auth_token")
+		log.Printf("Auth token from cookie: %s", token)
+
 		if err != nil {
+			log.Printf("Error getting auth_token cookie: %v", err)
 			c.JSON(401, gin.H{
 				"isAuthenticated": false,
 				"error":           "No token found",
 			})
 			return
 		}
+		log.Println("Auth token cookie found")
 
 		claims, err := helper.ValidateAdminToken(token)
 		if err != nil {
+			log.Printf("Admin token validation failed: %v", err)
 			c.JSON(401, gin.H{
 				"isAuthenticated": false,
 				"error":           "Invalid token",
 			})
 			return
 		}
+		log.Println("Admin token validated successfully")
 
 		c.Set("claims", claims)
+		log.Println("Claims set in context")
+
 		c.Next()
+		log.Println("Exiting AdminJWTAuthMiddleware")
 	}
 }

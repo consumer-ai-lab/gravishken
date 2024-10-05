@@ -2,80 +2,18 @@ package route
 
 import (
 	"common/models/test"
-	"fmt"
 	"server/src/controllers"
-	"strconv"
-
-	"github.com/gin-gonic/gin"
 	"server/src/middleware"
+	"github.com/gin-gonic/gin"
+
 )
 
 func TestRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) {
-	testRoute := route.Group("/test")
-	testRoute.Use(middleware.UserJWTAuthMiddleware(allControllers.UserCollection))
+	unauthenticatedTestRoute := route.Group("/test")
+	authenticatedTestRoute := route.Group("/test")
+	authenticatedTestRoute.Use(middleware.AdminJWTAuthMiddleware(allControllers.UserCollection))
 
-	testRoute.POST("/add_test", func(ctx *gin.Context) {
-
-		if err := ctx.Request.ParseMultipartForm(10 << 20); err != nil {
-			ctx.JSON(400, gin.H{"error": "File too large"})
-			return
-		}
-
-		testType := ctx.Request.FormValue("type")
-		duration := ctx.Request.FormValue("duration")
-		typingText := ctx.Request.FormValue("typingText")
-
-		fmt.Println("textType: ", testType)
-		fmt.Println("duration: ", duration)
-		fmt.Println("typing text: ", typingText)
-
-		durationInt, err := strconv.Atoi(duration)
-		if err != nil {
-			fmt.Println("Conversion error:", err)
-			return
-		}
-
-		testModel := test.Test{
-			Type:       test.TestType(testType),
-			Duration:   durationInt,
-			TypingText: typingText,
-		}
-
-		// file, header, err := ctx.Request.FormFile("file")
-
-		if err == nil {
-			//TODO: Handle Image to AWS
-			// sess, err := session.NewSession(&aws.Config{
-			// 	Region: aws.String("us-east-2"),
-			// })
-			// if err != nil {
-			// 	ctx.JSON(500, gin.H{"error": "Failed to create AWS session"})
-			// 	return
-			// }
-
-			// uploader := s3manager.NewUploader(sess)
-
-			// filename := filepath.Base(header.Filename)
-			// result, err := uploader.Upload(&s3manager.UploadInput{
-			// 	Bucket: aws.String("wclsubmission"),
-			// 	Key:    aws.String(filename),
-			// 	Body:   file,
-			// })
-
-			// if err != nil {
-			// 	ctx.JSON(500, gin.H{"error": "Failed to upload file to S3"})
-			// 	return
-			// }
-
-			// testModel.File = result.Location
-		}
-
-		allControllers.AddTestToDB(ctx, &testModel)
-
-		ctx.JSON(200, gin.H{"message": "Test added successfully", "test": testModel})
-	})
-
-	testRoute.GET("/get_question_paper/:batch_name", func(ctx *gin.Context) {
+	authenticatedTestRoute.GET("/get_question_paper/:batch_name", func(ctx *gin.Context) {
 
 		batch_name := ctx.Param("batch_name")
 
@@ -91,6 +29,36 @@ func TestRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) 
 		ctx.JSON(200, gin.H{
 			"message":       "Question paper fetched successfully",
 			"questionPaper": questionPaper,
+		})
+	})
+
+	unauthenticatedTestRoute.GET("/test_types", func(ctx *gin.Context) {
+        testTypes := []string{
+            string(test.TypingTest),
+            string(test.DocxTest),
+            string(test.ExcelTest),
+            string(test.WordTest),
+        }
+
+        ctx.JSON(200, gin.H{
+            "message": "Test types fetched successfully",
+            "testTypes": testTypes,
+        })
+    })
+
+	unauthenticatedTestRoute.GET("/get_all_tests", func(ctx *gin.Context) {
+		tests, err := allControllers.GetAllTests(ctx)
+		if err != nil {
+			ctx.JSON(500, gin.H{
+				"message": "Error while fetching tests",
+				"error":   err.Error(),
+			})
+			return
+		}
+
+		ctx.JSON(200, gin.H{
+			"message": "Tests fetched successfully",
+			"tests":   tests,
 		})
 	})
 }

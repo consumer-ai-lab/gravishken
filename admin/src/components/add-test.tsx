@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useDropzone, Accept } from 'react-dropzone';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,19 +11,40 @@ import axios from "axios";
 import { X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-const testTypes = [
-  { value: 'typing', label: 'Typing Test' },
-  { value: 'docx', label: 'Docx Test' },
-  { value: 'excel', label: 'Excel Test' },
-  { value: 'word', label: 'Word Test' },
-];
+// const testTypes = [
+//   { value: 'typing', label: 'Typing Test' },
+//   { value: 'docx', label: 'Docx Test' },
+//   { value: 'excel', label: 'Excel Test' },
+//   { value: 'word', label: 'Word Test' },
+// ];
 
 export default function AddTest() {
   const [testType, setTestType] = useState('typing');
   const [duration, setDuration] = useState('');
   const [typingText, setTypingText] = useState('');
   const [file, setFile] = useState<any>(null);
-  const { toast } = useToast()
+  const [testTypes, setTestTypes] = useState<any[]>([]);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchTestTypes = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.SERVER_URL}/test/test_types`);
+        setTestTypes(response.data.testTypes.map((type: any) => ({ value: type, label: `${type.charAt(0).toUpperCase() + type.slice(1)} Test` })));
+        if (response.data.testTypes.length > 0) {
+          setTestType(response.data.testTypes[0]);
+        }
+      } catch (error) {
+        console.error('Error fetching test types:', error);
+        toast({
+          variant: "destructive",
+          title: "Failed to fetch test types",
+          description: "Unable to load test types. Please try again later."
+        });
+      }
+    };
+    fetchTestTypes();
+  }, []);
 
   const onDrop = useCallback((acceptedFiles: any) => {
     setFile(acceptedFiles[0]);
@@ -58,11 +79,12 @@ export default function AddTest() {
     }
 
     try {
-      const response = await axios.post(`${import.meta.env.SERVER_URL}/test/add_test`, formData, {
+      const response = await axios.post(`${import.meta.env.SERVER_URL}/admin/add_test`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
-      });
+        withCredentials:true
+      },);
       toast({
         title: "Test added",
         description: "Successfully added the test!",
@@ -71,9 +93,9 @@ export default function AddTest() {
     } catch (error) {
       console.error('Error adding test:', error);
       toast({
-        variant:"destructive",
-        title:"Failed to add",
-        description:"Test was not added due to some error on server, try again later."
+        variant: "destructive",
+        title: "Failed to add",
+        description: "Test was not added due to some error on server, try again later."
       })
     }
   };
@@ -95,7 +117,7 @@ export default function AddTest() {
                   <SelectValue placeholder="Select test type" />
                 </SelectTrigger>
                 <SelectContent>
-                  {testTypes.map((type) => (
+                  {testTypes && testTypes.map((type: any) => (
                     <SelectItem key={type.value} value={type.value}>
                       {type.label}
                     </SelectItem>

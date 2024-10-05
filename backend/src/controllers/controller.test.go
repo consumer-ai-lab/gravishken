@@ -1,12 +1,16 @@
 package controllers
 
 import (
-	// "common/models/test"
+	"common/models/test"
 	// "common/models/batch"
 	"server/src/helper"
 	"server/src/types"
 
 	"github.com/gin-gonic/gin"
+	"context"
+
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (this *ControllerClass) GetQuestionPaperHandler(ctx *gin.Context, batchName string) ([]types.ModelInterface, error) {
@@ -27,3 +31,24 @@ func (this *ControllerClass) GetQuestionPaperHandler(ctx *gin.Context, batchName
 
 	return modelTests, nil
 }
+
+
+func (c *ControllerClass) GetAllTests(ctx *gin.Context) ([]test.Test, error) {
+	var tests []test.Test
+
+	cursor, err := c.TestCollection.Find(context.TODO(), bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.TODO())
+
+	if err = cursor.All(context.TODO(), &tests); err != nil {
+		return nil, err
+	}
+
+	return tests, nil
+}
+
+
+
+

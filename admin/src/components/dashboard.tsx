@@ -4,7 +4,7 @@ import { PlusCircle, Users, FileSpreadsheet, Database, Menu } from 'lucide-react
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet'
 import AddTest from './add-test'
 import UserDetails from './user-details'
-import { AddUser } from './add-user'
+import AddUser  from './add-user'
 import AddBatch from './add-batch'
 
 export default function Dashboard() {
