@@ -21,7 +21,7 @@ const AddBatch: React.FC = () => {
     useEffect(() => {
     const fetchBatches = async () => {
         try {
-        const response = await fetch('http://localhost:8081/batch/get_batches');
+        const response = await fetch('http://localhost:6201/batch/get_batches');
         if (!response.ok) {
             throw new Error('Failed to fetch batches');
         }
@@ -53,7 +53,7 @@ const AddBatch: React.FC = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch('http://localhost:8081/admin/add_batch', {
+      const response = await fetch('http://localhost:6201/admin/add_batch', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -66,7 +66,7 @@ const AddBatch: React.FC = () => {
         setBatchName(''); // Clear the input field after successful submission
         // Re-fetch batches to include the new one
         const fetchBatches = async () => {
-          const updatedResponse = await fetch('http://localhost:8081/batch/get_batches');
+          const updatedResponse = await fetch('http://localhost:6201/batch/get_batches');
           const updatedData = await updatedResponse.json();
           setBatches(updatedData.data); // Update the batches list
         };
