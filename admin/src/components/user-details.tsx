@@ -5,7 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Trash2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 
@@ -101,6 +101,23 @@ export default function UserDetails() {
             }
         }
     };
+
+    const handleDeleteUser = async (userId: string | undefined) => {
+        try {
+            console.log("Userid: ", userId);
+            await axios.delete(`http://localhost:6201/user/delete_user`, {
+                data: { userId: userId },
+                withCredentials: true
+            });
+
+            console.log("User deleted successfully!!");
+            
+            fetchUsers(currentPage);
+        } catch (error) {
+            console.log("Error in deleting user: ", error);
+            setError("Failed to delete user!");
+        }
+    }
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (editedUser) {
@@ -221,6 +238,9 @@ export default function UserDetails() {
                                                         <TableCell className='flex justify-center'>
                                                             <Button variant={"ghost"} onClick={() => handleEditUser(user)}>
                                                                 Edit
+                                                            </Button>
+                                                            <Button variant="ghost" className="p-2" onClick={() => handleDeleteUser(user.id?.toString())}>
+                                                                <Trash2 className="h-4 w-4" />
                                                             </Button>
                                                         </TableCell>
                                                     </>

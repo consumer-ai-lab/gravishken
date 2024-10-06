@@ -340,4 +340,5 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 
 		allControllers.UpdateTypingTestText(ctx, UpdateTypingTestTextRequest.TypingTestText, UpdateTypingTestTextRequest.TestPassword)
 	})
+
 }

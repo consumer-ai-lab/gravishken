@@ -192,3 +192,16 @@ func (self *ControllerClass) UpdateUser(ctx *gin.Context, userRequest *User.User
 
 	return nil
 }
+
+
+func (self *ControllerClass) DeleteUser(ctx *gin.Context, userId string) error{
+	userCollection := self.UserCollection
+
+	err := helper.Delete_Model_By_ID(userCollection, userId)
+
+	if err != nil{
+		return err
+	}
+
+	return nil;
+}
