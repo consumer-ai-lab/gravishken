@@ -9,25 +9,32 @@ import { Loader2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 export default function UserDetails() {
-    const [users, setUsers] = useState([]);
+    const [users, setUsers] = useState<User[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [editingUserId, setEditingUserId] = useState<string | null>(null);
+    const [editedUser, setEditedUser] = useState<Partial<User> | null>(null);
 
     const fetchUsers = async (page: number) => {
         setIsLoading(true);
+        setError(null);
         try {
-            const response = await axios.get(`${import.meta.env.SERVER_URL}/user/paginated_users`, {
+            const response = await axios.get(`http://localhost:6201/user/paginated_users`, {
                 params: {
                     page: page,
                     limit: 50
                 },
                 withCredentials: true
             });
-            setUsers(response.data.users);
-            setTotalPages(response.data.totalPages);
+            setUsers(response.data.users || []);
+            setTotalPages(response.data.totalPages || 0);
         } catch (error) {
             console.error('Error fetching users:', error);
+            setError('Failed to fetch users. Please try again.');
+            setUsers([]);
+            setTotalPages(0);
         }
         setIsLoading(false);
     };
@@ -47,6 +54,48 @@ export default function UserDetails() {
             setCurrentPage(currentPage + 1);
         }
     };
+    
+    const handleEditUser = (user: User) => {
+        setEditingUserId(user.id);
+        setEditedUser(user);
+    };
+
+    const handleCancelEdit = () => {
+        setEditingUserId(null);
+        setEditedUser(null);
+    };
+
+    const handleSaveUser = async () => {
+        if (editedUser && editingUserId) {
+            try {
+                // Update the user in the backend
+                await axios.put(`http://localhost:6201/user/${editingUserId}`, editedUser, {
+                    withCredentials: true
+                });
+
+                // Update the users list in the state
+                setUsers(users.map(user => user.id === editingUserId ? { ...user, ...editedUser } : user));
+                setEditingUserId(null);
+                setEditedUser(null);
+            } catch (error) {
+                console.error('Error updating user:', error);
+                setError('Failed to update user. Please try again.');
+            }
+        }
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (editedUser) {
+            setEditedUser({
+                ...editedUser,
+                [e.target.name]: e.target.value
+            });
+        }
+    };
+
+    if (error) {
+        return <div className="text-red-500">{error}</div>;
+    }
 
     return (
         <div className="w-full mx-auto p-4 space-y-6">
@@ -79,25 +128,85 @@ export default function UserDetails() {
                                     <TableBody>
                                         {users.map((user: User) => (
                                             <TableRow key={user.id}>
-                                                <TableCell>
-                                                    {user.id && <TooltipProvider>
-                                                        <Tooltip>
-                                                            <TooltipTrigger>{user.id.slice(0, 4)}...{user.id.slice(-4)}</TooltipTrigger>
-                                                            <TooltipContent>
-                                                                <div>{user.id}</div>
-                                                            </TooltipContent>
-                                                        </Tooltip>
-                                                    </TooltipProvider>}
-                                                </TableCell>
-                                                <TableCell>{user.username}</TableCell>
-                                                <TableCell>{user.password}</TableCell>
-                                                <TableCell>{user.testPassword}</TableCell>
-                                                <TableCell>{user.batch}</TableCell>
-                                                <TableCell className='flex justify-center'>
-                                                    <Button variant={"ghost"}>
-                                                        Edit
-                                                    </Button>
-                                                </TableCell>
+                                                {editingUserId === user.id ? (
+                                                    <>
+                                                        <TableCell>
+                                                            <input
+                                                                type="text"
+                                                                name="id"
+                                                                value={editedUser?.id || ''}
+                                                                disabled
+                                                                className="border p-1"
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <input
+                                                                type="text"
+                                                                name="username"
+                                                                value={editedUser?.username || ''}
+                                                                onChange={handleInputChange}
+                                                                className="border p-1"
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <input
+                                                                type="text"
+                                                                name="password"
+                                                                value={editedUser?.password || ''}
+                                                                onChange={handleInputChange}
+                                                                className="border p-1"
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <input
+                                                                type="text"
+                                                                name="testPassword"
+                                                                value={editedUser?.testPassword || ''}
+                                                                onChange={handleInputChange}
+                                                                className="border p-1"
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <input
+                                                                type="text"
+                                                                name="batch"
+                                                                value={editedUser?.batch || ''}
+                                                                onChange={handleInputChange}
+                                                                className="border p-1"
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell className='flex justify-center'>
+                                                            <Button variant={"ghost"} onClick={handleSaveUser}>
+                                                                Save
+                                                            </Button>
+                                                            <Button variant={"ghost"} onClick={handleCancelEdit}>
+                                                                Cancel
+                                                            </Button>
+                                                        </TableCell>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <TableCell>
+                                                            {user.id && <TooltipProvider>
+                                                                <Tooltip>
+                                                                    <TooltipTrigger>{user.id.slice(0, 4)}...{user.id.slice(-4)}</TooltipTrigger>
+                                                                    <TooltipContent>
+                                                                        <div>{user.id}</div>
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            </TooltipProvider>}
+                                                        </TableCell>
+                                                        <TableCell>{user.username}</TableCell>
+                                                        <TableCell>{user.password}</TableCell>
+                                                        <TableCell>{user.testPassword}</TableCell>
+                                                        <TableCell>{user.batch}</TableCell>
+                                                        <TableCell className='flex justify-center'>
+                                                            <Button variant={"ghost"} onClick={() => handleEditUser(user)}>
+                                                                Edit
+                                                            </Button>
+                                                        </TableCell>
+                                                    </>
+                                                )}
                                             </TableRow>
                                         ))}
                                     </TableBody>

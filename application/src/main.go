@@ -15,6 +15,8 @@ import (
 var build_mode string
 var port string
 
+
+
 func main() {
 	if build_mode == "DEV" {
 		root, ok := os.LookupEnv("PROJECT_ROOT")
@@ -40,14 +42,14 @@ func main() {
 			app.wait()
 		},
 	}
-	command.AddCommand(&cobra.Command{
-		Use:   "test",
-		Short: "testing command",
-		Run: func(cmd *cobra.Command, args []string) {
-			// panic("TODO")
-			uritaOpenWv("http://localhost:3000")
-		},
-	})
+	// command.AddCommand(&cobra.Command{
+	// 	Use:   "test",
+	// 	Short: "testing command",
+	// 	Run: func(cmd *cobra.Command, args []string) {
+	// 		// panic("TODO")
+	// 		uritaOpenWv("http://localhost:3000")
+	// 	},
+	// })
 	command.AddCommand(&cobra.Command{
 		Use:   "server",
 		Short: "start server",
@@ -78,4 +80,5 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error: %s\n", err)
 		os.Exit(1)
 	}
+
 }

@@ -12,7 +12,7 @@ import (
 	"syscall"
 	"time"
 	"unsafe"
-
+	"golang.org/x/sys/windows"
 	"github.com/go-vgo/robotgo"
 	"github.com/tailscale/win"
 	"golang.org/x/sys/windows/registry"
@@ -609,4 +609,62 @@ func (self *Runner) disableTitlebar() {
 	// - MAYBE: keep looping through unknown windows and keep hiding them?
 	syscall.SyscallN(uintptr(user32.NewProc("SetWindowPos").Addr()), 5,
 		hwnd, 0, 0, 0, 0, win.SWP_NOMOVE|win.SWP_NOSIZE)
+}
+
+var (
+	user32a               = windows.NewLazySystemDLL("user32.dll")
+	procEnumWindows      = user32a.NewProc("EnumWindows")
+	procGetWindowThreadProcessId = user32a.NewProc("GetWindowThreadProcessId")
+	procIsWindowVisible  = user32a.NewProc("IsWindowVisible")
+	procGetWindowTextW   = user32a.NewProc("GetWindowTextW")
+)
+
+
+func IsWindowVisible(hwnd syscall.Handle) bool {
+	r1, _, _ := procIsWindowVisible.Call(uintptr(hwnd))
+	return r1 != 0
+}
+
+func GetWindowThreadProcessId(hwnd syscall.Handle) (uint32, error) {
+	var pid uint32
+	_, _, _ = procGetWindowThreadProcessId.Call(uintptr(hwnd), uintptr(unsafe.Pointer(&pid)))
+	return pid, nil
+}
+
+func GetWindowText(hwnd syscall.Handle) string {
+	buf := make([]uint16, 200)
+	procGetWindowTextW.Call(uintptr(hwnd), uintptr(unsafe.Pointer(&buf[0])), uintptr(len(buf)))
+	return syscall.UTF16ToString(buf)
+}
+
+type EnumWindowsProc1 func(hwnd syscall.Handle, lParam uintptr) uintptr
+
+func EnumWindows(enumFunc EnumWindowsProc1, lParam uintptr) error {
+	r1, _, err := procEnumWindows.Call(syscall.NewCallback(enumFunc), lParam)
+	if r1 == 0 {
+		return err
+	}
+	return nil
+}
+
+func (self *Runner) ListAllProcess() (map[uint32]string, error) {
+	processes := make(map[uint32]string)
+
+	cb := func(hwnd syscall.Handle, lParam uintptr) uintptr {
+		if IsWindowVisible(hwnd) {
+			pid, _ := GetWindowThreadProcessId(hwnd)
+			windowText := GetWindowText(hwnd)
+			if windowText != "" {
+				processes[pid] = windowText
+			}
+		}
+		return 1 // Continue enumeration
+	}
+
+	err := EnumWindows(cb, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	return processes, nil
 }

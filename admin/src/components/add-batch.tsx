@@ -17,7 +17,8 @@ export default function AddBatch() {
   useEffect(() => {
     const fetchTests = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.SERVER_URL}/test/get_all_tests`);
+        const response = await axios.get(`http://localhost:6201/test/get_all_tests`);
+        console.log("Response: ", response)
         setAvailableTests(response.data.tests);
       } catch (error) {
         console.error('Error fetching tests:', error);
@@ -29,6 +30,7 @@ export default function AddBatch() {
       }
     };
     fetchTests();
+    console.log("Available tests: ",availableTests)
   }, []);
 
   const handleTestSelection = (testId: string) => {
@@ -44,7 +46,7 @@ export default function AddBatch() {
 
     try {
 
-      await axios.post(`${import.meta.env.SERVER_URL}/admin/add_batch`, {
+      await axios.post(`http://localhost:6201/admin/add_batch`, {
         batchName,
         selectedTests
       }, {

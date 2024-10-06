@@ -7,7 +7,7 @@ require (
 	github.com/gorilla/websocket v1.5.3
 	github.com/spf13/cobra v1.8.1
 	github.com/tailscale/win v0.0.0-20240403170916-6580b55d49ca
-	golang.org/x/sys v0.23.0
+	golang.org/x/sys v0.26.0
 )
 
 require (

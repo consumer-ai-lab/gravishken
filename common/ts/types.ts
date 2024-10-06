@@ -81,7 +81,7 @@ export interface UserSubmission {
     resultDownloaded: boolean;
 }
 export interface User {
-    id?: string;
+    id?: number[];
     username: string;
     password: string;
     testPassword: string;

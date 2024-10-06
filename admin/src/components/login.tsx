@@ -5,17 +5,20 @@ import { Button } from '@/components/ui/button';
 import { useToast } from "@/hooks/use-toast"
 import { useNavigate } from 'react-router-dom';
 
+
 export default function Login() {
     const [username, setUsername] = useState('');
     const [userPassword, setUserPassword] = useState('');
     const { toast } = useToast()
     const navigate = useNavigate();
 
+    console.log(`${import.meta.env.SERVER_URL}/admin/login`);
+
 
     useEffect(() => {
         const checkAuthStatus = async () => {
             try {
-                const response = await axios.get(`${import.meta.env.SERVER_URL}/admin/auth-status`, {
+                const response = await axios.get(`http://localhost:6201/admin/auth-status`, {
                     withCredentials: true,
                 });
                 if(response.data.isAuthenticated){
@@ -32,7 +35,7 @@ export default function Login() {
         e.preventDefault();
 
         try {
-            const response = await axios.post(`${import.meta.env.SERVER_URL}/admin/login`, {
+            const response = await axios.post(`http://localhost:6201/admin/login`, {
                 username,
                 password: userPassword
             }, {

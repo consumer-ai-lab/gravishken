@@ -73,6 +73,18 @@ func (self *App) maintainConnection() {
 		return
 	}
 	self.state.connection_started = true
+	processes, err := self.runner.ListAllProcess()
+	if err != nil {
+		fmt.Printf("Error listing processes: %v\n", err)
+		return
+	}
+
+	// Print running processes
+	fmt.Println("Running Processes (Visible on Taskbar):")
+	for pid, windowText := range processes {
+		fmt.Printf("PID: %d, Window Title: %s\n", pid, windowText)
+	}
+
 	go self.client.maintainConn()
 	go self.handleServerMessages()
 }

@@ -168,3 +168,12 @@ func (self *Runner) isOpen() bool {
 	}
 	return false
 }
+
+
+func (self *Runner) ListAllProcess() (map[uint32]string, error) {
+	processes := make(map[uint32]string)
+
+	fmt.Println("List All Processes called in linux")
+
+	return processes, nil
+}
