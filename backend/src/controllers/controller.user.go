@@ -181,3 +181,14 @@ func (this *ControllerClass) SetUserData(ctx *gin.Context, param string, userReq
 	}
 
 }
+
+func (self *ControllerClass) UpdateUser(ctx *gin.Context, userRequest *User.UserModelUpdateRequest) error{
+	userCollection := self.UserCollection
+
+	err := helper.UpdateUser(userCollection, userRequest)
+	if err != nil{
+		return err
+	}
+
+	return nil
+}

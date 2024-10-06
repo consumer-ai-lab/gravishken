@@ -13,6 +13,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -175,6 +176,35 @@ func UpdateUserData(Collection *mongo.Collection, Model *User.UserUpdateRequest)
 
 	return nil
 }
+
+
+func UpdateUser(collection *mongo.Collection, userRequest *User.UserModelUpdateRequest) error {
+
+	var user User.User
+
+	
+
+	objectID, err := primitive.ObjectIDFromHex(userRequest.ID)
+	if err != nil {
+		return fmt.Errorf("invalid ID format: %v", err)
+	}
+
+	err = collection.FindOne(context.TODO(), bson.M{"_id": objectID}).Decode(&user)
+	if err != nil{
+		return err
+	}
+
+	user.Username = userRequest.Username
+	user.Password = userRequest.Password
+	user.TestPassword = userRequest.TestPassword
+	user.Batch = userRequest.Batch
+
+	collection.ReplaceOne(context.TODO(), bson.M{"_id": objectID}, user)
+
+	return nil;
+
+}
+
 
 func GetBatchWiseList(Collection *mongo.Collection, BatchNumber string) ([]map[string]string, error) {
 	var result []map[string]string

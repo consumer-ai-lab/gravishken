@@ -8,6 +8,15 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Loader2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
+
+interface UserModelUpdationRequest {
+    id:string
+	username:string | undefined
+	password:string | undefined
+	testPassword:string | undefined
+	batch:string | undefined
+}
+
 export default function UserDetails() {
     const [users, setUsers] = useState<User[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -68,8 +77,17 @@ export default function UserDetails() {
     const handleSaveUser = async () => {
         if (editedUser && editingUserId) {
             try {
+                // Prepare the request body
+                const updateUserData: UserModelUpdationRequest = {
+                    id: editingUserId,
+                    username: editedUser.username,
+                    password: editedUser.password,
+                    testPassword: editedUser.testPassword,
+                    batch: editedUser.batch
+                };
+
                 // Update the user in the backend
-                await axios.put(`http://localhost:6201/user/${editingUserId}`, editedUser, {
+                await axios.put(`http://localhost:6201/user/update_user`, updateUserData, {
                     withCredentials: true
                 });
 
@@ -175,14 +193,14 @@ export default function UserDetails() {
                                                                 className="border p-1"
                                                             />
                                                         </TableCell>
-                                                        <TableCell className='flex justify-center'>
+                                                        {/* <TableCell className='flex justify-center'>
                                                             <Button variant={"ghost"} onClick={handleSaveUser}>
                                                                 Save
                                                             </Button>
                                                             <Button variant={"ghost"} onClick={handleCancelEdit}>
                                                                 Cancel
                                                             </Button>
-                                                        </TableCell>
+                                                        </TableCell> */}
                                                     </>
                                                 ) : (
                                                     <>
@@ -215,23 +233,42 @@ export default function UserDetails() {
                         </div>
                     </div>
                     <div className="flex justify-between items-center mt-4">
-                        <Button
-                            onClick={handlePrevPage}
-                            disabled={currentPage === 1 || isLoading}
-                            variant="outline"
-                        >
-                            Previous
-                        </Button>
-                        <span className="text-sm text-muted-foreground">
-                            Page {currentPage} of {totalPages}
-                        </span>
-                        <Button
-                            onClick={handleNextPage}
-                            disabled={currentPage === totalPages || isLoading}
-                            variant="outline"
-                        >
-                            Next
-                        </Button>
+                        {editingUserId ? (
+                            <>
+                                <Button
+                                    onClick={handleCancelEdit}
+                                    variant="outline"
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    onClick={handleSaveUser}
+                                    variant="outline"
+                                >
+                                    Save
+                                </Button>
+                            </>
+                        ) : (
+                            <>
+                                <Button
+                                    onClick={handlePrevPage}
+                                    disabled={currentPage === 1 || isLoading}
+                                    variant="outline"
+                                >
+                                    Previous
+                                </Button>
+                                <span className="text-sm text-muted-foreground">
+                                    Page {currentPage} of {totalPages}
+                                </span>
+                                <Button
+                                    onClick={handleNextPage}
+                                    disabled={currentPage === totalPages || isLoading}
+                                    variant="outline"
+                                >
+                                    Next
+                                </Button>
+                            </>
+                        )}
                     </div>
                     {isLoading && (
                         <div className="flex justify-center items-center mt-4">

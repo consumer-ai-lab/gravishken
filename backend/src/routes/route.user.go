@@ -2,15 +2,16 @@ package route
 
 import (
 	"common/models/user"
-	"github.com/gin-gonic/gin"
-	"server/src/controllers"
-	"net/http"
 	"context"
-	"strconv"
+	"log"
 	"math"
+	"net/http"
+	"server/src/controllers"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
-
 
 	middleware "server/src/middleware"
 )
@@ -26,6 +27,30 @@ func UserRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) 
 		}
 
 		allControllers.UserLoginHandler(ctx, &userModel)
+	})
+
+	userRoute.PUT("/update_user", func(ctx *gin.Context) {
+		var updateRequest user.UserModelUpdateRequest
+		if err := ctx.ShouldBindJSON(&updateRequest); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+			return
+		}
+
+		log.Default().Println("User Request: ", updateRequest)
+		
+		err := allControllers.UpdateUser(ctx, &updateRequest)
+
+		if err != nil {
+			ctx.JSON(500, gin.H{
+				"message": "Error in updating user!",
+				"error": err,
+			})
+			return
+		}
+
+		ctx.JSON(200, gin.H{
+			"message": "user updated successfully!!",
+		})
 	})
 
 	authenticated := userRoute.Group("/")
@@ -83,6 +108,9 @@ func UserRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) 
 			"currentPage": page,
 		})
 	})
+
+
+	
 
 	
 }
