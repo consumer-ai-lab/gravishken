@@ -11,6 +11,7 @@ export BUILD_MODE="DEV"
 export APP_PORT=6200
 export SERVER_PORT=6201
 export DEV_PORT=6202
+export APP_TAGS="-tags withwebview"
 
 # TODO
 # export ADMIN_UI_PORT=6203
@@ -62,6 +63,7 @@ build-windows-app() {
   web-build
   
   cd "$PROJECT_ROOT/application"
+  source ./.env
   export BUILD_MODE="PROD"
   # export SERVER_URL=""
   export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT -X main.server_url=$SERVER_URL"
@@ -71,7 +73,7 @@ build-windows-app() {
 
   echo "NOTE: building with SERVER_URL as $SERVER_URL"
 
-  go build -ldflags "$VARS -H windowsgui" -o ../build/gravtest.exe ./src/.
+  go build $APP_TAGS -ldflags "$VARS -H windowsgui" -o ../build/gravtest.exe ./src/.
 }
 
 build-windows-server() {
@@ -115,13 +117,14 @@ build-app() {
   web-build
   
   cd "$PROJECT_ROOT/application"
+  source ./.env
   export BUILD_MODE="PROD"
   # export SERVER_URL=""
   export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT -X main.server_url=$SERVER_URL"
 
   echo "NOTE: building with SERVER_URL as $SERVER_URL"
 
-  go build -ldflags "$VARS" -o ../build/gravtest ./src/.
+  go build $APP_TAGS -ldflags "$VARS" -o ../build/gravtest ./src/.
 }
 
 build-server() {
@@ -165,11 +168,12 @@ web-dev() {
 
 app() {
   cd "$PROJECT_ROOT/application"
+  source ./.env
 
   mkdir -p ./dist
   touch ./dist/ignore
 
-  go build -tags nowebview -ldflags "$VARS" -o ../build/gravtest ./src/.
+  go build $APP_TAGS -ldflags "$VARS" -o ../build/gravtest ./src/.
   ../build/gravtest $@
 }
 

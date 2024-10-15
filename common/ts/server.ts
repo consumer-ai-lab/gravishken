@@ -50,9 +50,9 @@ export class Server {
 
     protected wait: Promise<void>;
     protected constructor() {
-        // @thrombe: I was not sure which .env file this was going to read thats why I temporarily hardcoded the port
-        this.ws = new WebSocket(`wss://solid-succotash-gwjp9pr7r59265g-6200.app.github.dev/ws`);
-        // this.ws = new WebSocket(`ws://localhost:${import.meta.env.APP_PORT}/ws`);
+        // this.ws = new WebSocket(`wss://solid-succotash-gwjp9pr7r59265g-6200.app.github.dev/ws`);
+        // @ts-ignore
+        this.ws = new WebSocket(`ws://localhost:${import.meta.env.APP_PORT}/ws`);
 
         this.ws.addEventListener('message', async (e) => {
             let mesg: Message = JSON.parse(e.data);
