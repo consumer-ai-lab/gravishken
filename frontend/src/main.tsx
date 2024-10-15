@@ -17,6 +17,7 @@ import * as server from "@common/server.ts";
 import * as types from "@common/types.ts";
 import { Alert, AlertDescription, AlertTitle } from './components/ui/alert';
 import { TestProvider } from '@/components/TestContext';
+import OfflineToast from './components/offline-toast';
 
 function WebSocketHandler() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -113,6 +114,7 @@ server.init().then(async () => {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <RouterProvider router={router} />
+      <OfflineToast/>
     </StrictMode>,
   );
 });
