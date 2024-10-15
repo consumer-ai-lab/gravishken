@@ -76,22 +76,22 @@ func SetupRouter() *gin.Engine {
 		panic("invalid BUILD_MODE")
 	}
 
-	// allowOrigins := getEnvOrDefault("CORS_ALLOW_ORIGINS", "http://localhost:3000/")
-    // allowMethods := getEnvOrDefault("CORS_ALLOW_METHODS", "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS")
-    // allowHeaders := getEnvOrDefault("CORS_ALLOW_HEADERS", "Origin,Content-Length,Content-Type,Authorization")
-    // allowCredentials := getEnvOrDefault("CORS_ALLOW_CREDENTIALS", "true") == "true"
-    // maxAge := 12 * 60 * 60 // 12 hours
+	allowOrigins := getEnvOrDefault("CORS_ALLOW_ORIGINS", "http://localhost:3000")
+	allowMethods := getEnvOrDefault("CORS_ALLOW_METHODS", "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS")
+	allowHeaders := getEnvOrDefault("CORS_ALLOW_HEADERS", "Origin,Content-Length,Content-Type,Authorization")
+	allowCredentials := getEnvOrDefault("CORS_ALLOW_CREDENTIALS", "true") == "true"
+	maxAge := 12 * 60 * 60 // 12 hours
 
-    router.Use(cors.New(cors.Config{
-        AllowOrigins:     []string{"http://localhost:3000"},
-        AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
-        AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
-        AllowCredentials: true,
-        MaxAge:           12 * time.Hour,
-        AllowWildcard:    true,
-        AllowWebSockets:  true,
-        AllowFiles:       true,
-    }))
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     strings.Split(allowOrigins, ","),
+		AllowMethods:     strings.Split(allowMethods, ","),
+		AllowHeaders:     strings.Split(allowHeaders, ","),
+		AllowCredentials: allowCredentials,
+		MaxAge:           time.Duration(maxAge) * time.Second,
+		AllowWildcard:    true,
+		AllowWebSockets:  true,
+		AllowFiles:       true,
+	}))
 
     // Add a middleware to log request details
     router.Use(func(c *gin.Context) {
