@@ -12,17 +12,15 @@ export default function Login() {
     const { toast } = useToast()
     const navigate = useNavigate();
 
-    console.log(`${import.meta.env.SERVER_URL}/admin/login`);
-
-
     useEffect(() => {
         const checkAuthStatus = async () => {
             try {
-                const response = await axios.get(`http://localhost:6201/admin/auth-status`, {
+                const response = await axios.get(`${import.meta.env.SERVER_URL}/admin/auth-status`, {
                     withCredentials: true,
                 });
+                
                 if(response.data.isAuthenticated){
-                    navigate("/");
+                    navigate("/dashboard");
                 }
             } catch (err) {
                 console.log(err);
@@ -35,7 +33,7 @@ export default function Login() {
         e.preventDefault();
 
         try {
-            const response = await axios.post(`http://localhost:6201/admin/login`, {
+            const response = await axios.post(`${import.meta.env.SERVER_URL}/admin/login`, {
                 username,
                 password: userPassword
             }, {

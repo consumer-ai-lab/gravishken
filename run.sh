@@ -45,6 +45,7 @@ web-build() {
 
 admin-web-build() {
   cd "$PROJECT_ROOT/admin"
+  source ./.env
 
   # replaced at runtime
   SERVER_URL="%SERVER_URL%" $runner run build
@@ -144,6 +145,7 @@ build-server() {
 
 admin-web-dev() {
   cd "$PROJECT_ROOT/admin"
+  source ./.env
 
   $runner run dev
 }

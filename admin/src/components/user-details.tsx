@@ -4,20 +4,26 @@ import axios from 'axios';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent } from './ui/card';
 import { Loader2, Trash2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 
 interface UserModelUpdationRequest {
-    id:string
-	username:string | undefined
-	password:string | undefined
-	testPassword:string | undefined
-	batch:string | undefined
+    id: string
+    username: string | undefined
+    password: string | undefined
+    testPassword: string | undefined
+    batch: string | undefined
 }
 
-export default function UserDetails() {
+interface UserDetailsProps{
+    isAuthenticated: boolean;
+}
+
+export default function UserDetails(
+    {isAuthenticated}: UserDetailsProps
+) {
     const [users, setUsers] = useState<User[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
@@ -29,8 +35,11 @@ export default function UserDetails() {
     const fetchUsers = async (page: number) => {
         setIsLoading(true);
         setError(null);
+        if(isAuthenticated === false){  
+            return;
+        }
         try {
-            const response = await axios.get(`http://localhost:6201/user/paginated_users`, {
+            const response = await axios.get(`${import.meta.env.SERVER_URL}/user/paginated_users`, {
                 params: {
                     page: page,
                     limit: 50
@@ -50,7 +59,7 @@ export default function UserDetails() {
 
     useEffect(() => {
         fetchUsers(currentPage);
-    }, [currentPage]);
+    }, [currentPage, isAuthenticated]);
 
     const handlePrevPage = () => {
         if (currentPage > 1) {
@@ -63,9 +72,9 @@ export default function UserDetails() {
             setCurrentPage(currentPage + 1);
         }
     };
-    
+
     const handleEditUser = (user: User) => {
-        setEditingUserId(user.id);
+        setEditingUserId(user.id!);
         setEditedUser(user);
     };
 
@@ -87,7 +96,7 @@ export default function UserDetails() {
                 };
 
                 // Update the user in the backend
-                await axios.put(`http://localhost:6201/user/update_user`, updateUserData, {
+                await axios.put(`${import.meta.env.SERVER_URL}/user/update_user`, updateUserData, {
                     withCredentials: true
                 });
 
@@ -105,13 +114,13 @@ export default function UserDetails() {
     const handleDeleteUser = async (userId: string | undefined) => {
         try {
             console.log("Userid: ", userId);
-            await axios.delete(`http://localhost:6201/user/delete_user`, {
+            await axios.delete(`${import.meta.env.SERVER_URL}/user/delete_user`, {
                 data: { userId: userId },
                 withCredentials: true
             });
 
             console.log("User deleted successfully!!");
-            
+
             fetchUsers(currentPage);
         } catch (error) {
             console.log("Error in deleting user: ", error);
@@ -141,12 +150,7 @@ export default function UserDetails() {
                         <div className="overflow-hidden border rounded-md">
                             <Table>
                                 <colgroup>
-                                    <col className="w-[15%]" /> {/* Adjust the width as needed */}
-                                    <col className="w-[18%]" />
-                                    <col className="w-[15%]" />
-                                    <col className="w-[26%]" />
-                                    <col className="w-[10%]" />
-                                    <col className="w-[10%]" />
+                                    <col className="w-[15%]" /><col className="w-[18%]" /><col className="w-[15%]" /><col className="w-[26%]" /><col className="w-[10%]" /><col className="w-[10%]" />
                                 </colgroup>
                                 <TableHeader className="sticky top-0 bg-background z-10">
                                     <TableRow>

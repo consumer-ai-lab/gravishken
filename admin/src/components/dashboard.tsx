@@ -1,25 +1,48 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { PlusCircle, Users, FileSpreadsheet, Database, Menu } from 'lucide-react'
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet'
 import AddTest from './add-test'
 import UserDetails from './user-details'
-import AddUser  from './add-user'
+import AddUser from './add-user'
 import AddBatch from './add-batch'
+import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
 
 export default function Dashboard() {
-  const [activeSection, setActiveSection] = useState('userDetails')
+  const [activeSection, setActiveSection] = useState('userDetails');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.SERVER_URL}/admin/auth-status`, {
+          withCredentials: true,
+        });
+        
+        setIsAuthenticated(response.data.isAuthenticated);
+      } catch (err:any) {
+        if(err.status === 401){
+          navigate('/login');
+        }
+      }
+    }
+    checkAuthStatus();
+  }, [])
+
+  
 
   const renderContent = () => {
     switch (activeSection) {
       case 'userDetails':
-       return <UserDetails/>
+        return <UserDetails isAuthenticated={isAuthenticated}/>
       case 'addTest':
-        return <AddTest/>
+        return <AddTest />
       case 'addUsers':
-       return <AddUser/>
+        return <AddUser />
       case 'createBatch':
-       return <AddBatch/>
+        return <AddBatch />
       default:
         return null
     }

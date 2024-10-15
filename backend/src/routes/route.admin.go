@@ -52,15 +52,15 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 	})
 
 	
-
 	authenticatedAdminRoutes := route.Group("/admin")
 	authenticatedAdminRoutes.Use(middleware.AdminJWTAuthMiddleware(allControllers.AdminCollection))
 
+	// If not authenticated, it will give 401 from the middleware
 	authenticatedAdminRoutes.GET("/auth-status", func(ctx *gin.Context) {
 		anyclaims, ok := ctx.Get("claims")
 		if !ok {
-			ctx.JSON(500, gin.H{
-				"isAuthenticated": true,
+			ctx.JSON(200, gin.H{
+				"isAuthenticated": false,
 				"error":           "Error fetching admin info",
 			})
 			return
@@ -70,8 +70,8 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 		var adminInfo admin.Admin
 		err := allControllers.AdminCollection.FindOne(context.TODO(), bson.M{"username": claims.Username}).Decode(&adminInfo)
 		if err != nil {
-			ctx.JSON(500, gin.H{
-				"isAuthenticated": true,
+			ctx.JSON(200, gin.H{
+				"isAuthenticated": false,
 				"error":           "Error fetching admin info",
 			})
 			return
