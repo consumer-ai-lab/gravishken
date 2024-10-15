@@ -50,6 +50,8 @@ export class Server {
 
     protected wait: Promise<void>;
     protected constructor() {
+        // this.ws = new WebSocket(`wss://solid-succotash-gwjp9pr7r59265g-6200.app.github.dev/ws`);
+        // @ts-ignore
         this.ws = new WebSocket(`ws://localhost:${import.meta.env.APP_PORT}/ws`);
 
         this.ws.addEventListener('message', async (e) => {

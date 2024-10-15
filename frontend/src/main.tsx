@@ -1,12 +1,11 @@
 "use client"
-import { StrictMode, useEffect, useState } from 'react'
+import { StrictMode, useEffect } from 'react'
 import { createRoot } from 'react-dom/client';
 import {
   createBrowserRouter,
   Outlet,
   RouterProvider,
   useNavigate,
-  useLocation,
 } from "react-router-dom";
 import './index.css';
 import InstructionsPage from './pages/instructions';
@@ -15,29 +14,29 @@ import TestsPage from './pages/tests';
 import EndPage from './pages/end';
 import * as server from "@common/server.ts";
 import * as types from "@common/types.ts";
-import { Alert, AlertDescription, AlertTitle } from './components/ui/alert';
 import { TestProvider } from '@/components/TestContext';
 import OfflineToast from './components/offline-toast';
+import { toast, useToast } from './hooks/use-toast';
+import { Toaster } from './components/ui/toaster';
 
 function WebSocketHandler() {
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // TODO: some kinda progress bar of these
-  let timeout = 0;
-  const setErrorMessageDeffered = (msg: string, tout = 6000) => {
-    clearTimeout(timeout);
-
-    setErrorMessage(msg);
-
-    // @ts-ignore
-    timeout = setTimeout(() => {
-      setErrorMessage(null);
-    }, tout);
-  };
+ const {toast} = useToast();
 
   useEffect(() => {
     let disable: (() => PromiseLike<void>)[] = [];
+
+    server.server.add_callback(types.Varient.ExeNotFound, async (res) => {
+      console.error('Error from server:', res.ErrMsg);
+      toast({
+        title: "Error",
+        description: res.ErrMsg,
+        variant:"destructive"
+      })
+    }).then(d => {
+      disable.push(d);
+    });
 
     server.server.add_callback(types.Varient.LoadRoute, async (res) => {
       console.log(res);
@@ -48,14 +47,22 @@ function WebSocketHandler() {
 
     server.server.add_callback(types.Varient.Err, async (res) => {
       console.error('Error from server:', res.Message);
-      setErrorMessageDeffered(res.Message);  
+      toast({
+        title: "Error",
+        description: res.Message,
+        variant:"destructive"
+      })
     }).then(d => {
       disable.push(d);
     });
 
     server.server.add_callback(types.Varient.WarnUser, async (res) => {
       console.error('Warning to the user:', res.Message);
-      setErrorMessageDeffered(res.Message);  
+      toast({
+        title: "Warning",
+        description: res.Message,
+        variant:"destructive"
+      })  
     }).then(d => {
       disable.push(d);
     });
@@ -69,12 +76,6 @@ function WebSocketHandler() {
 
   return (
     <div>
-      {errorMessage && (
-        <Alert variant="destructive">
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{errorMessage}</AlertDescription>
-        </Alert>
-      )}
       <Outlet />
     </div>
   );
@@ -111,10 +112,15 @@ const router = createBrowserRouter([
 
 
 server.init().then(async () => {
+  toast({
+    title:"Connected",
+    description:"Connected to the server"
+  })
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <RouterProvider router={router} />
       <OfflineToast/>
+      <Toaster/>
     </StrictMode>,
   );
 });
