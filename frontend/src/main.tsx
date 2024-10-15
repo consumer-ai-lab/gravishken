@@ -16,7 +16,8 @@ import * as server from "@common/server.ts";
 import * as types from "@common/types.ts";
 import { TestProvider } from '@/components/TestContext';
 import OfflineToast from './components/offline-toast';
-import { useToast } from './hooks/use-toast';
+import { toast, useToast } from './hooks/use-toast';
+import { Toaster } from './components/ui/toaster';
 
 function WebSocketHandler() {
   const navigate = useNavigate();
@@ -111,10 +112,15 @@ const router = createBrowserRouter([
 
 
 server.init().then(async () => {
+  toast({
+    title:"Connected",
+    description:"Connected to the server"
+  })
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <RouterProvider router={router} />
       <OfflineToast/>
+      <Toaster/>
     </StrictMode>,
   );
 });

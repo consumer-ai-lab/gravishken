@@ -169,7 +169,7 @@ app() {
   mkdir -p ./dist
   touch ./dist/ignore
 
-  go build -ldflags "$VARS" -o ../build/gravtest ./src/.
+  go build -tags nowebview -ldflags "$VARS" -o ../build/gravtest ./src/.
   ../build/gravtest $@
 }
 
