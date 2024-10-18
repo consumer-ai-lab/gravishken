@@ -161,7 +161,7 @@ func (self *App) openWv() {
 	self.state.webview_opened = true
 
 	go func() {
-		uritaOpenWv(url)
+		openWv(url)
 		self.exitFn()
 	}()
 }

@@ -2,6 +2,6 @@
 
 package main
 
-func uritaOpenWv(url string) {
+func openWv(url string) {
 	panic("App is not built with webview support!")
 }
