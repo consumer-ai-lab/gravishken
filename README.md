@@ -14,6 +14,7 @@ This project consists of a backend server, a frontend application, and an admin 
 - linux:
   - pkg-config
   - webkit2gtk-4.1
+  - Xtst
 - windows:
   - pkg-config
   - mingw
@@ -21,7 +22,7 @@ This project consists of a backend server, a frontend application, and an admin 
 
 ### command to install webkit on fedora
 ```bash
-sudo dnf install webkit2gtk3-devel
+sudo dnf install webkit2gtk3-devel libXtst-devel
 ```
 
 ## Packaging the application
