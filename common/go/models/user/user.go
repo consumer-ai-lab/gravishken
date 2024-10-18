@@ -51,7 +51,7 @@ func (userTest *UserSubmission) GetCollectionName() string {
 
 func FindByUsername(Collection *mongo.Collection, userName string) (*User, error) {
 
-	filter := bson.M{"name": userName}
+	filter := bson.M{"username": userName}
 
 	var user User
 	err := Collection.FindOne(context.TODO(), filter).Decode(&user)

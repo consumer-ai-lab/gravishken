@@ -5,25 +5,35 @@ export PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 # export BUILD_MODE="PROD"
 export BUILD_MODE="DEV"
 
-# command to install webkit on fedora
-# sudo dnf install webkit2gtk3-devel
-
 export APP_PORT=6200
 export SERVER_PORT=6201
 export DEV_PORT=6202
-export APP_TAGS="-tags withwebview"
+export URITA_ENABLED=0
 
 # TODO
 # export ADMIN_UI_PORT=6203
 
+# TODO: make webui + robotgo under this togglable feature for easier compilation
+# export ENABLE_WEBUI=0
 # export SERVER_URL="https://solid-succotash-gwjp9pr7r59265g-6201.app.github.dev"
-export SERVER_URL="http://localhost:6201"
-export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT -X main.server_url=$SERVER_URL"
+export SERVER_URL="http://localhost:$SERVER_PORT"
 
 # for urita
 # - [Can't find .so in the same directory as the executable?](https://serverfault.com/questions/279068/cant-find-so-in-the-same-directory-as-the-executable)
 export CGO_LDFLAGS="-Wl,-rpath=\$ORIGIN"
 export GOPROXY=direct # building on windows :/
+
+set-app-tags() {
+  if [[ "$URITA_ENABLED" == "1" ]]; then
+    export APP_TAGS="-tags uritawebview"
+  else
+    export APP_TAGS="-tags nowebview"
+  fi
+}
+
+set-app-vars() {
+  export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT -X main.server_url=$SERVER_URL"
+}
 
 if command -v bun >/dev/null; then
   runner="bun"
@@ -60,17 +70,22 @@ admin-web-build() {
 #   - NOTE: install WebView2 runtime for < Windows 11
 # - [MAYBE: WebView2Loader.dll](https://github.com/webview/webview?tab=readme-ov-file#ms-webview2-loader)
 build-windows-app() {
+  source "$PROJECT_ROOT/application/.env"
+
   build-urita
   web-build
   
   cd "$PROJECT_ROOT/application"
-  source ./.env
+
+  export URITA_ENABLED=1
   export BUILD_MODE="PROD"
   # export SERVER_URL=""
-  export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT -X main.server_url=$SERVER_URL"
   export GOOS=windows
   export GOARCH=amd64
   export CGO_ENABLED=1
+
+  set-app-vars
+  set-app-tags
 
   echo "NOTE: building with SERVER_URL as $SERVER_URL"
 
@@ -114,14 +129,19 @@ build-urita() {
 }
 
 build-app() {
-  build-urita
+  source "$PROJECT_ROOT/application/.env"
+
+  if [[ "$URITA_ENABLED" == "1" ]]; then
+    build-urita
+  fi
   web-build
   
   cd "$PROJECT_ROOT/application"
-  source ./.env
+
   export BUILD_MODE="PROD"
   # export SERVER_URL=""
-  export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT -X main.server_url=$SERVER_URL"
+  set-app-tags
+  set-app-vars
 
   echo "NOTE: building with SERVER_URL as $SERVER_URL"
 
@@ -169,8 +189,16 @@ web-dev() {
 }
 
 app() {
+  source "$PROJECT_ROOT/application/.env"
+
+  if [[ "$URITA_ENABLED" == "1" ]]; then
+    build-urita
+  fi
+
   cd "$PROJECT_ROOT/application"
-  source ./.env
+
+  set-app-tags
+  set-app-vars
 
   mkdir -p ./dist
   touch ./dist/ignore

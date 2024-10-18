@@ -112,10 +112,6 @@ const router = createBrowserRouter([
 
 
 server.init().then(async () => {
-  toast({
-    title:"Connected",
-    description:"Connected to the server"
-  })
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <RouterProvider router={router} />

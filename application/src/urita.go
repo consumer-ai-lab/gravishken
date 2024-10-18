@@ -1,4 +1,4 @@
-// +build withwebview
+//go:build uritawebview
 
 package main
 
@@ -15,7 +15,7 @@ import (
 	"unsafe"
 )
 
-func uritaOpenWv(url string) {
+func openWv(url string) {
 	cUrl := C.CString(url)
 	defer C.free(unsafe.Pointer(cUrl))
 
