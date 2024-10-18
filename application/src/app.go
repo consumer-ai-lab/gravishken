@@ -6,9 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
-	"strconv"
-	"strings"
 )
 
 type App struct {
@@ -71,46 +68,15 @@ func (self *App) login(user_login *types.TUserLogin) error {
 	return nil
 }
 
-
-func KillProcess(pid uint32) error {
-	cmd := exec.Command("taskkill", "/PID", strconv.Itoa(int(pid)), "/F")
-	return cmd.Run()
-}
-
-
 func (self *App) maintainConnection() {
 	if self.state.connection_started {
 		return
 	}
 	self.state.connection_started = true
-	processes, err := self.runner.ListAllProcess()
-	if err != nil {
-		fmt.Printf("Error listing processes: %v\n", err)
-		return
-	}
-
-	fmt.Println("Running Processes (Visible on Taskbar):")
-	for pid, windowText := range processes {
-		fmt.Printf("PID: %d, Window Title: %s\n", pid, windowText)
-	}
-
-	appsToKill := []string{"Chrome", "Firefox", "Brave"}
-
-	for pid, cmdline := range processes {
-		for _, app := range appsToKill {
-			if strings.Contains(cmdline, app) {
-				fmt.Printf("Killing process %d (%s)\n", pid, cmdline)
-				if err := KillProcess(pid); err != nil {
-					fmt.Printf("Error killing process %d: %v\n", pid, err)
-				}
-			}
-		}
-	}
 
 	go self.client.maintainConn()
 	go self.handleServerMessages()
 }
-
 
 func (self *App) handleServerMessages() {
 	for {

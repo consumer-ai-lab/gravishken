@@ -8,27 +8,30 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
 	"unsafe"
-	"golang.org/x/sys/windows"
+
 	"github.com/go-vgo/robotgo"
 	"github.com/tailscale/win"
 	"golang.org/x/sys/windows/registry"
 )
 
 var (
-	user32                  = syscall.NewLazyDLL("user32.dll")
-	getForegroundWindow     = user32.NewProc("GetForegroundWindow")
-	setWindowLong           = user32.NewProc("SetWindowLongW")
-	getWindowLong           = user32.NewProc("GetWindowLongW")
-	showWindow              = user32.NewProc("ShowWindow")
-	setWindowPos            = user32.NewProc("SetWindowPos")
-	enumWindows             = user32.NewProc("EnumWindows")
-	getWindowText           = user32.NewProc("GetWindowTextW")
-	getWindowTextLength     = user32.NewProc("GetWindowTextLengthW")
-	procGetMessageExtraInfo = user32.NewProc("GetMessageExtraInfo")
+	user32                       = syscall.NewLazyDLL("user32.dll")
+	getForegroundWindow          = user32.NewProc("GetForegroundWindow")
+	setWindowLong                = user32.NewProc("SetWindowLongW")
+	getWindowLong                = user32.NewProc("GetWindowLongW")
+	showWindow                   = user32.NewProc("ShowWindow")
+	setWindowPos                 = user32.NewProc("SetWindowPos")
+	enumWindows                  = user32.NewProc("EnumWindows")
+	getWindowText                = user32.NewProc("GetWindowTextW")
+	getWindowTextLength          = user32.NewProc("GetWindowTextLengthW")
+	procGetMessageExtraInfo      = user32.NewProc("GetMessageExtraInfo")
+	procGetWindowThreadProcessId = user32.NewProc("GetWindowThreadProcessId")
+	procIsWindowVisible          = user32.NewProc("IsWindowVisible")
 )
 
 const (
@@ -42,8 +45,6 @@ const word = "WINWORD.exe"
 const excel = "EXCEL.exe"
 const powerpoint = "POWERPNT.exe"
 const notepad = "NOTEPAD.exe"
-
-const windows = "windows"
 
 type Runner struct {
 	paths struct {
@@ -409,6 +410,37 @@ func (self *Runner) kill(name string) error {
 
 // TODO: disallow alt + tab
 func (self *Runner) preventDistractions(ctx context.Context) {
+	killProcess := func(pid uint32) error {
+		cmd := exec.Command("taskkill", "/PID", strconv.Itoa(int(pid)), "/F")
+		return cmd.Run()
+	}
+
+	killApps := func() {
+		processes, err := self.ListAllProcess()
+		if err != nil {
+			fmt.Printf("Error listing processes: %v\n", err)
+			return
+		}
+
+		fmt.Println("Running Processes (Visible on Taskbar):")
+		for pid, windowText := range processes {
+			fmt.Printf("PID: %d, Window Title: %s\n", pid, windowText)
+		}
+
+		appsToKill := []string{"Chrome", "Firefox", "Brave"}
+
+		for pid, cmdline := range processes {
+			for _, app := range appsToKill {
+				if strings.Contains(cmdline, app) {
+					fmt.Printf("Killing process %d (%s)\n", pid, cmdline)
+					if err := killProcess(pid); err != nil {
+						fmt.Printf("Error killing process %d: %v\n", pid, err)
+					}
+				}
+			}
+		}
+	}
+
 	for {
 		time.Sleep(time.Millisecond * 100)
 
@@ -445,6 +477,8 @@ func (self *Runner) preventDistractions(ctx context.Context) {
 			_ = win.SetWindowPos(hwnd, 1, 0, 0, 0, 0, win.SWP_NOMOVE|win.SWP_NOSIZE)
 			// _ = win.PostMessage(hwnd, win.WM_CLOSE, 0, 0)
 			self.send <- types.NewMessage(types.TWarnUser{Message: "Unknown open application detected. Please do not open any other application during test"})
+
+			killApps()
 		}
 	}
 }
@@ -611,15 +645,6 @@ func (self *Runner) disableTitlebar() {
 		hwnd, 0, 0, 0, 0, win.SWP_NOMOVE|win.SWP_NOSIZE)
 }
 
-var (
-	user32a               = windows.NewLazySystemDLL("user32.dll")
-	procEnumWindows      = user32a.NewProc("EnumWindows")
-	procGetWindowThreadProcessId = user32a.NewProc("GetWindowThreadProcessId")
-	procIsWindowVisible  = user32a.NewProc("IsWindowVisible")
-	procGetWindowTextW   = user32a.NewProc("GetWindowTextW")
-)
-
-
 func IsWindowVisible(hwnd syscall.Handle) bool {
 	r1, _, _ := procIsWindowVisible.Call(uintptr(hwnd))
 	return r1 != 0
@@ -633,14 +658,14 @@ func GetWindowThreadProcessId(hwnd syscall.Handle) (uint32, error) {
 
 func GetWindowText(hwnd syscall.Handle) string {
 	buf := make([]uint16, 200)
-	procGetWindowTextW.Call(uintptr(hwnd), uintptr(unsafe.Pointer(&buf[0])), uintptr(len(buf)))
+	getWindowText.Call(uintptr(hwnd), uintptr(unsafe.Pointer(&buf[0])), uintptr(len(buf)))
 	return syscall.UTF16ToString(buf)
 }
 
 type EnumWindowsProc1 func(hwnd syscall.Handle, lParam uintptr) uintptr
 
 func EnumWindows(enumFunc EnumWindowsProc1, lParam uintptr) error {
-	r1, _, err := procEnumWindows.Call(syscall.NewCallback(enumFunc), lParam)
+	r1, _, err := enumWindows.Call(syscall.NewCallback(enumFunc), lParam)
 	if r1 == 0 {
 		return err
 	}
