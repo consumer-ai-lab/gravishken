@@ -410,11 +410,6 @@ func (self *Runner) kill(name string) error {
 
 // TODO: disallow alt + tab
 func (self *Runner) preventDistractions(ctx context.Context) {
-	killProcess := func(pid uint32) error {
-		cmd := exec.Command("taskkill", "/PID", strconv.Itoa(int(pid)), "/F")
-		return cmd.Run()
-	}
-
 	killApps := func() {
 		processes, err := self.ListAllProcess()
 		if err != nil {
@@ -433,12 +428,47 @@ func (self *Runner) preventDistractions(ctx context.Context) {
 			for _, app := range appsToKill {
 				if strings.Contains(cmdline, app) {
 					fmt.Printf("Killing process %d (%s)\n", pid, cmdline)
-					if err := killProcess(pid); err != nil {
+
+					cmd := exec.Command("taskkill", "/PID", strconv.Itoa(int(pid)), "/F")
+					err = cmd.Run()
+					if err != nil {
 						fmt.Printf("Error killing process %d: %v\n", pid, err)
 					}
 				}
 			}
 		}
+	}
+
+	hideActiveApps := func() {
+		hwnd := win.GetForegroundWindow()
+		title, _ := getWindowTitle(hwnd)
+		child := win.GetParent(hwnd)
+		var pid uint32
+		_ = win.GetWindowThreadProcessId(hwnd, &pid)
+		log.Println(title)
+		if hwnd == self.webview_hwnd || child == self.webview_hwnd {
+			return
+		}
+		if hwnd == self.state.hwnd {
+			return
+		}
+		// this check allows any windows created within the same process
+		if child == self.state.hwnd {
+			return
+		}
+
+		// NOTE: this allows user to create/open new windows from the currently open app
+		// if pid == uint32(self.state.running_app.Process.Pid) || pid == self.this_pid {
+		// 	return
+		// }
+
+		log.Println("bad window detected")
+		_ = win.SetForegroundWindow(self.webview_hwnd)
+		_ = win.BringWindowToTop(self.webview_hwnd)
+		_ = win.ShowWindow(hwnd, win.SW_SHOWMINIMIZED)
+		_ = win.SetWindowPos(hwnd, 1, 0, 0, 0, 0, win.SWP_NOMOVE|win.SWP_NOSIZE)
+		// _ = win.PostMessage(hwnd, win.WM_CLOSE, 0, 0)
+		self.send <- types.NewMessage(types.TWarnUser{Message: "Unknown open application detected. Please do not open any other application during test"})
 	}
 
 	for {
@@ -448,36 +478,8 @@ func (self *Runner) preventDistractions(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		default:
-			hwnd := win.GetForegroundWindow()
-			title, _ := getWindowTitle(hwnd)
-			child := win.GetParent(hwnd)
-			var pid uint32
-			_ = win.GetWindowThreadProcessId(hwnd, &pid)
-			log.Println(title)
-			if hwnd == self.webview_hwnd || child == self.webview_hwnd {
-				continue
-			}
-			if hwnd == self.state.hwnd {
-				continue
-			}
-			// this check allows any windows created within the same process
-			if child == self.state.hwnd {
-				continue
-			}
-
-			// NOTE: this allows user to create/open new windows from the currently open app
-			// if pid == uint32(self.state.running_app.Process.Pid) || pid == self.this_pid {
-			// 	continue
-			// }
-
-			log.Println("bad window detected")
-			_ = win.SetForegroundWindow(self.webview_hwnd)
-			_ = win.BringWindowToTop(self.webview_hwnd)
-			_ = win.ShowWindow(hwnd, win.SW_SHOWMINIMIZED)
-			_ = win.SetWindowPos(hwnd, 1, 0, 0, 0, 0, win.SWP_NOMOVE|win.SWP_NOSIZE)
-			// _ = win.PostMessage(hwnd, win.WM_CLOSE, 0, 0)
-			self.send <- types.NewMessage(types.TWarnUser{Message: "Unknown open application detected. Please do not open any other application during test"})
-
+			_ = hideActiveApps
+			// hideActiveApps()
 			killApps()
 		}
 	}
