@@ -1,4 +1,4 @@
-// +build withwebview
+//go:build uritawebview
 
 package main
 
