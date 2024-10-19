@@ -1,10 +1,6 @@
-package types
+package common
 
 import (
-	"common/models/admin"
-	"common/models/batch"
-	"common/models/test"
-	"common/models/user"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -33,11 +29,11 @@ const (
 	Err Varient = iota
 	ExeNotFound
 	Quit
-	UserLogin
+	UserLoginRequest
 	WarnUser
 	LoadRoute
 	ReloadUi
-	GetTest
+	StartTest
 	OpenApp
 	QuitApp
 	Unknown // NOTE: keep this as the last constant here.
@@ -51,16 +47,16 @@ func (self Varient) TSName() string {
 		return "ExeNotFound"
 	case Quit:
 		return "Quit"
-	case UserLogin:
-		return "UserLogin"
+	case UserLoginRequest:
+		return "UserLoginRequest"
 	case WarnUser:
 		return "WarnUser"
 	case LoadRoute:
 		return "LoadRoute"
 	case ReloadUi:
 		return "ReloadUi"
-	case GetTest:
-		return "GetTest"
+	case StartTest:
+		return "StartTest"
 	case OpenApp:
 		return "OpenApp"
 	case QuitApp:
@@ -77,16 +73,16 @@ func varientFromName(typ string) Varient {
 		return ExeNotFound
 	case "Quit":
 		return Quit
-	case "UserLogin":
-		return UserLogin
+	case "UserLoginRequest":
+		return UserLoginRequest
 	case "WarnUser":
 		return WarnUser
 	case "ReloadUi":
 		return ReloadUi
 	case "LoadRoute":
 		return LoadRoute
-	case "GetTest":
-		return GetTest
+	case "StartTest":
+		return StartTest
 	case "OpenApp":
 		return OpenApp
 	case "QuitApp":
@@ -113,10 +109,9 @@ type TExeNotFound struct {
 
 type TQuit struct{}
 
-type TUserLogin struct {
+type TUserLoginRequest struct {
 	Username string
 	Password string
-	TestCode string
 }
 type TWarnUser struct {
 	Message string
@@ -128,8 +123,10 @@ type TLoadRoute struct {
 
 type TReloadUi struct{}
 
-type TGetTest struct {
-	TestPassword string
+type TStartTestRequest struct{}
+
+type TStartTest struct {
+	tests []Test
 }
 
 type AppType int
@@ -203,28 +200,26 @@ func DumpTypes(dir string) {
 		Add(Message{}).
 		Add(TExeNotFound{}).
 		Add(TQuit{}).
-		Add(TUserLogin{}).
+		Add(TUserLoginRequest{}).
 		Add(TWarnUser{}).
 		Add(TLoadRoute{}).
 		Add(TReloadUi{}).
-		Add(TGetTest{}).
+		Add(TStartTestRequest{}).
+		Add(TStartTest{}).
 		Add(TOpenApp{}).
 		Add(TQuitApp{}).
 		AddEnum([]AppType{TXT, DOCX, XLSX, PPTX}).
 		AddEnum(allVarients)
 
-		converter = converter.
-		Add(user.User{}).
-		Add(user.UserSubmission{}).
-		Add(user.UserBatchRequestData{}).
-		Add(user.UserLoginRequest{}).
-		Add(user.UserUpdateRequest{}).
-		Add(test.Test{}).
-		Add(admin.Admin{}).
-		Add(admin.AdminRequest{}).
-		Add(batch.Batch{}).
-		AddEnum([]test.TestType{test.TypingTest, test.DocxTest, test.ExcelTest, test.WordTest})
-
+	converter = converter.
+		Add(User{}).
+		Add(UserSubmission{}).
+		// Add(UserBatchRequestData{}).
+		Add(Test{}).
+		Add(Admin{}).
+		// Add(AdminRequest{}).
+		Add(Batch{}).
+		AddEnum([]TestType{TypingTest, DocxTest, ExcelTest, WordTest})
 
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {

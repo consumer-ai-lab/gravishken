@@ -55,7 +55,7 @@ func newApp() (*App, error) {
 	return app, nil
 }
 
-func (self *App) login(user_login *types.TUserLogin) error {
+func (self *App) login(user_login *types.TUserLoginRequest) error {
 	err := self.client.login(user_login)
 	if err != nil {
 		errorMessage := types.NewMessage(types.TErr{
@@ -98,14 +98,13 @@ func (self *App) handleServerMessages() {
 	}
 }
 
-func (self *App) startTest(testData types.TGetTest) error {
-	questionPaper, err := self.client.getTest(testData)
+func (self *App) startTest() error {
+	tests, err := self.client.getTests(self.client.user.Batch)
+	self.client.tests = tests
 
 	if err != nil {
 		return err
 	}
-
-	log.Println("Question paper: ", questionPaper)
 
 	routeMessage := types.TLoadRoute{
 		Route: "/tests/1",

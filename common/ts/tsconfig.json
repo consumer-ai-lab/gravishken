@@ -3,6 +3,7 @@
         "target": "ESNext",
         "module": "ESNext",
         "useDefineForClassFields": true,
+        "allowImportingTsExtensions": true,
         "noEmit": true,
         "paths": {
           "@common/*": [

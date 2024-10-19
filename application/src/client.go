@@ -2,9 +2,7 @@ package main
 
 import (
 	"bytes"
-	types "common"
-	TEST "common/models/test"
-	user "common/models/user"
+	"common"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -22,11 +20,13 @@ var server_url string
 type Client struct {
 	client http.Client
 	jwt    string
+	user   *common.User
+	tests  []common.Test
 
 	server struct {
 		conn         *websocket.Conn
-		send         chan types.Message
-		recv         chan types.Message
+		send         chan common.Message
+		recv         chan common.Message
 		conn_started bool
 	}
 
@@ -36,18 +36,18 @@ type Client struct {
 	}
 
 	frontend struct {
-		send chan<- types.Message
+		send chan<- common.Message
 	}
 }
 
-func newClient(send chan<- types.Message) (*Client, error) {
+func newClient(send chan<- common.Message) (*Client, error) {
 	self := &Client{}
 	self.frontend.send = send
 
 	self.client = http.Client{}
 
-	self.server.send = make(chan types.Message, 100)
-	self.server.recv = make(chan types.Message, 100)
+	self.server.send = make(chan common.Message, 100)
+	self.server.recv = make(chan common.Message, 100)
 
 	ctx, destroy := context.WithCancel(context.Background())
 	self.exit.ctx = ctx
@@ -64,7 +64,7 @@ func (self *Client) destroy() {
 
 func (self *Client) notifyErr(err error) {
 	if err != nil {
-		self.frontend.send <- types.NewMessage(types.TErr{
+		self.frontend.send <- common.NewMessage(common.TErr{
 			Message: fmt.Sprintf("Error: %s", err),
 		})
 		log.Printf("Error: %s\n", err)
@@ -78,14 +78,8 @@ func (self *Client) closeServerConn() {
 	self.server.conn.Close()
 }
 
-func (self *Client) login(user_login *types.TUserLogin) error {
-	login_req := user.UserLoginRequest{
-		Username:     user_login.Username,
-		Password:     user_login.Password,
-		TestPassword: user_login.TestCode,
-	}
-
-	json_data, err := json.Marshal(login_req)
+func (self *Client) login(user_login *common.TUserLoginRequest) error {
+	json_data, err := json.Marshal(user_login)
 	if err != nil {
 		return err
 	}
@@ -113,21 +107,19 @@ func (self *Client) login(user_login *types.TUserLogin) error {
 		return err
 	}
 
-	var result struct {
-		Message  string `json:"message"`
-		Response string `json:"response"`
-	}
+	var result common.UserLoginResponse
 	if err := json.Unmarshal(body, &result); err != nil {
 		return err
 	}
 
-	self.jwt = result.Response
+	self.jwt = result.Jwt
+	self.user = &result.User
+	log.Println(self.user)
 
 	return nil
 }
 
 func (self *Client) maintainConn() {
-	
 	for {
 		ctx, close := context.WithCancel(context.Background())
 
@@ -195,7 +187,7 @@ func (self *Client) connect(exit context.Context, cancel context.CancelFunc) err
 	go func() {
 		defer cancel()
 		for {
-			var msg types.Message
+			var msg common.Message
 			err := self.server.conn.ReadJSON(&msg)
 			if err != nil {
 				log.Println(err)
@@ -208,39 +200,37 @@ func (self *Client) connect(exit context.Context, cancel context.CancelFunc) err
 	return nil
 }
 
-func (self *Client) getTest(testData types.TGetTest) (TEST.Test, error) {
-	test_code := testData.TestPassword
-	url := server_url + "/test/get_question_paper/" + test_code
+func (self *Client) getTests(batchName string) ([]common.Test, error) {
+	url := server_url + "/batch/tests/" + batchName
+	log.Println(url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return TEST.Test{}, err
+		return []common.Test{}, err
 	}
 	req.Header.Set("content-type", "application/json")
-	req.Header.Set("test_code", test_code)
 	req.Header.Set("Authorization", "Bearer "+self.jwt)
 
 	resp, err := self.client.Do(req)
 	if err != nil {
-		return TEST.Test{}, err
+		return []common.Test{}, err
 	}
 	defer resp.Body.Close()
 
 	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
-		return TEST.Test{}, fmt.Errorf("%s", resp.Status)
+		return []common.Test{}, fmt.Errorf("%s", resp.Status)
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return TEST.Test{}, err
+		return []common.Test{}, err
 	}
 
-	var result struct {
-		Message  string    `json:"message"`
-		Response TEST.Test `json:"response"`
-	}
+	log.Println(string(body))
+
+	var result []common.Test
 	if err := json.Unmarshal(body, &result); err != nil {
-		return TEST.Test{}, err
+		return []common.Test{}, err
 	}
 
-	return result.Response, nil
+	return result, nil
 }

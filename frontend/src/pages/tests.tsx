@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import * as types from "@common/types";
 import { UserIcon } from 'lucide-react';
 import { useTest } from '@/components/TestContext';
+import * as server from "@common/server.ts";
 
 const testList = [
     { id: '1', name: 'Typing Test' },
@@ -35,6 +36,13 @@ export default function TestsPage() {
             setTimeLeft((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
         }, 1000);
 
+        fetch(server.base_url + "/get-tests").then(async (r) => {
+            console.log(await r.json())
+        })
+        fetch(server.base_url + "/get-user").then(async (r) => {
+            console.log(await r.json())
+        })
+
         return () => clearInterval(timer);
     }, []);
 
@@ -54,11 +62,9 @@ export default function TestsPage() {
     useEffect(() => {
         const storedUsername = localStorage.getItem('username');
         const storedUserPassword = localStorage.getItem('userPassword');
-        const storedTestPassword = localStorage.getItem('testPassword');
 
         console.log("Username: ", storedUsername);
         console.log("UserPassword: ", storedUserPassword);
-        console.log("TestPassword: ", storedTestPassword);
 
         if (storedUsername) setUsername(storedUsername);
         if (storedUserPassword) {
@@ -68,7 +74,6 @@ export default function TestsPage() {
             console.log("Digits: ", digits);
             console.log("Roll Number: ", rollNumber);
         }
-        if (storedTestPassword) setTestPassword(storedTestPassword);
     }, []);
 
     const testData = {

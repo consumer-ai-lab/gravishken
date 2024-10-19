@@ -15,8 +15,6 @@ import (
 var build_mode string
 var port string
 
-
-
 func main() {
 	if build_mode == "DEV" {
 		root, ok := os.LookupEnv("PROJECT_ROOT")
