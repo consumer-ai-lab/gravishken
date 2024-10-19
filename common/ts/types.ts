@@ -66,10 +66,10 @@ export interface TQuitApp {
 
 }
 export interface User {
-    Id: string;
+    Id?: string;
     Username: string;
     Password: string;
-    BatchName: string;
+    Batch: string;
 }
 export interface Time {
 
@@ -89,31 +89,22 @@ export interface UserSubmission {
     MergedFileID: string;
     SubmissionFolderID: string;
 }
-export interface UserBatchRequestData {
-    From: number;
-    To: number;
-    ResultDownloaded: boolean;
-}
 export interface Test {
-    Id: string;
+    Id?: string;
     TestName: string;
-    Type: TestType;
     Duration: number;
-    FilePath: string;
-    TypingText: string;
-    MCQJSON: string;
+    Type: TestType;
+    FilePath?: string;
+    TypingText?: string;
+    McqJson?: string;
 }
 export interface Admin {
-    Id: string;
+    Id?: string;
     Username: string;
     Password: string;
 }
-export interface AdminRequest {
-    Username: string;
-    Token: string;
-}
 export interface Batch {
-    Id: string;
+    Id?: string;
     Name: string;
     Tests: string[];
 }

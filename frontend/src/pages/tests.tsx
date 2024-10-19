@@ -62,11 +62,9 @@ export default function TestsPage() {
     useEffect(() => {
         const storedUsername = localStorage.getItem('username');
         const storedUserPassword = localStorage.getItem('userPassword');
-        const storedTestPassword = localStorage.getItem('testPassword');
 
         console.log("Username: ", storedUsername);
         console.log("UserPassword: ", storedUserPassword);
-        console.log("TestPassword: ", storedTestPassword);
 
         if (storedUsername) setUsername(storedUsername);
         if (storedUserPassword) {
@@ -76,7 +74,6 @@ export default function TestsPage() {
             console.log("Digits: ", digits);
             console.log("Roll Number: ", rollNumber);
         }
-        if (storedTestPassword) setTestPassword(storedTestPassword);
     }, []);
 
     const testData = {

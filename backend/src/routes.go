@@ -120,10 +120,10 @@ func AdminRoutes(allControllers *Database, route *gin.Engine) {
 			}
 
 			user := common.User{
-				Id:        primitive.NewObjectID().String(),
-				Username:  record[0],
-				Password:  record[1],
-				BatchName: record[3],
+				Id:       primitive.NewObjectID().String(),
+				Username: record[0],
+				Password: record[1],
+				Batch:    record[3],
 			}
 			users = append(users, user)
 		}
@@ -526,8 +526,8 @@ func UserRoutes(allControllers *Database, route *gin.Engine) {
 			escapedSearch := regexp.QuoteMeta(search)
 			filter = bson.M{
 				"$or": []bson.M{
-					{"username": primitive.Regex{Pattern: escapedSearch, Options: "i"}}, // Changed from name to username
-					{"batch": primitive.Regex{Pattern: escapedSearch, Options: "i"}},    // Changed from batchName to batch
+					{"username": primitive.Regex{Pattern: escapedSearch, Options: "i"}},
+					{"batch": primitive.Regex{Pattern: escapedSearch, Options: "i"}},
 				},
 			}
 		}
@@ -552,7 +552,7 @@ func UserRoutes(allControllers *Database, route *gin.Engine) {
 		opts := options.Find().
 			SetSkip(int64(skip)).
 			SetLimit(int64(limit)).
-			SetSort(bson.D{{Key: "username", Value: 1}}) // Changed from name to username
+			SetSort(bson.D{{Key: "username", Value: 1}})
 
 		var users []common.User
 		cursor, err := allControllers.UserCollection.Find(context.Background(), filter, opts)

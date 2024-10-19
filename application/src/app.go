@@ -99,7 +99,7 @@ func (self *App) handleServerMessages() {
 }
 
 func (self *App) startTest() error {
-	tests, err := self.client.getTests(self.client.user.BatchName)
+	tests, err := self.client.getTests(self.client.user.Batch)
 	self.client.tests = tests
 
 	if err != nil {

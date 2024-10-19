@@ -384,6 +384,7 @@ func GetTestsByBatch(batchCollection *mongo.Collection, testCollection *mongo.Co
 
 	var tests []common.Test
 	cursor, err := testCollection.Find(context.TODO(), bson.M{"_id": bson.M{"$in": batchDoc.Tests}})
+	log.Println(batchDoc, tests)
 	if err != nil {
 		return nil, fmt.Errorf("error finding tests: %v", err)
 	}
@@ -397,30 +398,30 @@ func GetTestsByBatch(batchCollection *mongo.Collection, testCollection *mongo.Co
 	return tests, nil
 }
 
-func GetTestByID(testCollection *mongo.Collection, testID primitive.ObjectID) (*common.Test, error) {
-	var testDoc common.Test
-	err := testCollection.FindOne(context.TODO(), bson.M{"_id": testID}).Decode(&testDoc)
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			return nil, fmt.Errorf("test not found")
-		}
-		return nil, fmt.Errorf("error finding test: %v", err)
-	}
-	return &testDoc, nil
-}
+// func GetTestByID(testCollection *mongo.Collection, testID primitive.ObjectID) (*common.Test, error) {
+// 	var testDoc common.Test
+// 	err := testCollection.FindOne(context.TODO(), bson.M{"_id": testID}).Decode(&testDoc)
+// 	if err != nil {
+// 		if err == mongo.ErrNoDocuments {
+// 			return nil, fmt.Errorf("test not found")
+// 		}
+// 		return nil, fmt.Errorf("error finding test: %v", err)
+// 	}
+// 	return &testDoc, nil
+// }
 
-func GetBatchByBatchNumber(Collection *mongo.Collection, batchNumber string) (ModelInterface, error) {
-	var batch ModelInterface
+// func GetBatchByBatchNumber(Collection *mongo.Collection, batchNumber string) (ModelInterface, error) {
+// 	var batch ModelInterface
 
-	err := Collection.FindOne(context.TODO(), bson.M{"batch_number": batchNumber}).Decode(&batch)
+// 	err := Collection.FindOne(context.TODO(), bson.M{"batch_number": batchNumber}).Decode(&batch)
 
-	if err != nil {
-		return nil, err
-	}
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	return batch, nil
+// 	return batch, nil
 
-}
+// }
 
 func Add_Model_To_DB(Collection *mongo.Collection, Model ModelInterface) error {
 	_, err := Collection.InsertOne(context.TODO(), Model)

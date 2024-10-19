@@ -61,7 +61,7 @@ type Test struct {
 	Duration int
 
 	Type       TestType
-	FilePath   string `bson:"filepath,omitempty" json:"FilePath,omitempty"`
+	FilePath   string `bson:"file,omitempty" json:"FilePath,omitempty"`
 	TypingText string `bson:"typingtext,omitempty" json:"TypingText,omitempty"`
 	McqJson    string `bson:"mcqjson,omitempty" json:"McqJson,omitempty"`
 }
@@ -71,8 +71,8 @@ type User struct {
 	Username string
 	// TODO: plaintext password yo!
 	// passwords should be stored in another table hashed
-	Password  string
-	BatchName string
+	Password string
+	Batch    string
 }
 
 type UserSubmission struct {
