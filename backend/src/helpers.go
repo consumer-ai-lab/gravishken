@@ -286,7 +286,7 @@ import (
 // 	return result, nil
 // }
 
-func UserLogin(Collection *mongo.Collection, userRequest *common.UserLoginRequest) (string, error) {
+func UserLogin(Collection *mongo.Collection, userRequest *common.TUserLoginRequest) (string, error) {
 	user, err := common.FindByUsername(Collection, userRequest.Username)
 
 	if err != nil {

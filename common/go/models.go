@@ -100,11 +100,6 @@ type UserBatchRequestData struct {
 	ResultDownloaded bool
 }
 
-type UserLoginRequest struct {
-	Username string
-	Password string
-}
-
 type UserLoginResponse struct {
 	Jwt  string
 	User User

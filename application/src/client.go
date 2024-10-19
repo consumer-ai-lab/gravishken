@@ -77,13 +77,8 @@ func (self *Client) closeServerConn() {
 	self.server.conn.Close()
 }
 
-func (self *Client) login(user_login *common.TUserLogin) error {
-	login_req := common.UserLoginRequest{
-		Username: user_login.Username,
-		Password: user_login.Password,
-	}
-
-	json_data, err := json.Marshal(login_req)
+func (self *Client) login(user_login *common.TUserLoginRequest) error {
+	json_data, err := json.Marshal(user_login)
 	if err != nil {
 		return err
 	}

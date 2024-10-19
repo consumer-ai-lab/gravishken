@@ -55,7 +55,7 @@ func newApp() (*App, error) {
 	return app, nil
 }
 
-func (self *App) login(user_login *types.TUserLogin) error {
+func (self *App) login(user_login *types.TUserLoginRequest) error {
 	err := self.client.login(user_login)
 	if err != nil {
 		errorMessage := types.NewMessage(types.TErr{

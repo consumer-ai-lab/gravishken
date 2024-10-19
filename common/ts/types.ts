@@ -11,7 +11,7 @@ export enum Varient {
     Err = 0,
     ExeNotFound = 1,
     Quit = 2,
-    UserLogin = 3,
+    UserLoginRequest = 3,
     WarnUser = 4,
     LoadRoute = 5,
     ReloadUi = 6,
@@ -40,10 +40,9 @@ export interface TExeNotFound {
 export interface TQuit {
 
 }
-export interface TUserLogin {
+export interface TUserLoginRequest {
     Username: string;
     Password: string;
-    TestCode: string;
 }
 export interface TWarnUser {
     Message: string;
@@ -94,10 +93,6 @@ export interface UserBatchRequestData {
     From: number;
     To: number;
     ResultDownloaded: boolean;
-}
-export interface UserLoginRequest {
-    Username: string;
-    Password: string;
 }
 export interface Test {
     Id: string;

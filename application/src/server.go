@@ -171,8 +171,8 @@ func (self *App) handleMessages() {
 				continue
 			}
 			self.send <- types.NewMessage(*val)
-		case types.UserLogin:
-			val, err := types.Get[types.TUserLogin](msg)
+		case types.UserLoginRequest:
+			val, err := types.Get[types.TUserLoginRequest](msg)
 			if err != nil {
 				self.notifyErr(err)
 				continue

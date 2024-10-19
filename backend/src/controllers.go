@@ -202,7 +202,7 @@ func (this *Database) GetBatches(ctx *gin.Context) {
 	})
 }
 
-func (this *Database) UserLoginHandler(ctx *gin.Context, userModel *common.UserLoginRequest) {
+func (this *Database) UserLoginHandler(ctx *gin.Context, userModel *common.TUserLoginRequest) {
 	userCollection := this.UserCollection
 	response, err := UserLogin(userCollection, userModel)
 	user, _ := common.FindByUsername(userCollection, userModel.Username)
