@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 	assets "server"
-	route "server/src/routes"
 	"strings"
 	"time"
 
@@ -109,7 +108,7 @@ func SetupRouter() *gin.Engine {
 	router.Use(helmet.Default())
 	router.Use(gzip.Gzip(gzip.BestCompression))
 
-	route.InitAuthRoutes(db, router)
+	InitAuthRoutes(db, router)
 	// route.InitOtherRoutes(db, router)
 
 	AppRoutes(router)

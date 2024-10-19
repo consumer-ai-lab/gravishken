@@ -1,10 +1,8 @@
 package main
 
 import (
-	"common/models"
+	"common"
 	"context"
-	"server/src/helper"
-	"server/src/types"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -19,18 +17,18 @@ type ControllerClass struct {
 	BatchCollection *mongo.Collection
 }
 
-func (this *ControllerClass) GetQuestionPaperHandler(ctx *gin.Context, batchName string) ([]types.ModelInterface, error) {
+func (this *ControllerClass) GetQuestionPaperHandler(ctx *gin.Context, batchName string) ([]ModelInterface, error) {
 	batchCollection := this.BatchCollection
 	testCollection := this.TestCollection
 
-	tests, err := helper.GetTestsByBatch(batchCollection, testCollection, batchName)
+	tests, err := GetTestsByBatch(batchCollection, testCollection, batchName)
 	if err != nil {
 		ctx.JSON(500, gin.H{"error": "Error while fetching question papers"})
 		return nil, err
 	}
 
 	// Convert []test.Test to []types.ModelInterface
-	var modelTests []types.ModelInterface
+	var modelTests []ModelInterface
 	for _, t := range tests {
 		modelTests = append(modelTests, &t)
 	}
@@ -38,8 +36,8 @@ func (this *ControllerClass) GetQuestionPaperHandler(ctx *gin.Context, batchName
 	return modelTests, nil
 }
 
-func (c *ControllerClass) GetAllTests(ctx *gin.Context) ([]models.Test, error) {
-	var tests []models.Test
+func (c *ControllerClass) GetAllTests(ctx *gin.Context) ([]common.Test, error) {
+	var tests []common.Test
 
 	cursor, err := c.TestCollection.Find(context.TODO(), bson.M{})
 	if err != nil {
@@ -54,9 +52,9 @@ func (c *ControllerClass) GetAllTests(ctx *gin.Context) ([]models.Test, error) {
 	return tests, nil
 }
 
-func (this *ControllerClass) AdminLoginHandler(ctx *gin.Context, adminModel *models.Admin) {
+func (this *ControllerClass) AdminLoginHandler(ctx *gin.Context, adminModel *common.Admin) {
 	adminCollection := this.AdminCollection
-	token, err := helper.AdminLogin(adminCollection, adminModel)
+	token, err := AdminLogin(adminCollection, adminModel)
 
 	if err != nil {
 		ctx.JSON(401, gin.H{
@@ -73,9 +71,9 @@ func (this *ControllerClass) AdminLoginHandler(ctx *gin.Context, adminModel *mod
 	})
 }
 
-func (this *ControllerClass) AdminRegisterHandler(ctx *gin.Context, adminModel *models.Admin) {
+func (this *ControllerClass) AdminRegisterHandler(ctx *gin.Context, adminModel *common.Admin) {
 	adminCollection := this.AdminCollection
-	err := helper.RegisterAdmin(adminCollection, adminModel)
+	err := RegisterAdmin(adminCollection, adminModel)
 
 	if err != nil {
 		ctx.JSON(500, gin.H{
@@ -96,9 +94,9 @@ func (this *ControllerClass) AdminChangePassword(ctx *gin.Context) {
 	})
 }
 
-func (this *ControllerClass) AddTestToDB(ctx *gin.Context, test *models.Test) {
+func (this *ControllerClass) AddTestToDB(ctx *gin.Context, test *common.Test) {
 	testCollection := this.TestCollection
-	err := helper.Add_Model_To_DB(testCollection, test)
+	err := Add_Model_To_DB(testCollection, test)
 
 	if err != nil {
 		ctx.JSON(500, gin.H{
@@ -116,7 +114,7 @@ func (this *ControllerClass) AddTestToDB(ctx *gin.Context, test *models.Test) {
 func (this *ControllerClass) UpdateTypingTestText(ctx *gin.Context, typingTestText string, testID string) {
 	testCollection := this.TestCollection
 
-	err := helper.UpdateTypingTestText(testCollection, testID, typingTestText)
+	err := UpdateTypingTestText(testCollection, testID, typingTestText)
 	if err != nil {
 		ctx.JSON(500, gin.H{
 			"message": "Error while updating typing test text",
@@ -130,10 +128,10 @@ func (this *ControllerClass) UpdateTypingTestText(ctx *gin.Context, typingTestTe
 	})
 }
 
-func (this *ControllerClass) AddBatchToDB(ctx *gin.Context, batchData *models.Batch) {
+func (this *ControllerClass) AddBatchToDB(ctx *gin.Context, batchData *common.Batch) {
 	testCollection := this.BatchCollection
 
-	err := helper.Add_Model_To_DB(testCollection, batchData)
+	err := Add_Model_To_DB(testCollection, batchData)
 
 	if err != nil {
 		ctx.JSON(500, gin.H{
@@ -151,7 +149,7 @@ func (this *ControllerClass) AddBatchToDB(ctx *gin.Context, batchData *models.Ba
 func (this *ControllerClass) GetBatches(ctx *gin.Context) {
 	testCollection := this.BatchCollection
 
-	batchData, err := helper.Get_All_Models(testCollection, &models.Batch{})
+	batchData, err := Get_All_Models(testCollection, &common.Batch{})
 
 	if err != nil {
 		ctx.JSON(500, gin.H{
@@ -167,9 +165,9 @@ func (this *ControllerClass) GetBatches(ctx *gin.Context) {
 	})
 }
 
-func (this *ControllerClass) UserLoginHandler(ctx *gin.Context, userModel *models.UserLoginRequest) {
+func (this *ControllerClass) UserLoginHandler(ctx *gin.Context, userModel *common.UserLoginRequest) {
 	userCollection := this.UserCollection
-	response, err := helper.UserLogin(userCollection, userModel)
+	response, err := UserLogin(userCollection, userModel)
 
 	if err != nil {
 		ctx.JSON(401, gin.H{
@@ -185,9 +183,9 @@ func (this *ControllerClass) UserLoginHandler(ctx *gin.Context, userModel *model
 	})
 }
 
-func (this *ControllerClass) UpdateUserData(ctx *gin.Context, userUpdateRequest *models.UserUpdateRequest) {
+func (this *ControllerClass) UpdateUserData(ctx *gin.Context, userUpdateRequest *common.UserUpdateRequest) {
 	userCollection := this.UserCollection
-	err := helper.UpdateUserData(userCollection, userUpdateRequest)
+	err := UpdateUserData(userCollection, userUpdateRequest)
 
 	if err != nil {
 		ctx.JSON(500, gin.H{
@@ -218,7 +216,7 @@ func (this *ControllerClass) Increase_Time(ctx *gin.Context, param string, usern
 
 	switch param {
 	case "user":
-		err := helper.UpdateUserTestTime(userCollection, username[0], time_to_increase)
+		err := UpdateUserTestTime(userCollection, username[0], time_to_increase)
 		if err != nil {
 			ctx.JSON(500, gin.H{
 				"message": "Error in increasing time",
@@ -231,7 +229,7 @@ func (this *ControllerClass) Increase_Time(ctx *gin.Context, param string, usern
 
 	case "batch":
 
-		err := helper.UpdateBatchTestTime(userCollection, username, time_to_increase)
+		err := UpdateBatchTestTime(userCollection, username, time_to_increase)
 		if err != nil {
 			ctx.JSON(500, gin.H{
 				"message": "Error in increasing time",
@@ -255,7 +253,7 @@ func (this *ControllerClass) GetBatchWiseData(ctx *gin.Context, param string, Ba
 
 	switch param {
 	case "batch":
-		result, err := helper.GetBatchWiseList(userCollection, BatchNumber)
+		result, err := GetBatchWiseList(userCollection, BatchNumber)
 		if err != nil {
 			ctx.JSON(500, gin.H{
 				"message": "Error in fetching batch wise data",
@@ -270,7 +268,7 @@ func (this *ControllerClass) GetBatchWiseData(ctx *gin.Context, param string, Ba
 	case "roll":
 		From := Ranges[0]
 		To := Ranges[1]
-		result, err := helper.GetBatchWiseListRoll(userCollection, BatchNumber, From, To)
+		result, err := GetBatchWiseListRoll(userCollection, BatchNumber, From, To)
 		if err != nil {
 			ctx.JSON(500, gin.H{
 				"message": "Error in fetching batch wise data",
@@ -284,7 +282,7 @@ func (this *ControllerClass) GetBatchWiseData(ctx *gin.Context, param string, Ba
 		})
 
 	case "frontend":
-		result, err := helper.GetBatchDataForFrontend(userCollection, BatchNumber)
+		result, err := GetBatchDataForFrontend(userCollection, BatchNumber)
 		if err != nil {
 			ctx.JSON(500, gin.H{
 				"message": "Error in fetching batch wise data",
@@ -304,12 +302,12 @@ func (this *ControllerClass) GetBatchWiseData(ctx *gin.Context, param string, Ba
 	}
 }
 
-func (this *ControllerClass) SetUserData(ctx *gin.Context, param string, userRequest *models.UserBatchRequestData, Username string) {
+func (this *ControllerClass) SetUserData(ctx *gin.Context, param string, userRequest *common.UserBatchRequestData, Username string) {
 	userCollection := this.UserCollection
 
 	switch param {
 	case "download":
-		err := helper.SetUserResultToDownloaded(userCollection, userRequest)
+		err := SetUserResultToDownloaded(userCollection, userRequest)
 		if err != nil {
 			ctx.JSON(500, gin.H{
 				"message": "Error in setting user data",
@@ -322,7 +320,7 @@ func (this *ControllerClass) SetUserData(ctx *gin.Context, param string, userReq
 		})
 
 	case "reset":
-		err := helper.ResetUserData(userCollection, Username)
+		err := ResetUserData(userCollection, Username)
 		if err != nil {
 			ctx.JSON(500, gin.H{
 				"message": "Error in resetting user data",
@@ -342,10 +340,10 @@ func (this *ControllerClass) SetUserData(ctx *gin.Context, param string, userReq
 
 }
 
-func (self *ControllerClass) UpdateUser(ctx *gin.Context, userRequest *models.UserModelUpdateRequest) error {
+func (self *ControllerClass) UpdateUser(ctx *gin.Context, userRequest *common.UserModelUpdateRequest) error {
 	userCollection := self.UserCollection
 
-	err := helper.UpdateUser(userCollection, userRequest)
+	err := UpdateUser(userCollection, userRequest)
 	if err != nil {
 		return err
 	}
@@ -356,7 +354,7 @@ func (self *ControllerClass) UpdateUser(ctx *gin.Context, userRequest *models.Us
 func (self *ControllerClass) DeleteUser(ctx *gin.Context, userId string) error {
 	userCollection := self.UserCollection
 
-	err := helper.Delete_Model_By_ID(userCollection, userId)
+	err := Delete_Model_By_ID(userCollection, userId)
 
 	if err != nil {
 		return err

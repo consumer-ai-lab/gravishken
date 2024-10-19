@@ -12,7 +12,6 @@ import (
 	types "common"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"server/src/auth"
 )
 
 type Client struct {
@@ -169,7 +168,7 @@ func AppRoutes(route *gin.Engine) {
 		}
 		token := bearerToken[1]
 
-		claims, err := auth.VerifyJWT(token)
+		claims, err := VerifyJWT(token)
 		if err != nil {
 			c.JSON(401, gin.H{"error": "Invalid or expired token"})
 			return

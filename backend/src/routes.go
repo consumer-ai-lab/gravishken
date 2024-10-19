@@ -1,7 +1,7 @@
 package main
 
 import (
-	"common/models"
+	"common"
 	"context"
 	"encoding/csv"
 	"fmt"
@@ -11,8 +11,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"server/src/middleware"
-	"server/src/types"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -32,7 +30,7 @@ func AdminRoutes(allControllers *ControllerClass, route *gin.Engine) {
 	unauthenticatedAdminRoutes := route.Group("/admin")
 
 	unauthenticatedAdminRoutes.POST("/register", func(ctx *gin.Context) {
-		var adminModel models.Admin
+		var adminModel common.Admin
 		if err := ctx.ShouldBindJSON(&adminModel); err != nil {
 			ctx.JSON(400, gin.H{"error": "Invalid request body"})
 			return
@@ -42,7 +40,7 @@ func AdminRoutes(allControllers *ControllerClass, route *gin.Engine) {
 	})
 
 	unauthenticatedAdminRoutes.POST("/login", func(ctx *gin.Context) {
-		var adminModel models.Admin
+		var adminModel common.Admin
 		fmt.Println("Admin login route")
 		if err := ctx.ShouldBindJSON(&adminModel); err != nil {
 			ctx.JSON(400, gin.H{"error": "Invalid request body"})
@@ -53,7 +51,7 @@ func AdminRoutes(allControllers *ControllerClass, route *gin.Engine) {
 	})
 
 	authenticatedAdminRoutes := route.Group("/admin")
-	authenticatedAdminRoutes.Use(middleware.AdminJWTAuthMiddleware(allControllers.AdminCollection))
+	authenticatedAdminRoutes.Use(AdminJWTAuthMiddleware(allControllers.AdminCollection))
 
 	// If not authenticated, it will give 401 from the middleware
 	authenticatedAdminRoutes.GET("/auth-status", func(ctx *gin.Context) {
@@ -65,9 +63,9 @@ func AdminRoutes(allControllers *ControllerClass, route *gin.Engine) {
 			})
 			return
 		}
-		claims := anyclaims.(*types.Claims)
+		claims := anyclaims.(*Claims)
 
-		var adminInfo models.Admin
+		var adminInfo common.Admin
 		err := allControllers.AdminCollection.FindOne(context.TODO(), bson.M{"username": claims.Username}).Decode(&adminInfo)
 		if err != nil {
 			ctx.JSON(200, gin.H{
@@ -95,7 +93,7 @@ func AdminRoutes(allControllers *ControllerClass, route *gin.Engine) {
 		defer file.Close()
 
 		reader := csv.NewReader(file)
-		var users []models.User
+		var users []common.User
 
 		// Skip the header row
 		if _, err := reader.Read(); err != nil {
@@ -118,13 +116,13 @@ func AdminRoutes(allControllers *ControllerClass, route *gin.Engine) {
 				return
 			}
 
-			user := models.User{
+			user := common.User{
 				ID:           primitive.NewObjectID(),
 				Username:     record[0],
 				Password:     record[1],
 				TestPassword: record[2],
 				Batch:        record[3],
-				Tests:        models.UserSubmission{},
+				Tests:        common.UserSubmission{},
 			}
 			users = append(users, user)
 		}
@@ -169,7 +167,7 @@ func AdminRoutes(allControllers *ControllerClass, route *gin.Engine) {
 			testObjectIDs = append(testObjectIDs, objectID)
 		}
 
-		newBatch := models.Batch{
+		newBatch := common.Batch{
 			Name:  batchData.BatchName,
 			Tests: testObjectIDs,
 		}
@@ -200,8 +198,8 @@ func AdminRoutes(allControllers *ControllerClass, route *gin.Engine) {
 			return
 		}
 
-		testModel := models.Test{
-			Type:       models.TestType(testType),
+		testModel := common.Test{
+			Type:       common.TestType(testType),
 			Duration:   durationInt,
 			TypingText: typingText,
 		}
@@ -258,7 +256,7 @@ func AdminRoutes(allControllers *ControllerClass, route *gin.Engine) {
 	})
 
 	authenticatedAdminRoutes.POST("/update_user_data", func(ctx *gin.Context) {
-		var userUpdateRequest models.UserUpdateRequest
+		var userUpdateRequest common.UserUpdateRequest
 
 		if err := ctx.ShouldBindJSON(&userUpdateRequest); err != nil {
 			ctx.JSON(500, gin.H{"error": "Invalid request body"})
@@ -319,7 +317,7 @@ func AdminRoutes(allControllers *ControllerClass, route *gin.Engine) {
 			return
 		}
 
-		allControllers.SetUserData(ctx, userRequest.Param, &models.UserBatchRequestData{
+		allControllers.SetUserData(ctx, userRequest.Param, &common.UserBatchRequestData{
 			From:             userRequest.From,
 			To:               userRequest.To,
 			ResultDownloaded: userRequest.ResultDownloaded,
@@ -364,7 +362,7 @@ func InitAuthRoutes(db *mongo.Client, route *gin.Engine) {
 
 func BatchRoutes(allControllers *ControllerClass, route *gin.Engine) {
 	batchRoute := route.Group("/batch")
-	// batchRoute.Use(middleware.UserJWTAuthMiddleware(allControllers.UserCollection))
+	// batchRoute.Use(UserJWTAuthMiddleware(allControllers.UserCollection))
 
 	batchRoute.GET("/get_batches", func(ctx *gin.Context) {
 		allControllers.GetBatches(ctx)
@@ -374,7 +372,7 @@ func BatchRoutes(allControllers *ControllerClass, route *gin.Engine) {
 func TestRoutes(allControllers *ControllerClass, route *gin.Engine) {
 	unauthenticatedTestRoute := route.Group("/test")
 	authenticatedTestRoute := route.Group("/test")
-	authenticatedTestRoute.Use(middleware.UserJWTAuthMiddleware(allControllers.UserCollection))
+	authenticatedTestRoute.Use(UserJWTAuthMiddleware(allControllers.UserCollection))
 
 	authenticatedTestRoute.GET("/get_question_paper/:batch_name", func(ctx *gin.Context) {
 
@@ -397,10 +395,10 @@ func TestRoutes(allControllers *ControllerClass, route *gin.Engine) {
 
 	unauthenticatedTestRoute.GET("/test_types", func(ctx *gin.Context) {
 		testTypes := []string{
-			string(models.TypingTest),
-			string(models.DocxTest),
-			string(models.ExcelTest),
-			string(models.WordTest),
+			string(common.TypingTest),
+			string(common.DocxTest),
+			string(common.ExcelTest),
+			string(common.WordTest),
 		}
 
 		ctx.JSON(200, gin.H{
@@ -430,7 +428,7 @@ func UserRoutes(allControllers *ControllerClass, route *gin.Engine) {
 	userRoute := route.Group("/user")
 
 	userRoute.POST("/login", func(ctx *gin.Context) {
-		var userModel models.UserLoginRequest
+		var userModel common.UserLoginRequest
 		if err := ctx.ShouldBindJSON(&userModel); err != nil {
 			ctx.JSON(400, gin.H{"error": "Invalid request body"})
 			return
@@ -441,10 +439,10 @@ func UserRoutes(allControllers *ControllerClass, route *gin.Engine) {
 
 	authenticated := userRoute.Group("/")
 
-	authenticated.Use(middleware.AdminJWTAuthMiddleware(allControllers.UserCollection))
+	authenticated.Use(AdminJWTAuthMiddleware(allControllers.UserCollection))
 
 	authenticated.GET("/get_all_users", func(ctx *gin.Context) {
-		var users []models.User
+		var users []common.User
 		cursor, err := allControllers.UserCollection.Find(context.Background(), bson.M{})
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve users"})
@@ -465,7 +463,7 @@ func UserRoutes(allControllers *ControllerClass, route *gin.Engine) {
 		limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "50"))
 		skip := (page - 1) * limit
 
-		var users []models.User
+		var users []common.User
 
 		opts := options.Find().SetSkip(int64(skip)).SetLimit(int64(limit))
 		cursor, err := allControllers.UserCollection.Find(context.Background(), bson.M{}, opts)
@@ -496,7 +494,7 @@ func UserRoutes(allControllers *ControllerClass, route *gin.Engine) {
 	})
 
 	userRoute.PUT("/update_user", func(ctx *gin.Context) {
-		var updateRequest models.UserModelUpdateRequest
+		var updateRequest common.UserModelUpdateRequest
 		if err := ctx.ShouldBindJSON(&updateRequest); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 			return

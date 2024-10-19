@@ -1,13 +1,12 @@
 package main
 
 import (
-	"common/models"
+	"common"
 	"context"
 	"errors"
 	"fmt"
 	"log"
 	"reflect"
-	"server/src/types"
 	"strconv"
 	"strings"
 	"time"
@@ -20,7 +19,7 @@ import (
 )
 
 func UpdateUserTestTime(Collection *mongo.Collection, Username string, TimeToIncrease int64) error {
-	var user models.User
+	var user common.User
 
 	err := Collection.FindOne(context.TODO(), bson.M{"name": Username}).Decode(&user)
 
@@ -58,9 +57,9 @@ func UpdateBatchTestTime(Collection *mongo.Collection, Usernames []string, TimeT
 	return nil
 }
 
-func UpdateUserData(Collection *mongo.Collection, Model *models.UserUpdateRequest) error {
+func UpdateUserData(Collection *mongo.Collection, Model *common.UserUpdateRequest) error {
 
-	var user models.User
+	var user common.User
 
 	err := Collection.FindOne(context.TODO(), bson.M{"name": Model.Username}).Decode(&user)
 
@@ -155,14 +154,14 @@ func UpdateUserData(Collection *mongo.Collection, Model *models.UserUpdateReques
 		if err != nil {
 			return err
 		}
-		user, err := GetModelByBatchId(Collection, batchNumber, &models.User{})
+		user, err := GetModelByBatchId(Collection, batchNumber, &common.User{})
 		if err != nil {
 			return err
 		}
 
 		var usernames []string
 		for _, user := range user {
-			usernames = append(usernames, user.(*models.User).Username)
+			usernames = append(usernames, user.(*common.User).Username)
 		}
 
 		err = UpdateBatchTestTime(Collection, usernames, timeToIncrease.Unix())
@@ -179,9 +178,9 @@ func UpdateUserData(Collection *mongo.Collection, Model *models.UserUpdateReques
 	return nil
 }
 
-func UpdateUser(collection *mongo.Collection, userRequest *models.UserModelUpdateRequest) error {
+func UpdateUser(collection *mongo.Collection, userRequest *common.UserModelUpdateRequest) error {
 
-	var user models.User
+	var user common.User
 
 	objectID, err := primitive.ObjectIDFromHex(userRequest.ID)
 	if err != nil {
@@ -206,7 +205,7 @@ func UpdateUser(collection *mongo.Collection, userRequest *models.UserModelUpdat
 
 func GetBatchWiseList(Collection *mongo.Collection, BatchNumber string) ([]map[string]string, error) {
 	var result []map[string]string
-	user, err := GetModelByBatchId(Collection, BatchNumber, &models.User{})
+	user, err := GetModelByBatchId(Collection, BatchNumber, &common.User{})
 	if err != nil {
 		return nil, err
 	}
@@ -219,9 +218,9 @@ func GetBatchWiseList(Collection *mongo.Collection, BatchNumber string) ([]map[s
 
 	for _, user := range user {
 		userMap := map[string]string{
-			"username":             user.(*models.User).Username,
-			"merged_file_id":       user.(*models.User).Tests.MergedFileID,
-			"submission_folder_id": user.(*models.User).Tests.SubmissionFolderID,
+			"username":             user.(*common.User).Username,
+			"merged_file_id":       user.(*common.User).Tests.MergedFileID,
+			"submission_folder_id": user.(*common.User).Tests.SubmissionFolderID,
 		}
 		result = append(result, userMap)
 	}
@@ -232,7 +231,7 @@ func GetBatchWiseList(Collection *mongo.Collection, BatchNumber string) ([]map[s
 
 func GetBatchWiseListRoll(Collection *mongo.Collection, BatchNumber string, From, To int) ([]map[string]string, error) {
 	var result []map[string]string
-	user, err := GetModelByBatchId(Collection, BatchNumber, &models.User{})
+	user, err := GetModelByBatchId(Collection, BatchNumber, &common.User{})
 	if err != nil {
 		return nil, err
 	}
@@ -246,14 +245,14 @@ func GetBatchWiseListRoll(Collection *mongo.Collection, BatchNumber string, From
 	*/
 
 	for _, user := range user {
-		username, _ := strconv.Atoi(user.(*models.User).Username) // Convert username to integer
+		username, _ := strconv.Atoi(user.(*common.User).Username) // Convert username to integer
 		if username >= From && username <= To {
 			userMap := map[string]string{
-				"username":             user.(*models.User).Username,
-				"merged_file_id":       user.(*models.User).Tests.MergedFileID,
-				"submission_folder_id": user.(*models.User).Tests.SubmissionFolderID,
-				"resultDownloaded":     strconv.FormatBool(user.(*models.User).Tests.ResultDownloaded),
-				"submission_received":  strconv.FormatBool(user.(*models.User).Tests.SubmissionReceived),
+				"username":             user.(*common.User).Username,
+				"merged_file_id":       user.(*common.User).Tests.MergedFileID,
+				"submission_folder_id": user.(*common.User).Tests.SubmissionFolderID,
+				"resultDownloaded":     strconv.FormatBool(user.(*common.User).Tests.ResultDownloaded),
+				"submission_received":  strconv.FormatBool(user.(*common.User).Tests.SubmissionReceived),
 			}
 			result = append(result, userMap)
 		}
@@ -264,17 +263,17 @@ func GetBatchWiseListRoll(Collection *mongo.Collection, BatchNumber string, From
 
 func GetBatchDataForFrontend(Collection *mongo.Collection, BatchNumber string) ([]map[string]string, error) {
 	var result []map[string]string
-	user, err := GetModelByBatchId(Collection, BatchNumber, &models.User{})
+	user, err := GetModelByBatchId(Collection, BatchNumber, &common.User{})
 	if err != nil {
 		return nil, err
 	}
 
 	for _, user := range user {
-		start_time := user.(*models.User).Tests.StartTime
+		start_time := user.(*common.User).Tests.StartTime
 		userArr := make(map[string]string)
-		userArr["username"] = user.(*models.User).Username
-		userArr["merged_file_id"] = user.(*models.User).Tests.MergedFileID
-		userArr["submission_folder_id"] = user.(*models.User).Tests.SubmissionFolderID
+		userArr["username"] = user.(*common.User).Username
+		userArr["merged_file_id"] = user.(*common.User).Tests.MergedFileID
+		userArr["submission_folder_id"] = user.(*common.User).Tests.SubmissionFolderID
 		if start_time.IsZero() {
 			userArr["status"] = "Present"
 		} else {
@@ -287,8 +286,8 @@ func GetBatchDataForFrontend(Collection *mongo.Collection, BatchNumber string) (
 	return result, nil
 }
 
-func UserLogin(Collection *mongo.Collection, userRequest *models.UserLoginRequest) (string, error) {
-	user, err := models.FindByUsername(Collection, userRequest.Username)
+func UserLogin(Collection *mongo.Collection, userRequest *common.UserLoginRequest) (string, error) {
+	user, err := common.FindByUsername(Collection, userRequest.Username)
 
 	if err != nil {
 		return "", err
@@ -316,8 +315,8 @@ func UserLogin(Collection *mongo.Collection, userRequest *models.UserLoginReques
 	return tokenString, nil
 }
 
-func SetUserResultToDownloaded(Collection *mongo.Collection, request *models.UserBatchRequestData) error {
-	user, err := Get_All_Models(Collection, &models.User{})
+func SetUserResultToDownloaded(Collection *mongo.Collection, request *common.UserBatchRequestData) error {
+	user, err := Get_All_Models(Collection, &common.User{})
 	if err != nil {
 		return err
 	}
@@ -326,22 +325,22 @@ func SetUserResultToDownloaded(Collection *mongo.Collection, request *models.Use
 	to := request.To
 	resultDownloaded := request.ResultDownloaded
 
-	filered_users := []types.ModelInterface{}
+	filered_users := []ModelInterface{}
 
 	for _, user := range user {
-		username, _ := strconv.Atoi(user.(*models.User).Username) // Convert username to integer
+		username, _ := strconv.Atoi(user.(*common.User).Username) // Convert username to integer
 		if username >= from && username <= to {
 			filered_users = append(filered_users, user)
 		}
 	}
 
 	for _, filtered_user := range filered_users {
-		if !filtered_user.(*models.User).Tests.SubmissionReceived {
+		if !filtered_user.(*common.User).Tests.SubmissionReceived {
 			continue
 		}
 
-		filtered_user.(*models.User).Tests.ResultDownloaded = resultDownloaded
-		err = Update_Model_By_ID(Collection, filtered_user.(*models.User).ID.Hex(), filtered_user)
+		filtered_user.(*common.User).Tests.ResultDownloaded = resultDownloaded
+		err = Update_Model_By_ID(Collection, filtered_user.(*common.User).ID.Hex(), filtered_user)
 		if err != nil {
 			return err
 		}
@@ -351,7 +350,7 @@ func SetUserResultToDownloaded(Collection *mongo.Collection, request *models.Use
 }
 
 func ResetUserData(Collection *mongo.Collection, username string) error {
-	user, err := models.FindByUsername(Collection, username)
+	user, err := common.FindByUsername(Collection, username)
 	if err != nil {
 		return err
 	}
@@ -376,14 +375,14 @@ func ResetUserData(Collection *mongo.Collection, username string) error {
 	return nil
 }
 
-func GetTestsByBatch(batchCollection *mongo.Collection, testCollection *mongo.Collection, batchName string) ([]models.Test, error) {
-	var batchDoc models.Batch
+func GetTestsByBatch(batchCollection *mongo.Collection, testCollection *mongo.Collection, batchName string) ([]common.Test, error) {
+	var batchDoc common.Batch
 	err := batchCollection.FindOne(context.TODO(), bson.M{"name": batchName}).Decode(&batchDoc)
 	if err != nil {
 		return nil, fmt.Errorf("error finding batch: %v", err)
 	}
 
-	var tests []models.Test
+	var tests []common.Test
 	cursor, err := testCollection.Find(context.TODO(), bson.M{"_id": bson.M{"$in": batchDoc.Tests}})
 	if err != nil {
 		return nil, fmt.Errorf("error finding tests: %v", err)
@@ -398,8 +397,8 @@ func GetTestsByBatch(batchCollection *mongo.Collection, testCollection *mongo.Co
 	return tests, nil
 }
 
-func GetTestByID(testCollection *mongo.Collection, testID primitive.ObjectID) (*models.Test, error) {
-	var testDoc models.Test
+func GetTestByID(testCollection *mongo.Collection, testID primitive.ObjectID) (*common.Test, error) {
+	var testDoc common.Test
 	err := testCollection.FindOne(context.TODO(), bson.M{"_id": testID}).Decode(&testDoc)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -410,8 +409,8 @@ func GetTestByID(testCollection *mongo.Collection, testID primitive.ObjectID) (*
 	return &testDoc, nil
 }
 
-func GetBatchByBatchNumber(Collection *mongo.Collection, batchNumber string) (types.ModelInterface, error) {
-	var batch types.ModelInterface
+func GetBatchByBatchNumber(Collection *mongo.Collection, batchNumber string) (ModelInterface, error) {
+	var batch ModelInterface
 
 	err := Collection.FindOne(context.TODO(), bson.M{"batch_number": batchNumber}).Decode(&batch)
 
@@ -423,7 +422,7 @@ func GetBatchByBatchNumber(Collection *mongo.Collection, batchNumber string) (ty
 
 }
 
-func Add_Model_To_DB(Collection *mongo.Collection, Model types.ModelInterface) error {
+func Add_Model_To_DB(Collection *mongo.Collection, Model ModelInterface) error {
 	_, err := Collection.InsertOne(context.TODO(), Model)
 
 	if err != nil {
@@ -434,7 +433,7 @@ func Add_Model_To_DB(Collection *mongo.Collection, Model types.ModelInterface) e
 	return nil
 }
 
-func Get_All_Models(collection *mongo.Collection, modelType types.ModelInterface) ([]types.ModelInterface, error) {
+func Get_All_Models(collection *mongo.Collection, modelType ModelInterface) ([]ModelInterface, error) {
 	fmt.Println("Fetching all models from database...")
 	cursor, err := collection.Find(context.TODO(), bson.M{})
 	if err != nil {
@@ -443,7 +442,7 @@ func Get_All_Models(collection *mongo.Collection, modelType types.ModelInterface
 	}
 	defer cursor.Close(context.TODO())
 
-	var results []types.ModelInterface
+	var results []ModelInterface
 
 	// Create a new slice of the concrete type
 	sliceType := reflect.SliceOf(reflect.TypeOf(modelType).Elem())
@@ -460,21 +459,21 @@ func Get_All_Models(collection *mongo.Collection, modelType types.ModelInterface
 	// Convert concrete slice to []ModelInterface
 	concreteSliceVal := concreteSlicePtr.Elem()
 	for i := 0; i < concreteSliceVal.Len(); i++ {
-		item := concreteSliceVal.Index(i).Addr().Interface().(types.ModelInterface)
+		item := concreteSliceVal.Index(i).Addr().Interface().(ModelInterface)
 		results = append(results, item)
 	}
 
 	return results, nil
 }
 
-func GetModelById(collection *mongo.Collection, ID string, modelType types.ModelInterface) (types.ModelInterface, error) {
+func GetModelById(collection *mongo.Collection, ID string, modelType ModelInterface) (ModelInterface, error) {
 	fmt.Println("Fetching model from database...")
 	objectID, err := primitive.ObjectIDFromHex(ID)
 	if err != nil {
 		return nil, fmt.Errorf("invalid ID format: %v", err)
 	}
 
-	var result types.ModelInterface
+	var result ModelInterface
 	err = collection.FindOne(context.TODO(), bson.M{"_id": objectID}).Decode(&result)
 	if err != nil {
 		fmt.Println("Error in fetching model: ", err)
@@ -485,10 +484,10 @@ func GetModelById(collection *mongo.Collection, ID string, modelType types.Model
 	return result, nil
 }
 
-func GetModelByBatchId(collection *mongo.Collection, batchNumber string, modelType types.ModelInterface) ([]types.ModelInterface, error) {
+func GetModelByBatchId(collection *mongo.Collection, batchNumber string, modelType ModelInterface) ([]ModelInterface, error) {
 	fmt.Println("Fetching model from database...")
 
-	var results []types.ModelInterface
+	var results []ModelInterface
 	cursor, err := collection.Find(context.TODO(), bson.M{"batch": batchNumber})
 	if err != nil {
 		fmt.Println("Error in fetching model: ", err)
@@ -509,7 +508,7 @@ func GetModelByBatchId(collection *mongo.Collection, batchNumber string, modelTy
 	// Convert concrete slice to []ModelInterface
 	concreteSliceVal := concreteSlicePtr.Elem()
 	for i := 0; i < concreteSliceVal.Len(); i++ {
-		item := concreteSliceVal.Index(i).Addr().Interface().(types.ModelInterface)
+		item := concreteSliceVal.Index(i).Addr().Interface().(ModelInterface)
 		results = append(results, item)
 	}
 
@@ -550,7 +549,7 @@ func Delete_ALL_Model(Collection *mongo.Collection) error {
 	return nil
 }
 
-func Update_Model_By_ID(Collection *mongo.Collection, ID string, Model types.ModelInterface) error {
+func Update_Model_By_ID(Collection *mongo.Collection, ID string, Model ModelInterface) error {
 
 	objectID, err := primitive.ObjectIDFromHex(ID)
 	if err != nil {
@@ -575,9 +574,9 @@ func Update_Model_By_ID(Collection *mongo.Collection, ID string, Model types.Mod
 	return nil
 }
 
-func RegisterAdmin(Collection *mongo.Collection, Admin types.ModelInterface) error {
+func RegisterAdmin(Collection *mongo.Collection, Admin ModelInterface) error {
 
-	password := Admin.(*models.Admin).Password
+	password := Admin.(*common.Admin).Password
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -585,18 +584,18 @@ func RegisterAdmin(Collection *mongo.Collection, Admin types.ModelInterface) err
 		return err
 	}
 
-	Admin.(*models.Admin).Password = string(hashedPassword)
+	Admin.(*common.Admin).Password = string(hashedPassword)
 
 	Add_Model_To_DB(Collection, Admin)
 	return nil
 }
 
-func AdminLogin(Collection *mongo.Collection, Admin types.ModelInterface) (string, error) {
-	username := Admin.(*models.Admin).Username
-	password := Admin.(*models.Admin).Password
+func AdminLogin(Collection *mongo.Collection, Admin ModelInterface) (string, error) {
+	username := Admin.(*common.Admin).Username
+	password := Admin.(*common.Admin).Password
 	secretKey := []byte("TODO:add-a-secret-key-from-env")
 
-	var user models.Admin
+	var user common.Admin
 	err := Collection.FindOne(context.TODO(), bson.M{"username": username}).Decode(&user)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -615,7 +614,7 @@ func AdminLogin(Collection *mongo.Collection, Admin types.ModelInterface) (strin
 
 	expirationTime := time.Now().Add(48 * time.Hour)
 
-	claims := &types.Claims{
+	claims := &Claims{
 		Username: username,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
@@ -632,10 +631,10 @@ func AdminLogin(Collection *mongo.Collection, Admin types.ModelInterface) (strin
 	return tokenString, nil
 }
 
-func ValidateAdminToken(tokenString string) (*types.Claims, error) {
+func ValidateAdminToken(tokenString string) (*Claims, error) {
 	secretKey := []byte("TODO:add-a-secret-key-from-env") // Use the same secret key as in AdminLogin
 
-	token, err := jwt.ParseWithClaims(tokenString, &types.Claims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
@@ -646,7 +645,7 @@ func ValidateAdminToken(tokenString string) (*types.Claims, error) {
 		return nil, fmt.Errorf("error parsing token: %v", err)
 	}
 
-	if claims, ok := token.Claims.(*types.Claims); ok && token.Valid {
+	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
 		return claims, nil
 	}
 

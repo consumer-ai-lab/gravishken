@@ -1,10 +1,6 @@
-package types
+package common
 
 import (
-	"common/models/admin"
-	"common/models/batch"
-	"common/models/test"
-	"common/models/user"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -37,7 +33,7 @@ const (
 	WarnUser
 	LoadRoute
 	ReloadUi
-	GetTest
+	StartTest
 	OpenApp
 	QuitApp
 	Unknown // NOTE: keep this as the last constant here.
@@ -59,8 +55,8 @@ func (self Varient) TSName() string {
 		return "LoadRoute"
 	case ReloadUi:
 		return "ReloadUi"
-	case GetTest:
-		return "GetTest"
+	case StartTest:
+		return "StartTest"
 	case OpenApp:
 		return "OpenApp"
 	case QuitApp:
@@ -85,8 +81,8 @@ func varientFromName(typ string) Varient {
 		return ReloadUi
 	case "LoadRoute":
 		return LoadRoute
-	case "GetTest":
-		return GetTest
+	case "StartTest":
+		return StartTest
 	case "OpenApp":
 		return OpenApp
 	case "QuitApp":
@@ -128,8 +124,8 @@ type TLoadRoute struct {
 
 type TReloadUi struct{}
 
-type TGetTest struct {
-	TestPassword string
+type TStartTest struct {
+	BatchName string
 }
 
 type AppType int
@@ -207,23 +203,23 @@ func DumpTypes(dir string) {
 		Add(TWarnUser{}).
 		Add(TLoadRoute{}).
 		Add(TReloadUi{}).
-		Add(TGetTest{}).
+		Add(TStartTest{}).
 		Add(TOpenApp{}).
 		Add(TQuitApp{}).
 		AddEnum([]AppType{TXT, DOCX, XLSX, PPTX}).
 		AddEnum(allVarients)
 
 	converter = converter.
-		Add(user.User{}).
-		Add(user.UserSubmission{}).
-		Add(user.UserBatchRequestData{}).
-		Add(user.UserLoginRequest{}).
-		Add(user.UserUpdateRequest{}).
-		Add(test.Test{}).
-		Add(admin.Admin{}).
-		Add(admin.AdminRequest{}).
-		Add(batch.Batch{}).
-		AddEnum([]test.TestType{test.TypingTest, test.DocxTest, test.ExcelTest, test.WordTest})
+		Add(User{}).
+		Add(UserSubmission{}).
+		Add(UserBatchRequestData{}).
+		Add(UserLoginRequest{}).
+		Add(UserUpdateRequest{}).
+		Add(Test{}).
+		Add(Admin{}).
+		Add(AdminRequest{}).
+		Add(Batch{}).
+		AddEnum([]TestType{TypingTest, DocxTest, ExcelTest, WordTest})
 
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {
