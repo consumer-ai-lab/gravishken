@@ -106,10 +106,12 @@ export interface UserUpdateRequest {
 }
 export interface Test {
     id?: number[];
+    testName: string;
     type: TestType;
     duration: number;
     file?: string;
     typingText?: string;
+    mcqJSON?: string;
 }
 export interface Admin {
     id?: number[];

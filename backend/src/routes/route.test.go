@@ -38,6 +38,7 @@ func TestRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) 
             string(test.DocxTest),
             string(test.ExcelTest),
             string(test.WordTest),
+			string(test.MCQTest),
         }
 
         ctx.JSON(200, gin.H{
