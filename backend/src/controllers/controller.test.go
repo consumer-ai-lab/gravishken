@@ -6,9 +6,9 @@ import (
 	"server/src/helper"
 	"server/src/types"
 
-	"github.com/gin-gonic/gin"
 	"context"
 
+	"github.com/gin-gonic/gin"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -32,7 +32,6 @@ func (this *ControllerClass) GetQuestionPaperHandler(ctx *gin.Context, batchName
 	return modelTests, nil
 }
 
-
 func (c *ControllerClass) GetAllTests(ctx *gin.Context) ([]test.Test, error) {
 	var tests []test.Test
 
@@ -48,7 +47,3 @@ func (c *ControllerClass) GetAllTests(ctx *gin.Context) ([]test.Test, error) {
 
 	return tests, nil
 }
-
-
-
-

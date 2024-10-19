@@ -44,7 +44,7 @@ func AdminLogin(Collection *mongo.Collection, Admin types.ModelInterface) (strin
 		return "", fmt.Errorf("error finding admin: %v", err)
 	}
 
-	log.Default().Printf("Provided username: %d and password: %d\nDatabase usernam: %d and password: %d", username, password, user.Username, user.Password);
+	log.Default().Printf("Provided username: %d and password: %d\nDatabase usernam: %d and password: %d", username, password, user.Username, user.Password)
 
 	// Compare the hashed password with the plaintext password
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))

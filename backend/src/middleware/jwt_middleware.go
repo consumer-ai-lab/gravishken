@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"net/http"
 	"log"
+	"net/http"
 	"server/src/auth"
 	"server/src/helper"
 	"strings"

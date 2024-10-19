@@ -4,14 +4,14 @@ import (
 	"common/models/test"
 	"server/src/controllers"
 	"server/src/middleware"
-	"github.com/gin-gonic/gin"
 
+	"github.com/gin-gonic/gin"
 )
 
 func TestRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) {
 	unauthenticatedTestRoute := route.Group("/test")
 	authenticatedTestRoute := route.Group("/test")
-	authenticatedTestRoute.Use(middleware.AdminJWTAuthMiddleware(allControllers.UserCollection))
+	authenticatedTestRoute.Use(middleware.UserJWTAuthMiddleware(allControllers.UserCollection))
 
 	authenticatedTestRoute.GET("/get_question_paper/:batch_name", func(ctx *gin.Context) {
 
@@ -33,18 +33,18 @@ func TestRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) 
 	})
 
 	unauthenticatedTestRoute.GET("/test_types", func(ctx *gin.Context) {
-        testTypes := []string{
-            string(test.TypingTest),
-            string(test.DocxTest),
-            string(test.ExcelTest),
-            string(test.WordTest),
-        }
+		testTypes := []string{
+			string(test.TypingTest),
+			string(test.DocxTest),
+			string(test.ExcelTest),
+			string(test.WordTest),
+		}
 
-        ctx.JSON(200, gin.H{
-            "message": "Test types fetched successfully",
-            "testTypes": testTypes,
-        })
-    })
+		ctx.JSON(200, gin.H{
+			"message":   "Test types fetched successfully",
+			"testTypes": testTypes,
+		})
+	})
 
 	unauthenticatedTestRoute.GET("/get_all_tests", func(ctx *gin.Context) {
 		tests, err := allControllers.GetAllTests(ctx)

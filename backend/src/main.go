@@ -93,14 +93,14 @@ func SetupRouter() *gin.Engine {
 		AllowFiles:       true,
 	}))
 
-    // Add a middleware to log request details
-    router.Use(func(c *gin.Context) {
-        log.Printf("Received request: %s %s", c.Request.Method, c.Request.URL.Path)
-        log.Printf("Request headers: %v", c.Request.Header)
-        c.Next()
-        log.Printf("Response status: %d", c.Writer.Status())
-        log.Printf("Response headers: %v", c.Writer.Header())
-    })
+	// Add a middleware to log request details
+	router.Use(func(c *gin.Context) {
+		log.Printf("Received request: %s %s", c.Request.Method, c.Request.URL.Path)
+		log.Printf("Request headers: %v", c.Request.Header)
+		c.Next()
+		log.Printf("Response status: %d", c.Writer.Status())
+		log.Printf("Response headers: %v", c.Writer.Header())
+	})
 
 	router.Use(helmet.Default())
 	router.Use(gzip.Gzip(gzip.BestCompression))

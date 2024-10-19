@@ -6,25 +6,25 @@ import (
 	"common/models/test"
 	"common/models/user"
 	"context"
-	"fmt"
-	"path/filepath"
 	"encoding/csv"
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
 	"io"
-	"strconv"
 	"net/http"
+	"os"
+	"path/filepath"
 	"server/src/controllers"
 	"server/src/middleware"
 	"server/src/types"
-	"os"
-	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson"
+	"strconv"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/aws/aws-sdk-go/aws"
-    "github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/aws/credentials"
-    "github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
 func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) {
@@ -51,7 +51,6 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 		allControllers.AdminLoginHandler(ctx, &adminModel)
 	})
 
-	
 	authenticatedAdminRoutes := route.Group("/admin")
 	authenticatedAdminRoutes.Use(middleware.AdminJWTAuthMiddleware(allControllers.AdminCollection))
 
@@ -124,7 +123,7 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 				Password:     record[1],
 				TestPassword: record[2],
 				Batch:        record[3],
-				Tests: user.UserSubmission{},
+				Tests:        user.UserSubmission{},
 			}
 			users = append(users, user)
 		}
@@ -175,7 +174,7 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 		}
 
 		allControllers.AddBatchToDB(ctx, &newBatch)
-		
+
 		ctx.JSON(200, gin.H{"message": "Batch added successfully", "batch": newBatch})
 	})
 
@@ -209,7 +208,7 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 		file, header, err := ctx.Request.FormFile("file")
 		if err != nil {
 			if err == http.ErrMissingFile {
-				
+
 				fmt.Println("No file uploaded, continuing without file")
 			} else {
 				ctx.JSON(400, gin.H{"error": "Error retrieving the file"})
@@ -247,8 +246,7 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 			testModel.File = result.Location
 		}
 
-
-		allControllers.AddTestToDB(ctx, &testModel);
+		allControllers.AddTestToDB(ctx, &testModel)
 
 		if err != nil {
 			ctx.JSON(500, gin.H{"error": "Failed to add test to database"})

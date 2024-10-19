@@ -28,7 +28,6 @@ func (self TestType) TSName() string {
 	}
 }
 
-
 type Test struct {
 	ID         primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
 	Type       TestType           `bson:"type" json:"type"`

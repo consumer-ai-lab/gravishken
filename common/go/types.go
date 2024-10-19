@@ -213,7 +213,7 @@ func DumpTypes(dir string) {
 		AddEnum([]AppType{TXT, DOCX, XLSX, PPTX}).
 		AddEnum(allVarients)
 
-		converter = converter.
+	converter = converter.
 		Add(user.User{}).
 		Add(user.UserSubmission{}).
 		Add(user.UserBatchRequestData{}).
@@ -224,7 +224,6 @@ func DumpTypes(dir string) {
 		Add(admin.AdminRequest{}).
 		Add(batch.Batch{}).
 		AddEnum([]test.TestType{test.TypingTest, test.DocxTest, test.ExcelTest, test.WordTest})
-
 
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {

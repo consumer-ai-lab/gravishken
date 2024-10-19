@@ -7,7 +7,7 @@ import (
 	"reflect"
 
 	"server/src/types"
-	
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -75,11 +75,8 @@ func GetModelById(collection *mongo.Collection, ID string, modelType types.Model
 	return result, nil
 }
 
-
-
 func GetModelByBatchId(collection *mongo.Collection, batchNumber string, modelType types.ModelInterface) ([]types.ModelInterface, error) {
 	fmt.Println("Fetching model from database...")
-
 
 	var results []types.ModelInterface
 	cursor, err := collection.Find(context.TODO(), bson.M{"batch": batchNumber})
@@ -108,8 +105,6 @@ func GetModelByBatchId(collection *mongo.Collection, batchNumber string, modelTy
 
 	return results, nil
 }
-
-
 
 func Delete_Model_By_ID(Collection *mongo.Collection, ID string) error {
 

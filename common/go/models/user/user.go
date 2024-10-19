@@ -34,11 +34,11 @@ type UserSubmission struct {
 }
 
 type UserModelUpdateRequest struct {
-	ID           string         `bson:"id" json:"id"`
-	Username     string         `bson:"username" json:"username" binding:"required"`
-	Password     string         `bson:"password" json:"password" binding:"required"`
-	TestPassword string         `bson:"testPassword" json:"testPassword" binding:"required"`
-	Batch        string         `bson:"batch" json:"batch" binding:"required"`
+	ID           string `bson:"id" json:"id"`
+	Username     string `bson:"username" json:"username" binding:"required"`
+	Password     string `bson:"password" json:"password" binding:"required"`
+	TestPassword string `bson:"testPassword" json:"testPassword" binding:"required"`
+	Batch        string `bson:"batch" json:"batch" binding:"required"`
 }
 
 func (user *User) GetCollectionName() string {

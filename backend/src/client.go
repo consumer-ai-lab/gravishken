@@ -4,15 +4,15 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
-	"strings"
 
 	types "common"
-	"server/src/auth"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"server/src/auth"
 )
 
 type Client struct {

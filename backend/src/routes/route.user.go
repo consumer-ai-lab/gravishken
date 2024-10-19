@@ -34,21 +34,21 @@ func UserRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) 
 	authenticated.Use(middleware.AdminJWTAuthMiddleware(allControllers.UserCollection))
 
 	authenticated.GET("/get_all_users", func(ctx *gin.Context) {
-        var users []user.User
-        cursor, err := allControllers.UserCollection.Find(context.Background(), bson.M{})
-        if err != nil {
-            ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve users"})
-            return
-        }
-        defer cursor.Close(context.Background())
+		var users []user.User
+		cursor, err := allControllers.UserCollection.Find(context.Background(), bson.M{})
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve users"})
+			return
+		}
+		defer cursor.Close(context.Background())
 
-        if err = cursor.All(context.Background(), &users); err != nil {
-            ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode users"})
-            return
-        }
+		if err = cursor.All(context.Background(), &users); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode users"})
+			return
+		}
 
-        ctx.JSON(http.StatusOK, gin.H{"users": users})
-    })
+		ctx.JSON(http.StatusOK, gin.H{"users": users})
+	})
 
 	authenticated.GET("/paginated_users", func(ctx *gin.Context) {
 		page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
@@ -93,13 +93,13 @@ func UserRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) 
 		}
 
 		log.Default().Println("User Request: ", updateRequest)
-		
+
 		err := allControllers.UpdateUser(ctx, &updateRequest)
 
 		if err != nil {
 			ctx.JSON(500, gin.H{
 				"message": "Error in updating user!",
-				"error": err,
+				"error":   err,
 			})
 			return
 		}
@@ -132,5 +132,4 @@ func UserRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) 
 		ctx.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
 	})
 
-	
 }

@@ -4,7 +4,6 @@ import (
 	"server/src/controllers"
 	// "server/src/middleware"
 
-
 	"github.com/gin-gonic/gin"
 )
 

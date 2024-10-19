@@ -26,4 +26,3 @@ func InitAuthRoutes(db *mongo.Client, route *gin.Engine) {
 	BatchRoutes(&allControllers, route)
 	TestRoutes(&allControllers, route)
 }
-

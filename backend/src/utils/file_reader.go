@@ -9,11 +9,11 @@ import (
 )
 
 func Read_CSV(file_path string) ([]map[string]string, map[string]bool) {
-    file, err := os.Open(file_path)
-    if err != nil {
-        log.Fatalf("failed to open file: %v", err)
-    }
-    defer file.Close()
+	file, err := os.Open(file_path)
+	if err != nil {
+		log.Fatalf("failed to open file: %v", err)
+	}
+	defer file.Close()
 
 	reader := csv.NewReader(file)
 
@@ -31,7 +31,7 @@ func Read_CSV(file_path string) ([]map[string]string, map[string]bool) {
 		}
 		lastColumn := record[len(record)-1]
 		batchNumber := strings.Split(lastColumn, " ")
-		if len(batchNumber) > 1{
+		if len(batchNumber) > 1 {
 			lastColumn = batchNumber[1]
 			unique_batches[batchNumber[1]] = true
 		}

@@ -1,8 +1,8 @@
 package models
 
 import (
-	"os"
 	"go.mongodb.org/mongo-driver/mongo"
+	"os"
 )
 
 func GetCollection(client *mongo.Client, collectionName string) *mongo.Collection {

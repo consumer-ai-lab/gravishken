@@ -1,7 +1,6 @@
 package utils
 
 import (
-
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -13,8 +12,6 @@ func Add_CSVData_To_DB(collection *mongo.Collection, file_path string) error {
 	// ****** Change logic here, add users to db and not batches ******
 
 	// batches := make(map[string]*batch.Batch)
-
-
 
 	// for _, row := range csvData[1:] { // Skip header row
 	// 	lastCol := row[len(row)-1]

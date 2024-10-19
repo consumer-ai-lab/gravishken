@@ -182,26 +182,25 @@ func (this *ControllerClass) SetUserData(ctx *gin.Context, param string, userReq
 
 }
 
-func (self *ControllerClass) UpdateUser(ctx *gin.Context, userRequest *User.UserModelUpdateRequest) error{
+func (self *ControllerClass) UpdateUser(ctx *gin.Context, userRequest *User.UserModelUpdateRequest) error {
 	userCollection := self.UserCollection
 
 	err := helper.UpdateUser(userCollection, userRequest)
-	if err != nil{
+	if err != nil {
 		return err
 	}
 
 	return nil
 }
 
-
-func (self *ControllerClass) DeleteUser(ctx *gin.Context, userId string) error{
+func (self *ControllerClass) DeleteUser(ctx *gin.Context, userId string) error {
 	userCollection := self.UserCollection
 
 	err := helper.Delete_Model_By_ID(userCollection, userId)
 
-	if err != nil{
+	if err != nil {
 		return err
 	}
 
-	return nil;
+	return nil
 }

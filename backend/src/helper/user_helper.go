@@ -177,12 +177,9 @@ func UpdateUserData(Collection *mongo.Collection, Model *User.UserUpdateRequest)
 	return nil
 }
 
-
 func UpdateUser(collection *mongo.Collection, userRequest *User.UserModelUpdateRequest) error {
 
 	var user User.User
-
-	
 
 	objectID, err := primitive.ObjectIDFromHex(userRequest.ID)
 	if err != nil {
@@ -190,7 +187,7 @@ func UpdateUser(collection *mongo.Collection, userRequest *User.UserModelUpdateR
 	}
 
 	err = collection.FindOne(context.TODO(), bson.M{"_id": objectID}).Decode(&user)
-	if err != nil{
+	if err != nil {
 		return err
 	}
 
@@ -201,10 +198,9 @@ func UpdateUser(collection *mongo.Collection, userRequest *User.UserModelUpdateR
 
 	collection.ReplaceOne(context.TODO(), bson.M{"_id": objectID}, user)
 
-	return nil;
+	return nil
 
 }
-
 
 func GetBatchWiseList(Collection *mongo.Collection, BatchNumber string) ([]map[string]string, error) {
 	var result []map[string]string
