@@ -54,8 +54,11 @@ export interface TLoadRoute {
 export interface TReloadUi {
 
 }
+export interface TStartTestRequest {
+
+}
 export interface TStartTest {
-    BatchName: string;
+
 }
 export interface TOpenApp {
     Typ: AppType;

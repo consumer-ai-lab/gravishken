@@ -3,6 +3,8 @@ package main
 import (
 	"common"
 	"context"
+	"log"
+
 	// "encoding/csv"
 	"fmt"
 	// "io"
@@ -15,7 +17,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -26,7 +27,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
-func AdminRoutes(allControllers *ControllerClass, route *gin.Engine) {
+func AdminRoutes(allControllers *Database, route *gin.Engine) {
 	unauthenticatedAdminRoutes := route.Group("/admin")
 
 	unauthenticatedAdminRoutes.POST("/register", func(ctx *gin.Context) {
@@ -340,27 +341,14 @@ func AdminRoutes(allControllers *ControllerClass, route *gin.Engine) {
 
 }
 
-func InitAuthRoutes(db *mongo.Client, route *gin.Engine) {
-	adminCollection := db.Database("GRAVTEST").Collection("Admin")
-	userCollection := db.Database("GRAVTEST").Collection("Users")
-	testCollection := db.Database("GRAVTEST").Collection("Tests")
-	batchCollection := db.Database("GRAVTEST").Collection("Batch")
-
-	allControllers := ControllerClass{
-		Client:          db,
-		AdminCollection: adminCollection,
-		UserCollection:  userCollection,
-		TestCollection:  testCollection,
-		BatchCollection: batchCollection,
-	}
-
-	AdminRoutes(&allControllers, route)
-	UserRoutes(&allControllers, route)
-	BatchRoutes(&allControllers, route)
-	TestRoutes(&allControllers, route)
+func InitAuthRoutes(db *Database, route *gin.Engine) {
+	AdminRoutes(db, route)
+	UserRoutes(db, route)
+	BatchRoutes(db, route)
+	TestRoutes(db, route)
 }
 
-func BatchRoutes(allControllers *ControllerClass, route *gin.Engine) {
+func BatchRoutes(allControllers *Database, route *gin.Engine) {
 	batchRoute := route.Group("/batch")
 	// batchRoute.Use(UserJWTAuthMiddleware(allControllers.UserCollection))
 
@@ -369,7 +357,7 @@ func BatchRoutes(allControllers *ControllerClass, route *gin.Engine) {
 	})
 }
 
-func TestRoutes(allControllers *ControllerClass, route *gin.Engine) {
+func TestRoutes(allControllers *Database, route *gin.Engine) {
 	unauthenticatedTestRoute := route.Group("/test")
 	authenticatedTestRoute := route.Group("/test")
 	authenticatedTestRoute.Use(UserJWTAuthMiddleware(allControllers.UserCollection))
@@ -377,6 +365,7 @@ func TestRoutes(allControllers *ControllerClass, route *gin.Engine) {
 	authenticatedTestRoute.GET("/get_question_paper/:batch_name", func(ctx *gin.Context) {
 
 		batch_name := ctx.Param("batch_name")
+		log.Println(batch_name)
 
 		questionPaper, err := allControllers.GetQuestionPaperHandler(ctx, batch_name)
 		if err != nil {
@@ -424,7 +413,7 @@ func TestRoutes(allControllers *ControllerClass, route *gin.Engine) {
 	})
 }
 
-func UserRoutes(allControllers *ControllerClass, route *gin.Engine) {
+func UserRoutes(allControllers *Database, route *gin.Engine) {
 	userRoute := route.Group("/user")
 
 	userRoute.POST("/login", func(ctx *gin.Context) {

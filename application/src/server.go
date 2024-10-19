@@ -190,17 +190,12 @@ func (self *App) handleMessages() {
 			}
 			message := types.NewMessage(routeMessage)
 			self.send <- message
-		// case types.GetTest:
-		// 	val, err := types.Get[types.TGetTest](msg)
-		// 	if err != nil {
-		// 		self.notifyErr(err)
-		// 		continue
-		// 	}
-		// 	err = self.startTest(*val)
-		// 	if err != nil {
-		// 		self.notifyErr(err)
-		// 		continue
-		// 	}
+		case types.StartTest:
+			err := self.startTest()
+			if err != nil {
+				self.notifyErr(err)
+				continue
+			}
 		case types.OpenApp:
 			val, err := types.Get[types.TOpenApp](msg)
 			if err != nil {

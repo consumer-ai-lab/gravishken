@@ -20,6 +20,7 @@ var server_url string
 type Client struct {
 	client http.Client
 	jwt    string
+	user   *common.User
 
 	server struct {
 		conn         *websocket.Conn
@@ -110,15 +111,14 @@ func (self *Client) login(user_login *common.TUserLogin) error {
 		return err
 	}
 
-	var result struct {
-		Message  string `json:"message"`
-		Response string `json:"response"`
-	}
+	var result common.UserLoginResponse
 	if err := json.Unmarshal(body, &result); err != nil {
 		return err
 	}
 
-	self.jwt = result.Response
+	self.jwt = result.Jwt
+	self.user = &result.User
+	log.Println(self.user)
 
 	return nil
 }
@@ -204,39 +204,39 @@ func (self *Client) connect(exit context.Context, cancel context.CancelFunc) err
 	return nil
 }
 
-// func (self *Client) getTest(testData common.TGetTest) (common.Test, error) {
-// 	test_code := testData.TestPassword
-// 	url := server_url + "/test/get_question_paper/" + test_code
-// 	req, err := http.NewRequest("GET", url, nil)
-// 	if err != nil {
-// 		return common.Test{}, err
-// 	}
-// 	req.Header.Set("content-type", "application/json")
-// 	req.Header.Set("test_code", test_code)
-// 	req.Header.Set("Authorization", "Bearer "+self.jwt)
+func (self *Client) getTests(batchName string) ([]common.Test, error) {
+	// TODO: fetch all tests
+	url := server_url + "/test/get_question_paper/" + batchName
+	log.Println(url)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return []common.Test{}, err
+	}
+	req.Header.Set("content-type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+self.jwt)
 
-// 	resp, err := self.client.Do(req)
-// 	if err != nil {
-// 		return common.Test{}, err
-// 	}
-// 	defer resp.Body.Close()
+	resp, err := self.client.Do(req)
+	if err != nil {
+		return []common.Test{}, err
+	}
+	defer resp.Body.Close()
 
-// 	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
-// 		return common.Test{}, fmt.Errorf("%s", resp.Status)
-// 	}
+	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
+		return []common.Test{}, fmt.Errorf("%s", resp.Status)
+	}
 
-// 	body, err := io.ReadAll(resp.Body)
-// 	if err != nil {
-// 		return common.Test{}, err
-// 	}
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return []common.Test{}, err
+	}
 
-// 	var result struct {
-// 		Message  string      `json:"message"`
-// 		Response common.Test `json:"response"`
-// 	}
-// 	if err := json.Unmarshal(body, &result); err != nil {
-// 		return common.Test{}, err
-// 	}
+	var result struct {
+		Message  string      `json:"message"`
+		Response common.Test `json:"response"`
+	}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return []common.Test{}, err
+	}
 
-// 	return result.Response, nil
-// }
+	return []common.Test{result.Response}, nil
+}

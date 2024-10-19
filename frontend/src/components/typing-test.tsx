@@ -44,9 +44,10 @@ export default function TypingTest({
     console.log("Test Password inside typing : ", testPassword);
 
     const getTypingTestText = async () => {
-        const response = await fetch(`${import.meta.env.SERVER_URL}/test/get_question_paper/${testPassword}`);
-        const data = await response.json();
-        setTypingTestText(data.questionPaper.typingTestText);
+        // const response = await fetch(`${import.meta.env.SERVER_URL}/test/get_question_paper/${testPassword}`);
+        // const data = await response.json();
+        // setTypingTestText(data.questionPaper.typingTestText);
+        setTypingTestText("TODO: fix")
     };
  
 

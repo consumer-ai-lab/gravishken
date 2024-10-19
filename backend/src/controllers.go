@@ -3,13 +3,18 @@ package main
 import (
 	"common"
 	"context"
+	"fmt"
+	"log"
+	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type ControllerClass struct {
+type Database struct {
 	Client          *mongo.Client
 	AdminCollection *mongo.Collection
 	UserCollection  *mongo.Collection
@@ -17,7 +22,39 @@ type ControllerClass struct {
 	BatchCollection *mongo.Collection
 }
 
-func (this *ControllerClass) GetQuestionPaperHandler(ctx *gin.Context, batchName string) ([]ModelInterface, error) {
+func connectDatabase() (*Database, error) {
+	uri, ok := os.LookupEnv("MONGODB_URI")
+	if !ok {
+		return nil, fmt.Errorf("MONGODB_URI not set")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to MongoDB: %v", err)
+	}
+
+	log.Println("Successfully connected to MongoDB!")
+
+	adminCollection := client.Database("GRAVTEST").Collection("Admin")
+	userCollection := client.Database("GRAVTEST").Collection("Users")
+	testCollection := client.Database("GRAVTEST").Collection("Tests")
+	batchCollection := client.Database("GRAVTEST").Collection("Batch")
+
+	db := Database{
+		Client:          client,
+		AdminCollection: adminCollection,
+		UserCollection:  userCollection,
+		TestCollection:  testCollection,
+		BatchCollection: batchCollection,
+	}
+	return &db, nil
+}
+
+func (this *Database) GetQuestionPaperHandler(ctx *gin.Context, batchName string) ([]ModelInterface, error) {
 	batchCollection := this.BatchCollection
 	testCollection := this.TestCollection
 
@@ -36,7 +73,7 @@ func (this *ControllerClass) GetQuestionPaperHandler(ctx *gin.Context, batchName
 	return modelTests, nil
 }
 
-func (c *ControllerClass) GetAllTests(ctx *gin.Context) ([]common.Test, error) {
+func (c *Database) GetAllTests(ctx *gin.Context) ([]common.Test, error) {
 	var tests []common.Test
 
 	cursor, err := c.TestCollection.Find(context.TODO(), bson.M{})
@@ -52,7 +89,7 @@ func (c *ControllerClass) GetAllTests(ctx *gin.Context) ([]common.Test, error) {
 	return tests, nil
 }
 
-func (this *ControllerClass) AdminLoginHandler(ctx *gin.Context, adminModel *common.Admin) {
+func (this *Database) AdminLoginHandler(ctx *gin.Context, adminModel *common.Admin) {
 	adminCollection := this.AdminCollection
 	token, err := AdminLogin(adminCollection, adminModel)
 
@@ -71,7 +108,7 @@ func (this *ControllerClass) AdminLoginHandler(ctx *gin.Context, adminModel *com
 	})
 }
 
-func (this *ControllerClass) AdminRegisterHandler(ctx *gin.Context, adminModel *common.Admin) {
+func (this *Database) AdminRegisterHandler(ctx *gin.Context, adminModel *common.Admin) {
 	adminCollection := this.AdminCollection
 	err := RegisterAdmin(adminCollection, adminModel)
 
@@ -88,13 +125,13 @@ func (this *ControllerClass) AdminRegisterHandler(ctx *gin.Context, adminModel *
 	})
 }
 
-func (this *ControllerClass) AdminChangePassword(ctx *gin.Context) {
+func (this *Database) AdminChangePassword(ctx *gin.Context) {
 	ctx.JSON(501, gin.H{
 		"message": "This route is not needed",
 	})
 }
 
-func (this *ControllerClass) AddTestToDB(ctx *gin.Context, test *common.Test) {
+func (this *Database) AddTestToDB(ctx *gin.Context, test *common.Test) {
 	testCollection := this.TestCollection
 	err := Add_Model_To_DB(testCollection, test)
 
@@ -111,7 +148,7 @@ func (this *ControllerClass) AddTestToDB(ctx *gin.Context, test *common.Test) {
 	})
 }
 
-func (this *ControllerClass) UpdateTypingTestText(ctx *gin.Context, typingTestText string, testID string) {
+func (this *Database) UpdateTypingTestText(ctx *gin.Context, typingTestText string, testID string) {
 	testCollection := this.TestCollection
 
 	err := UpdateTypingTestText(testCollection, testID, typingTestText)
@@ -128,7 +165,7 @@ func (this *ControllerClass) UpdateTypingTestText(ctx *gin.Context, typingTestTe
 	})
 }
 
-func (this *ControllerClass) AddBatchToDB(ctx *gin.Context, batchData *common.Batch) {
+func (this *Database) AddBatchToDB(ctx *gin.Context, batchData *common.Batch) {
 	testCollection := this.BatchCollection
 
 	err := Add_Model_To_DB(testCollection, batchData)
@@ -146,7 +183,7 @@ func (this *ControllerClass) AddBatchToDB(ctx *gin.Context, batchData *common.Ba
 	})
 }
 
-func (this *ControllerClass) GetBatches(ctx *gin.Context) {
+func (this *Database) GetBatches(ctx *gin.Context) {
 	testCollection := this.BatchCollection
 
 	batchData, err := Get_All_Models(testCollection, &common.Batch{})
@@ -165,9 +202,10 @@ func (this *ControllerClass) GetBatches(ctx *gin.Context) {
 	})
 }
 
-func (this *ControllerClass) UserLoginHandler(ctx *gin.Context, userModel *common.UserLoginRequest) {
+func (this *Database) UserLoginHandler(ctx *gin.Context, userModel *common.UserLoginRequest) {
 	userCollection := this.UserCollection
 	response, err := UserLogin(userCollection, userModel)
+	user, _ := common.FindByUsername(userCollection, userModel.Username)
 
 	if err != nil {
 		ctx.JSON(401, gin.H{
@@ -177,9 +215,9 @@ func (this *ControllerClass) UserLoginHandler(ctx *gin.Context, userModel *commo
 		return
 	}
 
-	ctx.JSON(200, gin.H{
-		"message":  "Admin Login route here",
-		"response": response,
+	ctx.JSON(200, common.UserLoginResponse{
+		Jwt:  response,
+		User: *user,
 	})
 }
 
@@ -351,7 +389,7 @@ func (this *ControllerClass) UserLoginHandler(ctx *gin.Context, userModel *commo
 // 	return nil
 // }
 
-func (self *ControllerClass) DeleteUser(ctx *gin.Context, userId string) error {
+func (self *Database) DeleteUser(ctx *gin.Context, userId string) error {
 	userCollection := self.UserCollection
 
 	err := Delete_Model_By_ID(userCollection, userId)

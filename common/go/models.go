@@ -58,8 +58,10 @@ type Test struct {
 }
 
 type User struct {
-	Id        ID
-	Username  string
+	Id       ID
+	Username string
+	// TODO: plaintext password yo!
+	// passwords should be stored in another table hashed
 	Password  string
 	BatchName string
 }
@@ -101,6 +103,11 @@ type UserBatchRequestData struct {
 type UserLoginRequest struct {
 	Username string
 	Password string
+}
+
+type UserLoginResponse struct {
+	Jwt  string
+	User User
 }
 
 type TestType string

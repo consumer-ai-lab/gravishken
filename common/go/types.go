@@ -124,8 +124,10 @@ type TLoadRoute struct {
 
 type TReloadUi struct{}
 
+type TStartTestRequest struct{}
+
 type TStartTest struct {
-	BatchName string
+	tests []Test
 }
 
 type AppType int
@@ -203,6 +205,7 @@ func DumpTypes(dir string) {
 		Add(TWarnUser{}).
 		Add(TLoadRoute{}).
 		Add(TReloadUi{}).
+		Add(TStartTestRequest{}).
 		Add(TStartTest{}).
 		Add(TOpenApp{}).
 		Add(TQuitApp{}).

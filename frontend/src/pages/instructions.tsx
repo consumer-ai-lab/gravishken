@@ -13,9 +13,7 @@ export default function InstructionsPage() {
 
         server.send_message({
             Typ: types.Varient.StartTest, 
-            Val: {
-                BatchName: "?",
-            }
+            Val: { }
         });
     };
 

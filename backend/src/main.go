@@ -16,17 +16,12 @@ import (
 
 	"log"
 
-	"context"
-	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http/httptest"
 	"strconv"
-
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // build time configuration. these get set using -ldflags in build script
@@ -59,7 +54,7 @@ func main() {
 }
 
 func SetupRouter() *gin.Engine {
-	db, err := Connection()
+	db, err := connectDatabase()
 
 	if err != nil {
 		log.Fatal("Error connecting to MongoDB: ", err)
@@ -115,25 +110,6 @@ func SetupRouter() *gin.Engine {
 	AdminUiRoutes(router)
 
 	return router
-}
-
-func Connection() (*mongo.Client, error) {
-	uri, ok := os.LookupEnv("MONGODB_URI")
-	if !ok {
-		return nil, fmt.Errorf("MONGODB_URI not set")
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect to MongoDB: %v", err)
-	}
-
-	log.Println("Successfully connected to MongoDB!")
-	return client, nil
 }
 
 func AdminUiRoutes(router *gin.Engine) {
