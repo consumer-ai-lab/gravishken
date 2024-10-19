@@ -1,6 +1,8 @@
 package main
 
 import (
+	"common"
+	"context"
 	"io/fs"
 	"net/http"
 	"os"
@@ -16,12 +18,13 @@ import (
 
 	"log"
 
-	"github.com/gin-contrib/cors"
-	"github.com/gin-contrib/gzip"
-	"github.com/gin-gonic/gin"
 	"io"
 	"net/http/httptest"
 	"strconv"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/gzip"
+	"github.com/gin-gonic/gin"
 )
 
 // build time configuration. these get set using -ldflags in build script
@@ -55,6 +58,22 @@ func main() {
 
 func SetupRouter() *gin.Engine {
 	db, err := connectDatabase()
+	// db.UserCollection.InsertOne(context.TODO(), common.User{
+	// 	Username:  "test",
+	// 	Password:  "test",
+	// 	BatchName: "testbatch",
+	// })
+	// db.TestCollection.InsertOne(context.TODO(), common.Test{
+	// 	Id:         "typing test id",
+	// 	Type:       common.TypingTest,
+	// 	Duration:   500,
+	// 	TypingText: "some text to type",
+	// })
+	// db.BatchCollection.InsertOne(context.TODO(), common.Batch{
+	// 	Id:    "testbatchid",
+	// 	Name:  "testbatch",
+	// 	Tests: []string{"typing test id"},
+	// })
 
 	if err != nil {
 		log.Fatal("Error connecting to MongoDB: ", err)

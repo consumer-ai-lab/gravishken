@@ -7,8 +7,8 @@ import { useNavigate } from 'react-router-dom';
 
 
 export default function Login() {
-    const [username, setUsername] = useState('');
-    const [userPassword, setUserPassword] = useState('');
+    const [username, setUsername] = useState('Yash Thombre');
+    const [userPassword, setUserPassword] = useState('windowsSUCKS');
     const { toast } = useToast()
     const navigate = useNavigate();
 

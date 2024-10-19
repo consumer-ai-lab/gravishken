@@ -5,8 +5,8 @@ import * as types from '@common/types';
 import { Button } from '@/components/ui/button';
 
 export default function LoginPage() {
-  const [username, setUsername] = useState('12722');
-  const [userPassword, setUserPassword] = useState('wcl_12722');
+  const [username, setUsername] = useState('test');
+  const [userPassword, setUserPassword] = useState('test');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
