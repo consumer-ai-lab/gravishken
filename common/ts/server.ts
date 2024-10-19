@@ -10,8 +10,8 @@ export type Message = {
     Typ: types.Varient.ExeNotFound,
     Val: types.TExeNotFound,
 } | {
-    Typ: types.Varient.UserLogin,
-    Val: types.TUserLogin,
+    Typ: types.Varient.UserLoginRequest,
+    Val: types.TUserLoginRequest,
 } | {
     Typ: types.Varient.Quit,
     Val: types.TQuit,
@@ -28,8 +28,8 @@ export type Message = {
     Typ: types.Varient.Err,
     Val: types.TErr,
 } | {
-    Typ: types.Varient.GetTest,
-    Val: types.TGetTest,
+    Typ: types.Varient.StartTest,
+    Val: types.TStartTest,
 } | {
     Typ: types.Varient.OpenApp,
     Val: types.TOpenApp,
@@ -120,7 +120,7 @@ export class Server {
             case types.Varient.LoadRoute:
             case types.Varient.Err:
             case types.Varient.WarnUser:
-            case types.Varient.GetTest:
+            case types.Varient.StartTest:
                 break;
             case types.Varient.ReloadUi:
                 window.location.href = "/";
@@ -132,7 +132,7 @@ export class Server {
                 this.send_message(msg);
                 break;
             case types.Varient.Unknown:
-            case types.Varient.UserLogin: {
+            case types.Varient.UserLoginRequest: {
                 throw new Error(`message type '${msg.Typ}' can't be handled here`);
             } break;
             default:

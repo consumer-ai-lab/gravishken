@@ -1,12 +1,12 @@
 package main
 
 import (
+	// "common"
+	// "context"
 	"io/fs"
 	"net/http"
 	"os"
 	assets "server"
-	config "server/config"
-	route "server/src/routes"
 	"strings"
 	"time"
 
@@ -15,15 +15,17 @@ import (
 
 	helmet "github.com/danielkov/gin-helmet"
 	"github.com/joho/godotenv"
+	// "go.mongodb.org/mongo-driver/bson"
 
 	"log"
+
+	"io"
+	"net/http/httptest"
+	"strconv"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
-	"io"
-	"net/http/httptest"
-	"strconv"
 )
 
 // build time configuration. these get set using -ldflags in build script
@@ -56,7 +58,29 @@ func main() {
 }
 
 func SetupRouter() *gin.Engine {
-	db, err := config.Connection()
+	db, err := connectDatabase()
+	// db.UserCollection.InsertOne(context.TODO(), common.User{
+	// 	Username:  "test4",
+	// 	Password:  "test",
+	// 	BatchName: "testbatch4",
+	// })
+	// db.TestCollection.InsertOne(context.TODO(), common.Test{
+	// 	Id:         "typing test id4",
+	// 	Type:       common.TypingTest,
+	// 	Duration:   500,
+	// 	TypingText: "some text to type4",
+	// })
+	// db.TestCollection.InsertOne(context.TODO(), common.Test{
+	// 	Id:         "typing test id41",
+	// 	Type:       common.TypingTest,
+	// 	Duration:   500,
+	// 	TypingText: "some text to type41",
+	// })
+	// db.BatchCollection.InsertOne(context.TODO(), common.Batch{
+	// 	Id:    "testbatchid4",
+	// 	Name:  "testbatch4",
+	// 	Tests: []string{"typing test id4", "typing test id41"},
+	// })
 
 	if err != nil {
 		log.Fatal("Error connecting to MongoDB: ", err)
@@ -93,19 +117,19 @@ func SetupRouter() *gin.Engine {
 		AllowFiles:       true,
 	}))
 
-    // Add a middleware to log request details
-    router.Use(func(c *gin.Context) {
-        log.Printf("Received request: %s %s", c.Request.Method, c.Request.URL.Path)
-        log.Printf("Request headers: %v", c.Request.Header)
-        c.Next()
-        log.Printf("Response status: %d", c.Writer.Status())
-        log.Printf("Response headers: %v", c.Writer.Header())
-    })
+	// Add a middleware to log request details
+	router.Use(func(c *gin.Context) {
+		log.Printf("Received request: %s %s", c.Request.Method, c.Request.URL.Path)
+		log.Printf("Request headers: %v", c.Request.Header)
+		c.Next()
+		log.Printf("Response status: %d", c.Writer.Status())
+		log.Printf("Response headers: %v", c.Writer.Header())
+	})
 
 	router.Use(helmet.Default())
 	router.Use(gzip.Gzip(gzip.BestCompression))
 
-	route.InitAuthRoutes(db, router)
+	InitAuthRoutes(db, router)
 	// route.InitOtherRoutes(db, router)
 
 	AppRoutes(router)

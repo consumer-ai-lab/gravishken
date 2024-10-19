@@ -8,32 +8,18 @@ import * as types from '@common/types';
 
 export default function InstructionsPage() {
 
-    const [slotTime, setSlotTime] = useState("")
-    const [rollNumber, setRollNumber] = useState(12345)  
-    const [candidateName, setCandidateName] = useState("Yash Thombre")
-    const testPassword = "examplePassword123"; 
     // Function to handle Start Test
     const handleStartTest = () => {
-        console.log("Starting test with testPassword:", testPassword);
 
         server.send_message({
-            Typ: types.Varient.GetTest, 
-            Val: {
-                TestPassword: testPassword
-            }
+            Typ: types.Varient.StartTest, 
+            Val: { }
         });
     };
 
     return (
         <div className="min-h-screen bg-gray-100 p-4 flex items-center justify-center">
             <Card className="w-full max-w-6xl rounded-lg overflow-hidden">
-                <CardHeader className="bg-blue-600 text-white">
-                    <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
-                        <div>Slot Time: {slotTime}</div>
-                        <div>Roll Number: {rollNumber}</div>
-                        <div>Candidate Name: {candidateName}</div>
-                    </div>
-                </CardHeader>
                 <CardContent className="pt-6">
                     <CardTitle className="text-2xl mb-4">Instructions for the Test</CardTitle>
                     <ol className="list-decimal pl-6 space-y-3">

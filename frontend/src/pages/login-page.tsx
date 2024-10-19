@@ -5,26 +5,23 @@ import * as types from '@common/types';
 import { Button } from '@/components/ui/button';
 
 export default function LoginPage() {
-  const [username, setUsername] = useState('');
-  const [userPassword, setUserPassword] = useState('');
-  const [testPassword, setTestPassword] = useState('');
+  const [username, setUsername] = useState('test4');
+  const [userPassword, setUserPassword] = useState('test');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     localStorage.setItem('username', username);
     localStorage.setItem('userPassword', userPassword);
-    localStorage.setItem('testPassword', testPassword);
 
     server.send_message({
-      Typ: types.Varient.UserLogin,
+      Typ: types.Varient.UserLoginRequest,
       Val: {
         Username: username,
         Password: userPassword,
-        TestCode: testPassword,
       }
     });
-    console.log('Login submitted:', { username, userPassword, testPassword });
+    console.log('Login submitted:', { username, userPassword });
   };
 
   const handleQuit = () => {
@@ -74,21 +71,6 @@ export default function LoginPage() {
                 onChange={(e) => setUserPassword(e.target.value)}
                 className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter your password"
-                required
-              />
-            </div>
-          </div>
-          <div>
-            <label htmlFor="testPassword" className="block text-sm font-medium text-gray-700 mb-1">Test Password</label>
-            <div className="relative">
-              <LockOpenIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-              <input
-                id="testPassword"
-                type="password"
-                value={testPassword}
-                onChange={(e) => setTestPassword(e.target.value)}
-                className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter test password"
                 required
               />
             </div>

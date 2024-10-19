@@ -171,8 +171,8 @@ func (self *App) handleMessages() {
 				continue
 			}
 			self.send <- types.NewMessage(*val)
-		case types.UserLogin:
-			val, err := types.Get[types.TUserLogin](msg)
+		case types.UserLoginRequest:
+			val, err := types.Get[types.TUserLoginRequest](msg)
 			if err != nil {
 				self.notifyErr(err)
 				continue
@@ -190,13 +190,8 @@ func (self *App) handleMessages() {
 			}
 			message := types.NewMessage(routeMessage)
 			self.send <- message
-		case types.GetTest:
-			val, err := types.Get[types.TGetTest](msg)
-			if err != nil {
-				self.notifyErr(err)
-				continue
-			}
-			err = self.startTest(*val)
+		case types.StartTest:
+			err := self.startTest()
 			if err != nil {
 				self.notifyErr(err)
 				continue

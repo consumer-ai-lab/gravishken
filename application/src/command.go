@@ -7,7 +7,6 @@ import (
 	"os"
 )
 
-
 const template_docx = "template.docx"
 const template_xlsx = "template.xlsx"
 const template_pptx = "template.pptx"
@@ -81,10 +80,6 @@ func (self *Runner) newTemplate(name string, dest string) error {
 	_, err = file.Write(contents)
 	return err
 }
-
-
-
-
 
 // func (self *Runner) run(name string, args ...string) error {
 // 	cmd := exec.Command(name, args...)
