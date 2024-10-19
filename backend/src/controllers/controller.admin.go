@@ -70,50 +70,6 @@ func (this *ControllerClass) AddTestToDB(ctx *gin.Context, test *Test.Test) {
 	})
 }
 
-func (this *ControllerClass) AddAllUsersBacthesToDb(ctx *gin.Context, filePath string) {
-	// userCollection := this.UserCollection
-	// testCollection := this.TestCollection
-
-	// csvData, unique_batches := utils.Read_CSV(filePath)
-
-	// // creating a map to store test passwords for each batch
-	// batch_passwords := make(map[string]string)
-
-	// log.Default().Println("Adding all batches to db")
-
-	// // Looping over all batches and finding test password for each batch and storing it in a map
-	// for batch, _ := range unique_batches {
-	// 	test_data, err := helper.GetQuestionPaperByBatchNumber(testCollection, batch)
-	// 	if err != nil {
-	// 		ctx.JSON(500, gin.H{
-	// 			"message": "Error while fetching question paper",
-	// 			"error":   err,
-	// 		})
-	// 		return
-	// 	}
-
-	// 	batch_passwords[batch] = test_data.Password
-	// }
-
-	// // Looping over all user data fetched from reading csv file and adding them to db
-	// for _, data := range csvData {
-	// 	user := User.User{
-	// 		Name:         data["name"],
-	// 		Username:     data["roll_no"],
-	// 		Password:     data["password"],
-	// 		TestPassword: batch_passwords[data["slot"]],
-	// 		Batch:        data["slot"],
-	// 		Tests:        User.UserSubmission{},
-	// 	}
-
-	// 	helper.Add_Model_To_DB(userCollection, &user)
-	// }
-
-	ctx.JSON(200, gin.H{
-		"message": "Unimplemented.",
-	})
-}
-
 func (this *ControllerClass) UpdateTypingTestText(ctx *gin.Context, typingTestText string, testID string) {
 	testCollection := this.TestCollection
 

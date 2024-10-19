@@ -127,7 +127,6 @@ func (self *Client) login(user_login *types.TUserLogin) error {
 }
 
 func (self *Client) maintainConn() {
-
 	for {
 		ctx, close := context.WithCancel(context.Background())
 
