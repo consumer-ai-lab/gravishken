@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -31,10 +32,11 @@ func (batch *Batch) GetCollectionName() string {
 }
 
 // primitive id converted to string
-type ID = string
+// type ID = string
+type ID = primitive.ObjectID
 
 type Admin struct {
-	Id       ID `bson:"_id,omitempty" json:"Id,omitempty"`
+	Id       ID `bson:"_id,omitempty" json:"Id,omitempty" ts_type:"string"`
 	Username string
 	Password string
 }
@@ -45,9 +47,9 @@ type Admin struct {
 // }
 
 type Batch struct {
-	Id    ID `bson:"_id,omitempty" json:"Id,omitempty"`
+	Id    ID `bson:"_id,omitempty" json:"Id,omitempty" ts_type:"string"`
 	Name  string
-	Tests []ID
+	Tests []ID `ts_type:"string[]"`
 }
 
 type MCQ struct {
@@ -56,7 +58,7 @@ type MCQ struct {
 	Answer   string
 }
 type Test struct {
-	Id       ID `bson:"_id,omitempty" json:"Id,omitempty"`
+	Id       ID `bson:"_id,omitempty" json:"Id,omitempty" ts_type:"string"`
 	TestName string
 	Duration int
 
@@ -67,7 +69,7 @@ type Test struct {
 }
 
 type User struct {
-	Id       ID `bson:"_id,omitempty" json:"Id,omitempty"`
+	Id       ID `bson:"_id,omitempty" json:"Id,omitempty" ts_type:"string"`
 	Username string
 	// TODO: plaintext password yo!
 	// passwords should be stored in another table hashed
@@ -76,8 +78,8 @@ type User struct {
 }
 
 type UserSubmission struct {
-	UserId ID
-	TestId ID
+	UserId ID `ts_type:"string"`
+	TestId ID `ts_type:"string"`
 
 	StartTime   time.Time
 	EndTime     time.Time

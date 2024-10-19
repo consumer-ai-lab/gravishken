@@ -120,7 +120,7 @@ func AdminRoutes(allControllers *Database, route *gin.Engine) {
 			}
 
 			user := common.User{
-				Id:       primitive.NewObjectID().String(),
+				Id:       primitive.NewObjectID(),
 				Username: record[0],
 				Password: record[1],
 				Batch:    record[3],
@@ -156,14 +156,14 @@ func AdminRoutes(allControllers *Database, route *gin.Engine) {
 		}
 
 		// Convert string IDs to ObjectIDs
-		testObjectIDs := make([]string, 0, len(batchData.SelectedTests))
+		testObjectIDs := make([]primitive.ObjectID, 0, len(batchData.SelectedTests))
 		for _, testID := range batchData.SelectedTests {
 			objectID, err := primitive.ObjectIDFromHex(testID)
 			if err != nil {
 				ctx.JSON(400, gin.H{"error": "Invalid test ID format"})
 				return
 			}
-			testObjectIDs = append(testObjectIDs, objectID.String())
+			testObjectIDs = append(testObjectIDs, objectID)
 		}
 
 		newBatch := common.Batch{
