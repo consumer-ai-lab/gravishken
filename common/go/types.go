@@ -214,10 +214,10 @@ func DumpTypes(dir string) {
 	converter = converter.
 		Add(User{}).
 		Add(UserSubmission{}).
-		Add(UserBatchRequestData{}).
+		// Add(UserBatchRequestData{}).
 		Add(Test{}).
 		Add(Admin{}).
-		Add(AdminRequest{}).
+		// Add(AdminRequest{}).
 		Add(Batch{}).
 		AddEnum([]TestType{TypingTest, DocxTest, ExcelTest, WordTest})
 

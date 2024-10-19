@@ -34,18 +34,18 @@ func (batch *Batch) GetCollectionName() string {
 type ID = string
 
 type Admin struct {
-	Id       ID `bson:"_id"`
+	Id       ID `bson:"_id,omitempty" json:"Id,omitempty"`
 	Username string
 	Password string
 }
 
-type AdminRequest struct {
-	Username string
-	Token    string
-}
+// type AdminRequest struct {
+// 	Username string
+// 	Token    string
+// }
 
 type Batch struct {
-	Id    ID `bson:"_id"`
+	Id    ID `bson:"_id,omitempty" json:"Id,omitempty"`
 	Name  string
 	Tests []ID
 }
@@ -56,17 +56,18 @@ type MCQ struct {
 	Answer   string
 }
 type Test struct {
-	Id         ID `bson:"_id"`
-	TestName   string
+	Id       ID `bson:"_id,omitempty" json:"Id,omitempty"`
+	TestName string
+	Duration int
+
 	Type       TestType
-	Duration   int
-	FilePath   string
-	TypingText string
-	MCQJSON    string
+	FilePath   string `bson:"filepath,omitempty" json:"FilePath,omitempty"`
+	TypingText string `bson:"typingtext,omitempty" json:"TypingText,omitempty"`
+	McqJson    string `bson:"mcqjson,omitempty" json:"McqJson,omitempty"`
 }
 
 type User struct {
-	Id       ID `bson:"_id"`
+	Id       ID `bson:"_id,omitempty" json:"Id,omitempty"`
 	Username string
 	// TODO: plaintext password yo!
 	// passwords should be stored in another table hashed
@@ -94,19 +95,19 @@ type UserSubmission struct {
 	SubmissionFolderID        string
 }
 
-type UserModelUpdateRequest struct {
-	Id           ID
-	Username     string
-	Password     string
-	TestPassword string
-	Batch        string
-}
+// type UserModelUpdateRequest struct {
+// 	Id           ID
+// 	Username     string
+// 	Password     string
+// 	TestPassword string
+// 	Batch        string
+// }
 
-type UserBatchRequestData struct {
-	From             int
-	To               int
-	ResultDownloaded bool
-}
+// type UserBatchRequestData struct {
+// 	From             int
+// 	To               int
+// 	ResultDownloaded bool
+// }
 
 type UserLoginResponse struct {
 	Jwt  string
@@ -170,16 +171,16 @@ func (t *Test) SetMCQQuestions(questions []MCQ) error {
 	if err != nil {
 		return err
 	}
-	t.MCQJSON = string(jsonData)
+	t.McqJson = string(jsonData)
 	return nil
 }
 
 func (t *Test) GetMCQQuestions() ([]MCQ, error) {
-	if t.MCQJSON == "" {
+	if t.McqJson == "" {
 		return nil, nil
 	}
 	var questions []MCQ
-	err := json.Unmarshal([]byte(t.MCQJSON), &questions)
+	err := json.Unmarshal([]byte(t.McqJson), &questions)
 	return questions, err
 }
 
