@@ -4,6 +4,7 @@ import (
 	assets "app"
 	types "common"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/fs"
 	"log"
@@ -12,8 +13,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gorilla/websocket"
 	"net/http/httptest"
+
+	"github.com/gorilla/websocket"
 )
 
 func (self *App) serve() {
@@ -98,6 +100,21 @@ func (self *App) serve() {
 
 	// TODO: more than 1 websocket client at the same time is not supported. maybe crash / don't accept the connection
 	mux.HandleFunc("/ws", serveWs)
+
+	mux.HandleFunc("/get-user", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("content-type", "application/json")
+		w.Header().Add("access-control-allow-origin", "*")
+		if err := json.NewEncoder(w).Encode(self.client.user); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	})
+	mux.HandleFunc("/get-tests", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("content-type", "application/json")
+		w.Header().Add("access-control-allow-origin", "*")
+		if err := json.NewEncoder(w).Encode(self.client.tests); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	})
 
 	var contentReplacements = map[string]string{
 		"%SERVER_URL%": os.Getenv("SERVER_URL"),

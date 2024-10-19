@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import * as types from "@common/types";
 import { UserIcon } from 'lucide-react';
 import { useTest } from '@/components/TestContext';
+import * as server from "@common/server.ts";
 
 const testList = [
     { id: '1', name: 'Typing Test' },
@@ -34,6 +35,13 @@ export default function TestsPage() {
         const timer = setInterval(() => {
             setTimeLeft((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
         }, 1000);
+
+        fetch(server.base_url + "/get-tests").then(async (r) => {
+            console.log(await r.json())
+        })
+        fetch(server.base_url + "/get-user").then(async (r) => {
+            console.log(await r.json())
+        })
 
         return () => clearInterval(timer);
     }, []);

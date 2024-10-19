@@ -45,6 +45,9 @@ type ValType<T extends types.Varient> = Message extends infer P ? P extends { Ty
 type Callback<T extends types.Varient> = (res: ValType<T>) => PromiseLike<void>;
 type DisableCallback = () => Promise<void>;
 
+// @ts-ignore
+export const base_url = `http://localhost:${import.meta.env.APP_PORT}`
+
 export class Server {
     ws: WebSocket;
 
