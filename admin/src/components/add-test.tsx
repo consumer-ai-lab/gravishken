@@ -19,18 +19,19 @@ import { useToast } from '@/hooks/use-toast';
 // ];
 
 export default function AddTest() {
+  const [testName, setTestName] = useState('');
   const [testType, setTestType] = useState('typing');
   const [duration, setDuration] = useState('');
   const [typingText, setTypingText] = useState('');
   const [file, setFile] = useState<any>(null);
-  const [testTypes, setTestTypes] = useState<any[]>([]);
+  const [testTypes, setTestTypes] = useState([]);
   const { toast } = useToast();
 
   useEffect(() => {
     const fetchTestTypes = async () => {
       try {
         const response = await axios.get(`${import.meta.env.SERVER_URL}/test/test_types`);
-        setTestTypes(response.data.testTypes.map((type: any) => ({ value: type, label: `${type.charAt(0).toUpperCase() + type.slice(1)} Test` })));
+        setTestTypes(response.data.testTypes.map((type:any) => ({ value: type, label: `${type.charAt(0).toUpperCase() + type.slice(1)} Test` })));
         if (response.data.testTypes.length > 0) {
           setTestType(response.data.testTypes[0]);
         }
@@ -53,7 +54,8 @@ export default function AddTest() {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'image/*': []
+      'image/*': [],
+      'text/csv': [],
     },
     multiple: false,
   });
@@ -67,14 +69,13 @@ export default function AddTest() {
       file: testType !== 'typing' ? file : undefined,
     });
     const formData = new FormData();
+    formData.append('testName', testName);
     formData.append('type', testType);
     formData.append('duration', duration.toString());
 
-    if (typingText) {
+    if (testType === 'typing') {
       formData.append('typingText', typingText);
-    }
-
-    if (file) {
+    } else if (file) {
       formData.append('file', file);
     }
 
@@ -83,13 +84,17 @@ export default function AddTest() {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
-        withCredentials:true
+        withCredentials: true
       },);
+      console.log('Test added:', response.data);
       toast({
         title: "Test added",
         description: "Successfully added the test!",
       })
-
+      setTestName('');
+      setDuration('');
+      setTypingText('');
+      setFile(null);
     } catch (error) {
       console.error('Error adding test:', error);
       toast({
@@ -110,6 +115,18 @@ export default function AddTest() {
       <Card>
         <CardContent className="p-6 w-full">
           <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+              <Label htmlFor="testName">Test Name</Label>
+              <Input
+                type="text"
+                id="testName"
+                value={testName}
+                onChange={(e) => setTestName(e.target.value)}
+                placeholder="Enter test name"
+                required
+              />
+            </div>
+            
             <div className="space-y-2">
               <Label htmlFor="testType">Test Type</Label>
               <Select value={testType} onValueChange={setTestType}>

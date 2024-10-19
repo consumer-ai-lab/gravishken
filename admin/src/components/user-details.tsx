@@ -14,7 +14,7 @@ import { User as ImportedUser } from '@common/types';
 type UserWithoutId = Omit<ImportedUser, 'id'>;
 
 export interface User extends UserWithoutId {
-    id: string;  
+    id: string;
 }
 
 interface UserDetailsProps {
@@ -25,14 +25,17 @@ export default function UserDetails({ isAuthenticated }: UserDetailsProps) {
     const [users, setUsers] = useState<User[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [totalPages, setTotalPages] = useState(0);
     const [totalUsers, setTotalUsers] = useState(0);
     const [value] = useDebounce(searchTerm, 1000);
+    const [isDeleted, setIsDeleted] = useState(false);
     const itemsPerPage = 8;
 
+
+
     useEffect(() => {
-        const fetchUsers = async () => {
+        async function fetchUsers() {
             if (!isAuthenticated) return;
             setIsLoading(true);
             try {
@@ -58,16 +61,33 @@ export default function UserDetails({ isAuthenticated }: UserDetailsProps) {
             }
             setIsLoading(false);
         };
+
         fetchUsers();
-    }, [isAuthenticated, currentPage, value]);
+    }, [isAuthenticated, currentPage, value, isDeleted]);
+
+
+    async function handleDeleteUser(userId: string | undefined) {
+        try {
+            console.log("Userid: ", userId);
+            await axios.delete(`${import.meta.env.SERVER_URL}/user/delete_user`, {
+                data: { userId: userId },
+                withCredentials: true
+            });
+
+            console.log("User deleted successfully!!");
+
+            setIsDeleted((prev) => !prev);
+        } catch (error) {
+            console.log("Error in deleting user: ", error);
+        }
+    }
 
     return (
         <div className="w-full mx-auto p-6 space-y-6 max-w-7xl">
+            <h1 className="text-3xl font-bold mb-8">User Management</h1>
             <Card>
                 <CardHeader>
-                    <div className="flex justify-between items-center">
-                        <CardTitle className="text-2xl font-semibold">User Management</CardTitle>
-                    </div>
+
                     <div className="flex items-center space-x-4 mt-4">
                         <div className="relative flex-1">
                             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -130,10 +150,7 @@ export default function UserDetails({ isAuthenticated }: UserDetailsProps) {
                                                     <Badge variant="outline">{user.batch}</Badge>
                                                 </TableCell>
                                                 <TableCell className="text-right">
-                                                    <Button variant="ghost" size="icon">
-                                                        <PencilIcon className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button variant="ghost" size="icon">
+                                                    <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(user.id)}>
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
                                                 </TableCell>

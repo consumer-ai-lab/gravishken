@@ -77,7 +77,6 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 			return
 		}
 
-		// Remove sensitive information
 		adminInfo.Password = ""
 
 		ctx.JSON(200, gin.H{
@@ -97,7 +96,7 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 		reader := csv.NewReader(file)
 		var users []user.User
 
-		// Skip the header row
+		
 		if _, err := reader.Read(); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid CSV format"})
 			return
@@ -129,13 +128,13 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 			users = append(users, user)
 		}
 
-		// Insert users into the database
+		
 		userInterfaces := make([]interface{}, len(users))
 		for i, u := range users {
 			userInterfaces[i] = u
 		}
 
-		// Insert users into the database
+		
 		insertedResult, err := allControllers.UserCollection.InsertMany(context.Background(), userInterfaces)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert users"})
@@ -180,81 +179,135 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 	})
 
 	authenticatedAdminRoutes.POST("/add_test", func(ctx *gin.Context) {
-
+		
 		if err := ctx.Request.ParseMultipartForm(10 << 20); err != nil {
 			ctx.JSON(400, gin.H{"error": "File too large"})
 			return
 		}
-
+	
+	
+		testName := ctx.Request.FormValue("testName")
 		testType := ctx.Request.FormValue("type")
 		duration := ctx.Request.FormValue("duration")
 		typingText := ctx.Request.FormValue("typingText")
-
+	
+		fmt.Println("testName: ", testName)
 		fmt.Println("testType: ", testType)
 		fmt.Println("duration: ", duration)
 		fmt.Println("typing text: ", typingText)
+		fmt.Println("file: ", ctx.Request.FormValue("file"))
 
+	
+		if testName == "" {
+			ctx.JSON(400, gin.H{"error": "Test name is required"})
+			return
+		}
+	
 		durationInt, err := strconv.Atoi(duration)
 		if err != nil {
-			fmt.Println("Conversion error:", err)
+			ctx.JSON(400, gin.H{"error": "Invalid duration"})
 			return
 		}
-
+	
 		testModel := test.Test{
-			Type:       test.TestType(testType),
-			Duration:   durationInt,
-			TypingText: typingText,
+			TestName: testName,
+			Type:     test.TestType(testType),
+			Duration: durationInt,
 		}
-
-		file, header, err := ctx.Request.FormFile("file")
-		if err != nil {
-			if err == http.ErrMissingFile {
+	
+		if testType == string(test.TypingTest) {
+			testModel.TypingText = typingText
+			
+		} else if testType == string(test.MCQTest) {
+			file, _, err := ctx.Request.FormFile("file")
+			if err != nil {
 				
-				fmt.Println("No file uploaded, continuing without file")
-			} else {
-				ctx.JSON(400, gin.H{"error": "Error retrieving the file"})
+				ctx.JSON(400, gin.H{"error": "Error retrieving the CSV file"})
 				return
 			}
-		}
-		if file != nil {
-			sess, err := session.NewSession(&aws.Config{
-				Region: aws.String("ap-south-1"),
-				Credentials: credentials.NewStaticCredentials(
-					os.Getenv("AWS_S3_ACCESS_KEY"),
-					os.Getenv("AWS_S3_ACCESS_KEY_SECRET"),
-					"",
-				),
-			})
+			defer file.Close()
+	
+			reader := csv.NewReader(file)
+			var mcqQuestions []test.MCQ
+	
+			for {
+				record, err := reader.Read()
+				if err == io.EOF {
+					break
+				}
+				if err != nil {
+					ctx.JSON(400, gin.H{"error": "Error reading CSV file"})
+					return
+				}
+	
+				if len(record) != 6 {
+					ctx.JSON(400, gin.H{"error": "Invalid CSV format"})
+					return
+				}
+	
+				mcq := test.MCQ{
+					Question: record[0],
+					Options:  record[1:5],
+					Answer:   record[5],
+				}
+				mcqQuestions = append(mcqQuestions, mcq)
+			}
+			
+	
+			if err := testModel.SetMCQQuestions(mcqQuestions); err != nil {
+				
+				ctx.JSON(500, gin.H{"error": "Failed to set MCQ questions"})
+				return
+			}
+			
+		} else {
+			file, header, err := ctx.Request.FormFile("file")
 			if err != nil {
-				ctx.JSON(500, gin.H{"error": "Failed to create AWS session"})
-				return
+				if err == http.ErrMissingFile {
+					
+				} else {
+				
+					ctx.JSON(400, gin.H{"error": "Error retrieving the file"})
+					return
+				}
 			}
-
-			uploader := s3manager.NewUploader(sess)
-
-			filename := filepath.Base(header.Filename)
-			result, err := uploader.Upload(&s3manager.UploadInput{
-				Bucket: aws.String("collegeprojectbucket"),
-				Key:    aws.String(filename),
-				Body:   file,
-			})
-
-			if err != nil {
-				ctx.JSON(500, gin.H{"error": "Failed to upload file to S3"})
-				return
+			if file != nil {
+				defer file.Close()
+	
+				sess, err := session.NewSession(&aws.Config{
+					Region: aws.String("ap-south-1"),
+					Credentials: credentials.NewStaticCredentials(
+						os.Getenv("AWS_S3_ACCESS_KEY"),
+						os.Getenv("AWS_S3_ACCESS_KEY_SECRET"),
+						"",
+					),
+				})
+				if err != nil {
+					
+					ctx.JSON(500, gin.H{"error": "Failed to create AWS session"})
+					return
+				}
+				
+				uploader := s3manager.NewUploader(sess)
+	
+				filename := filepath.Base(header.Filename)
+				result, err := uploader.Upload(&s3manager.UploadInput{
+					Bucket: aws.String("collegeprojectbucket"),
+					Key:    aws.String(filename),
+					Body:   file,
+				})
+	
+				if err != nil {
+					ctx.JSON(500, gin.H{"error": "Failed to upload file to S3"})
+					return
+				}
+			
+				testModel.FilePath = result.Location
 			}
-
-			testModel.File = result.Location
 		}
-
-
-		allControllers.AddTestToDB(ctx, &testModel);
-
-		if err != nil {
-			ctx.JSON(500, gin.H{"error": "Failed to add test to database"})
-			return
-		}
-
+		
+		allControllers.AddTestToDB(ctx, &testModel)
+	
 		ctx.JSON(200, gin.H{"message": "Test added successfully", "test": testModel})
 	})
 
