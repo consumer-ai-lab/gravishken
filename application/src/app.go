@@ -98,24 +98,24 @@ func (self *App) handleServerMessages() {
 	}
 }
 
-func (self *App) startTest(testData types.TGetTest) error {
-	questionPaper, err := self.client.getTest(testData)
+// func (self *App) startTest(testData types.TGetTest) error {
+// 	questionPaper, err := self.client.getTest(testData)
 
-	if err != nil {
-		return err
-	}
+// 	if err != nil {
+// 		return err
+// 	}
 
-	log.Println("Question paper: ", questionPaper)
+// 	log.Println("Question paper: ", questionPaper)
 
-	routeMessage := types.TLoadRoute{
-		Route: "/tests/1",
-	}
-	message := types.NewMessage(routeMessage)
+// 	routeMessage := types.TLoadRoute{
+// 		Route: "/tests/1",
+// 	}
+// 	message := types.NewMessage(routeMessage)
 
-	self.send <- message
+// 	self.send <- message
 
-	return nil
-}
+// 	return nil
+// }
 
 func (self *App) openWv() {
 	var url string

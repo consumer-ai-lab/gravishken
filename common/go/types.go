@@ -214,7 +214,6 @@ func DumpTypes(dir string) {
 		Add(UserSubmission{}).
 		Add(UserBatchRequestData{}).
 		Add(UserLoginRequest{}).
-		Add(UserUpdateRequest{}).
 		Add(Test{}).
 		Add(Admin{}).
 		Add(AdminRequest{}).

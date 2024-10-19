@@ -183,173 +183,173 @@ func (this *ControllerClass) UserLoginHandler(ctx *gin.Context, userModel *commo
 	})
 }
 
-func (this *ControllerClass) UpdateUserData(ctx *gin.Context, userUpdateRequest *common.UserUpdateRequest) {
-	userCollection := this.UserCollection
-	err := UpdateUserData(userCollection, userUpdateRequest)
+// func (this *ControllerClass) UpdateUserData(ctx *gin.Context, userUpdateRequest *common.UserUpdateRequest) {
+// 	userCollection := this.UserCollection
+// 	err := UpdateUserData(userCollection, userUpdateRequest)
 
-	if err != nil {
-		ctx.JSON(500, gin.H{
-			"message": "Error in updating user data",
-			"error":   err,
-		})
-		return
-	}
+// 	if err != nil {
+// 		ctx.JSON(500, gin.H{
+// 			"message": "Error in updating user data",
+// 			"error":   err,
+// 		})
+// 		return
+// 	}
 
-	ctx.JSON(200, gin.H{
-		"message": "User data updated successfully",
-	})
-}
+// 	ctx.JSON(200, gin.H{
+// 		"message": "User data updated successfully",
+// 	})
+// }
 
-func (this *ControllerClass) Increase_Time(ctx *gin.Context, param string, username []string, time_to_increase int64) {
-	userCollection := this.UserCollection
+// func (this *ControllerClass) Increase_Time(ctx *gin.Context, param string, username []string, time_to_increase int64) {
+// 	userCollection := this.UserCollection
 
-	if len(username) == 0 {
-		ctx.JSON(500, gin.H{
-			"message": "Empty username",
-		})
-		return
-	}
+// 	if len(username) == 0 {
+// 		ctx.JSON(500, gin.H{
+// 			"message": "Empty username",
+// 		})
+// 		return
+// 	}
 
-	if len(username) > 1 {
-		param = "batch"
-	}
+// 	if len(username) > 1 {
+// 		param = "batch"
+// 	}
 
-	switch param {
-	case "user":
-		err := UpdateUserTestTime(userCollection, username[0], time_to_increase)
-		if err != nil {
-			ctx.JSON(500, gin.H{
-				"message": "Error in increasing time",
-				"error":   err,
-			})
-		}
-		ctx.JSON(200, gin.H{
-			"message": "Time increased successfully",
-		})
+// 	switch param {
+// 	case "user":
+// 		err := UpdateUserTestTime(userCollection, username[0], time_to_increase)
+// 		if err != nil {
+// 			ctx.JSON(500, gin.H{
+// 				"message": "Error in increasing time",
+// 				"error":   err,
+// 			})
+// 		}
+// 		ctx.JSON(200, gin.H{
+// 			"message": "Time increased successfully",
+// 		})
 
-	case "batch":
+// 	case "batch":
 
-		err := UpdateBatchTestTime(userCollection, username, time_to_increase)
-		if err != nil {
-			ctx.JSON(500, gin.H{
-				"message": "Error in increasing time",
-				"error":   err,
-			})
-		}
-		ctx.JSON(200, gin.H{
-			"message": "Time increased successfully",
-		})
+// 		err := UpdateBatchTestTime(userCollection, username, time_to_increase)
+// 		if err != nil {
+// 			ctx.JSON(500, gin.H{
+// 				"message": "Error in increasing time",
+// 				"error":   err,
+// 			})
+// 		}
+// 		ctx.JSON(200, gin.H{
+// 			"message": "Time increased successfully",
+// 		})
 
-	default:
-		ctx.JSON(500, gin.H{
-			"message": "Invalid parameter",
-		})
-	}
+// 	default:
+// 		ctx.JSON(500, gin.H{
+// 			"message": "Invalid parameter",
+// 		})
+// 	}
 
-}
+// }
 
-func (this *ControllerClass) GetBatchWiseData(ctx *gin.Context, param string, BatchNumber string, Ranges []int) {
-	userCollection := this.UserCollection
+// func (this *ControllerClass) GetBatchWiseData(ctx *gin.Context, param string, BatchNumber string, Ranges []int) {
+// 	userCollection := this.UserCollection
 
-	switch param {
-	case "batch":
-		result, err := GetBatchWiseList(userCollection, BatchNumber)
-		if err != nil {
-			ctx.JSON(500, gin.H{
-				"message": "Error in fetching batch wise data",
-				"error":   err,
-			})
-		}
-		ctx.JSON(200, gin.H{
-			"message": "Batch wise data fetched successfully",
-			"data":    result,
-		})
+// 	switch param {
+// 	case "batch":
+// 		result, err := GetBatchWiseList(userCollection, BatchNumber)
+// 		if err != nil {
+// 			ctx.JSON(500, gin.H{
+// 				"message": "Error in fetching batch wise data",
+// 				"error":   err,
+// 			})
+// 		}
+// 		ctx.JSON(200, gin.H{
+// 			"message": "Batch wise data fetched successfully",
+// 			"data":    result,
+// 		})
 
-	case "roll":
-		From := Ranges[0]
-		To := Ranges[1]
-		result, err := GetBatchWiseListRoll(userCollection, BatchNumber, From, To)
-		if err != nil {
-			ctx.JSON(500, gin.H{
-				"message": "Error in fetching batch wise data",
-				"error":   err,
-			})
-		}
+// 	case "roll":
+// 		From := Ranges[0]
+// 		To := Ranges[1]
+// 		result, err := GetBatchWiseListRoll(userCollection, BatchNumber, From, To)
+// 		if err != nil {
+// 			ctx.JSON(500, gin.H{
+// 				"message": "Error in fetching batch wise data",
+// 				"error":   err,
+// 			})
+// 		}
 
-		ctx.JSON(200, gin.H{
-			"message": "Batch wise data fetched successfully",
-			"data":    result,
-		})
+// 		ctx.JSON(200, gin.H{
+// 			"message": "Batch wise data fetched successfully",
+// 			"data":    result,
+// 		})
 
-	case "frontend":
-		result, err := GetBatchDataForFrontend(userCollection, BatchNumber)
-		if err != nil {
-			ctx.JSON(500, gin.H{
-				"message": "Error in fetching batch wise data",
-				"error":   err,
-			})
-		}
+// 	case "frontend":
+// 		result, err := GetBatchDataForFrontend(userCollection, BatchNumber)
+// 		if err != nil {
+// 			ctx.JSON(500, gin.H{
+// 				"message": "Error in fetching batch wise data",
+// 				"error":   err,
+// 			})
+// 		}
 
-		ctx.JSON(200, gin.H{
-			"message": "Batch wise data fetched successfully",
-			"data":    result,
-		})
+// 		ctx.JSON(200, gin.H{
+// 			"message": "Batch wise data fetched successfully",
+// 			"data":    result,
+// 		})
 
-	default:
-		ctx.JSON(500, gin.H{
-			"message": "Invalid parameter",
-		})
-	}
-}
+// 	default:
+// 		ctx.JSON(500, gin.H{
+// 			"message": "Invalid parameter",
+// 		})
+// 	}
+// }
 
-func (this *ControllerClass) SetUserData(ctx *gin.Context, param string, userRequest *common.UserBatchRequestData, Username string) {
-	userCollection := this.UserCollection
+// func (this *ControllerClass) SetUserData(ctx *gin.Context, param string, userRequest *common.UserBatchRequestData, Username string) {
+// 	userCollection := this.UserCollection
 
-	switch param {
-	case "download":
-		err := SetUserResultToDownloaded(userCollection, userRequest)
-		if err != nil {
-			ctx.JSON(500, gin.H{
-				"message": "Error in setting user data",
-				"error":   err,
-			})
-		}
+// 	switch param {
+// 	case "download":
+// 		err := SetUserResultToDownloaded(userCollection, userRequest)
+// 		if err != nil {
+// 			ctx.JSON(500, gin.H{
+// 				"message": "Error in setting user data",
+// 				"error":   err,
+// 			})
+// 		}
 
-		ctx.JSON(200, gin.H{
-			"message": "User data set successfully",
-		})
+// 		ctx.JSON(200, gin.H{
+// 			"message": "User data set successfully",
+// 		})
 
-	case "reset":
-		err := ResetUserData(userCollection, Username)
-		if err != nil {
-			ctx.JSON(500, gin.H{
-				"message": "Error in resetting user data",
-				"error":   err,
-			})
-		}
+// 	case "reset":
+// 		err := ResetUserData(userCollection, Username)
+// 		if err != nil {
+// 			ctx.JSON(500, gin.H{
+// 				"message": "Error in resetting user data",
+// 				"error":   err,
+// 			})
+// 		}
 
-		ctx.JSON(200, gin.H{
-			"message": "User data reset successfully",
-		})
+// 		ctx.JSON(200, gin.H{
+// 			"message": "User data reset successfully",
+// 		})
 
-	default:
-		ctx.JSON(500, gin.H{
-			"message": "Invalid parameter",
-		})
-	}
+// 	default:
+// 		ctx.JSON(500, gin.H{
+// 			"message": "Invalid parameter",
+// 		})
+// 	}
 
-}
+// }
 
-func (self *ControllerClass) UpdateUser(ctx *gin.Context, userRequest *common.UserModelUpdateRequest) error {
-	userCollection := self.UserCollection
+// func (self *ControllerClass) UpdateUser(ctx *gin.Context, userRequest *common.UserModelUpdateRequest) error {
+// 	userCollection := self.UserCollection
 
-	err := UpdateUser(userCollection, userRequest)
-	if err != nil {
-		return err
-	}
+// 	err := UpdateUser(userCollection, userRequest)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func (self *ControllerClass) DeleteUser(ctx *gin.Context, userId string) error {
 	userCollection := self.UserCollection

@@ -3,10 +3,10 @@ package main
 import (
 	"common"
 	"context"
-	"encoding/csv"
+	// "encoding/csv"
 	"fmt"
-	"io"
-	"log"
+	// "io"
+	// "log"
 	"math"
 	"net/http"
 	"os"
@@ -84,66 +84,66 @@ func AdminRoutes(allControllers *ControllerClass, route *gin.Engine) {
 		})
 	})
 
-	authenticatedAdminRoutes.POST("/add_users_from_csv", func(ctx *gin.Context) {
-		file, _, err := ctx.Request.FormFile("file")
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": "File upload failed"})
-			return
-		}
-		defer file.Close()
+	// authenticatedAdminRoutes.POST("/add_users_from_csv", func(ctx *gin.Context) {
+	// 	file, _, err := ctx.Request.FormFile("file")
+	// 	if err != nil {
+	// 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "File upload failed"})
+	// 		return
+	// 	}
+	// 	defer file.Close()
 
-		reader := csv.NewReader(file)
-		var users []common.User
+	// 	reader := csv.NewReader(file)
+	// 	var users []common.User
 
-		// Skip the header row
-		if _, err := reader.Read(); err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid CSV format"})
-			return
-		}
+	// 	// Skip the header row
+	// 	if _, err := reader.Read(); err != nil {
+	// 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid CSV format"})
+	// 		return
+	// 	}
 
-		for {
-			record, err := reader.Read()
-			if err == io.EOF {
-				break
-			}
-			if err != nil {
-				ctx.JSON(http.StatusBadRequest, gin.H{"error": "Error reading CSV"})
-				return
-			}
+	// 	for {
+	// 		record, err := reader.Read()
+	// 		if err == io.EOF {
+	// 			break
+	// 		}
+	// 		if err != nil {
+	// 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Error reading CSV"})
+	// 			return
+	// 		}
 
-			if len(record) != 5 {
-				ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid CSV format"})
-				return
-			}
+	// 		if len(record) != 5 {
+	// 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid CSV format"})
+	// 			return
+	// 		}
 
-			user := common.User{
-				ID:           primitive.NewObjectID(),
-				Username:     record[0],
-				Password:     record[1],
-				TestPassword: record[2],
-				Batch:        record[3],
-				Tests:        common.UserSubmission{},
-			}
-			users = append(users, user)
-		}
+	// 		user := common.User{
+	// 			ID:           primitive.NewObjectID(),
+	// 			Username:     record[0],
+	// 			Password:     record[1],
+	// 			TestPassword: record[2],
+	// 			Batch:        record[3],
+	// 			Tests:        common.UserSubmission{},
+	// 		}
+	// 		users = append(users, user)
+	// 	}
 
-		// Insert users into the database
-		userInterfaces := make([]interface{}, len(users))
-		for i, u := range users {
-			userInterfaces[i] = u
-		}
+	// 	// Insert users into the database
+	// 	userInterfaces := make([]interface{}, len(users))
+	// 	for i, u := range users {
+	// 		userInterfaces[i] = u
+	// 	}
 
-		// Insert users into the database
-		insertedResult, err := allControllers.UserCollection.InsertMany(context.Background(), userInterfaces)
-		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert users"})
-			return
-		}
+	// 	// Insert users into the database
+	// 	insertedResult, err := allControllers.UserCollection.InsertMany(context.Background(), userInterfaces)
+	// 	if err != nil {
+	// 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert users"})
+	// 		return
+	// 	}
 
-		ctx.JSON(http.StatusOK, gin.H{
-			"message": fmt.Sprintf("Successfully added %d users", len(insertedResult.InsertedIDs)),
-		})
-	})
+	// 	ctx.JSON(http.StatusOK, gin.H{
+	// 		"message": fmt.Sprintf("Successfully added %d users", len(insertedResult.InsertedIDs)),
+	// 	})
+	// })
 
 	authenticatedAdminRoutes.POST("/add_batch", func(ctx *gin.Context) {
 		var batchData struct {
@@ -157,14 +157,14 @@ func AdminRoutes(allControllers *ControllerClass, route *gin.Engine) {
 		}
 
 		// Convert string IDs to ObjectIDs
-		testObjectIDs := make([]primitive.ObjectID, 0, len(batchData.SelectedTests))
+		testObjectIDs := make([]string, 0, len(batchData.SelectedTests))
 		for _, testID := range batchData.SelectedTests {
 			objectID, err := primitive.ObjectIDFromHex(testID)
 			if err != nil {
 				ctx.JSON(400, gin.H{"error": "Invalid test ID format"})
 				return
 			}
-			testObjectIDs = append(testObjectIDs, objectID)
+			testObjectIDs = append(testObjectIDs, objectID.String())
 		}
 
 		newBatch := common.Batch{
@@ -255,74 +255,74 @@ func AdminRoutes(allControllers *ControllerClass, route *gin.Engine) {
 		ctx.JSON(200, gin.H{"message": "Test added successfully", "test": testModel})
 	})
 
-	authenticatedAdminRoutes.POST("/update_user_data", func(ctx *gin.Context) {
-		var userUpdateRequest common.UserUpdateRequest
+	// authenticatedAdminRoutes.POST("/update_user_data", func(ctx *gin.Context) {
+	// 	var userUpdateRequest common.UserUpdateRequest
 
-		if err := ctx.ShouldBindJSON(&userUpdateRequest); err != nil {
-			ctx.JSON(500, gin.H{"error": "Invalid request body"})
-			return
-		}
+	// 	if err := ctx.ShouldBindJSON(&userUpdateRequest); err != nil {
+	// 		ctx.JSON(500, gin.H{"error": "Invalid request body"})
+	// 		return
+	// 	}
 
-		allControllers.UpdateUserData(ctx, &userUpdateRequest)
+	// 	allControllers.UpdateUserData(ctx, &userUpdateRequest)
 
-	})
+	// })
 
-	authenticatedAdminRoutes.POST("/increase_test_time", func(ctx *gin.Context) {
-		var requestData struct {
-			Param          string   `json:"param"`
-			Username       []string `json:"username"`
-			TimeToIncrease int64    `json:"time_to_increase"`
-		}
+	// authenticatedAdminRoutes.POST("/increase_test_time", func(ctx *gin.Context) {
+	// 	var requestData struct {
+	// 		Param          string   `json:"param"`
+	// 		Username       []string `json:"username"`
+	// 		TimeToIncrease int64    `json:"time_to_increase"`
+	// 	}
 
-		// Bind JSON body to requestData struct
-		if err := ctx.ShouldBindJSON(&requestData); err != nil {
-			ctx.JSON(400, gin.H{
-				"message": "Invalid request body",
-				"error":   err.Error(),
-			})
-			return
-		}
+	// 	// Bind JSON body to requestData struct
+	// 	if err := ctx.ShouldBindJSON(&requestData); err != nil {
+	// 		ctx.JSON(400, gin.H{
+	// 			"message": "Invalid request body",
+	// 			"error":   err.Error(),
+	// 		})
+	// 		return
+	// 	}
 
-		allControllers.Increase_Time(ctx, requestData.Param, requestData.Username, requestData.TimeToIncrease)
+	// 	allControllers.Increase_Time(ctx, requestData.Param, requestData.Username, requestData.TimeToIncrease)
 
-	})
+	// })
 
-	authenticatedAdminRoutes.POST("/get_batchwise_data", func(ctx *gin.Context) {
-		var batchData struct {
-			Param       string `json:"param"`
-			BatchNumber string `json:"batchNumber"`
-			Ranges      []int  `json:"ranges"`
-		}
+	// authenticatedAdminRoutes.POST("/get_batchwise_data", func(ctx *gin.Context) {
+	// 	var batchData struct {
+	// 		Param       string `json:"param"`
+	// 		BatchNumber string `json:"batchNumber"`
+	// 		Ranges      []int  `json:"ranges"`
+	// 	}
 
-		if err := ctx.ShouldBindJSON(&batchData); err != nil {
-			ctx.JSON(500, gin.H{"error": "Invalid request body"})
-			return
-		}
+	// 	if err := ctx.ShouldBindJSON(&batchData); err != nil {
+	// 		ctx.JSON(500, gin.H{"error": "Invalid request body"})
+	// 		return
+	// 	}
 
-		allControllers.GetBatchWiseData(ctx, batchData.Param, batchData.BatchNumber, batchData.Ranges)
+	// 	allControllers.GetBatchWiseData(ctx, batchData.Param, batchData.BatchNumber, batchData.Ranges)
 
-	})
+	// })
 
-	authenticatedAdminRoutes.POST("/set_user_data", func(ctx *gin.Context) {
-		var userRequest struct {
-			Username         string `json:"username"`
-			Param            string `json:"param"`
-			From             int    `json:"from"`
-			To               int    `json:"to"`
-			ResultDownloaded bool   `json:"resultDownloaded"`
-		}
+	// authenticatedAdminRoutes.POST("/set_user_data", func(ctx *gin.Context) {
+	// 	var userRequest struct {
+	// 		Username         string `json:"username"`
+	// 		Param            string `json:"param"`
+	// 		From             int    `json:"from"`
+	// 		To               int    `json:"to"`
+	// 		ResultDownloaded bool   `json:"resultDownloaded"`
+	// 	}
 
-		if err := ctx.ShouldBindJSON(&userRequest); err != nil {
-			ctx.JSON(500, gin.H{"error": "Invalid request body"})
-			return
-		}
+	// 	if err := ctx.ShouldBindJSON(&userRequest); err != nil {
+	// 		ctx.JSON(500, gin.H{"error": "Invalid request body"})
+	// 		return
+	// 	}
 
-		allControllers.SetUserData(ctx, userRequest.Param, &common.UserBatchRequestData{
-			From:             userRequest.From,
-			To:               userRequest.To,
-			ResultDownloaded: userRequest.ResultDownloaded,
-		}, userRequest.Username)
-	})
+	// 	allControllers.SetUserData(ctx, userRequest.Param, &common.UserBatchRequestData{
+	// 		From:             userRequest.From,
+	// 		To:               userRequest.To,
+	// 		ResultDownloaded: userRequest.ResultDownloaded,
+	// 	}, userRequest.Username)
+	// })
 
 	authenticatedAdminRoutes.POST("/update_typing_test_text", func(ctx *gin.Context) {
 		var UpdateTypingTestTextRequest struct {
@@ -493,29 +493,29 @@ func UserRoutes(allControllers *ControllerClass, route *gin.Engine) {
 		})
 	})
 
-	userRoute.PUT("/update_user", func(ctx *gin.Context) {
-		var updateRequest common.UserModelUpdateRequest
-		if err := ctx.ShouldBindJSON(&updateRequest); err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
-			return
-		}
+	// userRoute.PUT("/update_user", func(ctx *gin.Context) {
+	// 	var updateRequest common.UserModelUpdateRequest
+	// 	if err := ctx.ShouldBindJSON(&updateRequest); err != nil {
+	// 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+	// 		return
+	// 	}
 
-		log.Default().Println("User Request: ", updateRequest)
+	// 	log.Default().Println("User Request: ", updateRequest)
 
-		err := allControllers.UpdateUser(ctx, &updateRequest)
+	// 	err := allControllers.UpdateUser(ctx, &updateRequest)
 
-		if err != nil {
-			ctx.JSON(500, gin.H{
-				"message": "Error in updating user!",
-				"error":   err,
-			})
-			return
-		}
+	// 	if err != nil {
+	// 		ctx.JSON(500, gin.H{
+	// 			"message": "Error in updating user!",
+	// 			"error":   err,
+	// 		})
+	// 		return
+	// 	}
 
-		ctx.JSON(200, gin.H{
-			"message": "user updated successfully!!",
-		})
-	})
+	// 	ctx.JSON(200, gin.H{
+	// 		"message": "user updated successfully!!",
+	// 	})
+	// })
 
 	userRoute.DELETE("/delete_user", func(ctx *gin.Context) {
 		var deleteRequest struct {

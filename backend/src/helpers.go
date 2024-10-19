@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"log"
 	"reflect"
-	"strconv"
-	"strings"
+	// "strconv"
+	// "strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -18,273 +18,273 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func UpdateUserTestTime(Collection *mongo.Collection, Username string, TimeToIncrease int64) error {
-	var user common.User
+// func UpdateUserTestTime(Collection *mongo.Collection, Username string, TimeToIncrease int64) error {
+// 	var user common.User
 
-	err := Collection.FindOne(context.TODO(), bson.M{"name": Username}).Decode(&user)
+// 	err := Collection.FindOne(context.TODO(), bson.M{"name": Username}).Decode(&user)
 
-	if err != nil {
-		return err
-	}
+// 	if err != nil {
+// 		return err
+// 	}
 
-	userTest := user.Tests
-	prevTimeElapsedUser := userTest.ElapsedTime
-	userTest.ElapsedTime = prevTimeElapsedUser - 60*TimeToIncrease
+// 	userTest := user.Tests
+// 	prevTimeElapsedUser := userTest.ElapsedTime
+// 	userTest.ElapsedTime = prevTimeElapsedUser - 60*TimeToIncrease
 
-	if userTest.ElapsedTime < 0 {
-		userTest.ElapsedTime = 0
-	}
+// 	if userTest.ElapsedTime < 0 {
+// 		userTest.ElapsedTime = 0
+// 	}
 
-	if userTest.ElapsedTime > 1797 {
-		userTest.ElapsedTime = 1797
-	}
+// 	if userTest.ElapsedTime > 1797 {
+// 		userTest.ElapsedTime = 1797
+// 	}
 
-	user.Tests = userTest
+// 	user.Tests = userTest
 
-	Collection.ReplaceOne(context.TODO(), bson.M{"name": Username}, user)
+// 	Collection.ReplaceOne(context.TODO(), bson.M{"name": Username}, user)
 
-	return nil
-}
+// 	return nil
+// }
 
-func UpdateBatchTestTime(Collection *mongo.Collection, Usernames []string, TimeToIncrease int64) error {
-	for _, username := range Usernames {
-		err := UpdateUserTestTime(Collection, username, TimeToIncrease)
-		if err != nil {
-			return err
-		}
-	}
+// func UpdateBatchTestTime(Collection *mongo.Collection, Usernames []string, TimeToIncrease int64) error {
+// 	for _, username := range Usernames {
+// 		err := UpdateUserTestTime(Collection, username, TimeToIncrease)
+// 		if err != nil {
+// 			return err
+// 		}
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-func UpdateUserData(Collection *mongo.Collection, Model *common.UserUpdateRequest) error {
+// func UpdateUserData(Collection *mongo.Collection, Model *common.UserUpdateRequest) error {
 
-	var user common.User
+// 	var user common.User
 
-	err := Collection.FindOne(context.TODO(), bson.M{"name": Model.Username}).Decode(&user)
+// 	err := Collection.FindOne(context.TODO(), bson.M{"name": Model.Username}).Decode(&user)
 
-	userTest := user.Tests
-	if err != nil {
-		return err
-	}
+// 	userTest := user.Tests
+// 	if err != nil {
+// 		return err
+// 	}
 
-	property := strings.ToLower(Model.Property)
-	_ = property
+// 	property := strings.ToLower(Model.Property)
+// 	_ = property
 
-	switch property {
-	case "start_time":
+// 	switch property {
+// 	case "start_time":
 
-		startTime, err := time.Parse(time.RFC3339, Model.Value[0])
-		if err != nil {
-			return err
-		}
-		userTest.StartTime = startTime
-		userTest.ElapsedTime = 0
-		user.Tests = userTest
-		Collection.ReplaceOne(context.TODO(), bson.M{"name": Model.Username}, user)
+// 		startTime, err := time.Parse(time.RFC3339, Model.Value[0])
+// 		if err != nil {
+// 			return err
+// 		}
+// 		userTest.StartTime = startTime
+// 		userTest.ElapsedTime = 0
+// 		user.Tests = userTest
+// 		Collection.ReplaceOne(context.TODO(), bson.M{"name": Model.Username}, user)
 
-	case "reading_submission_received":
-		userTest.ReadingSubmissionReceived = true
-		user.Tests = userTest
-		Collection.ReplaceOne(context.TODO(), bson.M{"name": Model.Username}, user)
+// 	case "reading_submission_received":
+// 		userTest.ReadingSubmissionReceived = true
+// 		user.Tests = userTest
+// 		Collection.ReplaceOne(context.TODO(), bson.M{"name": Model.Username}, user)
 
-	case "submission_received":
-		userTest.SubmissionReceived = true
-		user.Tests = userTest
-		Collection.ReplaceOne(context.TODO(), bson.M{"name": Model.Username}, user)
+// 	case "submission_received":
+// 		userTest.SubmissionReceived = true
+// 		user.Tests = userTest
+// 		Collection.ReplaceOne(context.TODO(), bson.M{"name": Model.Username}, user)
 
-	case "elapsed_time":
-		elapsedTime, err := time.Parse(time.RFC3339, Model.Value[0])
-		if err != nil {
-			return err
-		}
-		userTest.ElapsedTime = elapsedTime.Unix()
-		user.Tests = userTest
-		Collection.ReplaceOne(context.TODO(), bson.M{"name": Model.Username}, user)
+// 	case "elapsed_time":
+// 		elapsedTime, err := time.Parse(time.RFC3339, Model.Value[0])
+// 		if err != nil {
+// 			return err
+// 		}
+// 		userTest.ElapsedTime = elapsedTime.Unix()
+// 		user.Tests = userTest
+// 		Collection.ReplaceOne(context.TODO(), bson.M{"name": Model.Username}, user)
 
-	case "reading_elapsed_time":
-		readingElapsedTime, err := time.Parse(time.RFC3339, Model.Value[0])
-		if err != nil {
-			return err
-		}
-		userTest.ReadingElapsedTime = readingElapsedTime.Unix()
-		user.Tests = userTest
-		Collection.ReplaceOne(context.TODO(), bson.M{"name": Model.Username}, user)
+// 	case "reading_elapsed_time":
+// 		readingElapsedTime, err := time.Parse(time.RFC3339, Model.Value[0])
+// 		if err != nil {
+// 			return err
+// 		}
+// 		userTest.ReadingElapsedTime = readingElapsedTime.Unix()
+// 		user.Tests = userTest
+// 		Collection.ReplaceOne(context.TODO(), bson.M{"name": Model.Username}, user)
 
-	case "submission_folder_id":
-		userTest.SubmissionFolderID = Model.Value[0]
-		userTest.MergedFileID = Model.Value[1]
-		user.Tests = userTest
-		Collection.ReplaceOne(context.TODO(), bson.M{"name": Model.Username}, user)
+// 	case "submission_folder_id":
+// 		userTest.SubmissionFolderID = Model.Value[0]
+// 		userTest.MergedFileID = Model.Value[1]
+// 		user.Tests = userTest
+// 		Collection.ReplaceOne(context.TODO(), bson.M{"name": Model.Username}, user)
 
-	case "wpm":
-		wpm, err := time.Parse(time.RFC3339, Model.Value[0])
-		if err != nil {
-			return err
-		}
-		userTest.WPM = float64(wpm.Unix()) // Convert int64 to float64
+// 	case "wpm":
+// 		wpm, err := time.Parse(time.RFC3339, Model.Value[0])
+// 		if err != nil {
+// 			return err
+// 		}
+// 		userTest.WPM = float64(wpm.Unix()) // Convert int64 to float64
 
-		wmp_time, err := time.Parse(time.RFC3339, Model.Value[1])
-		if err != nil {
-			return err
-		}
-		userTest.WPMNormal = float64(wmp_time.Unix())
+// 		wmp_time, err := time.Parse(time.RFC3339, Model.Value[1])
+// 		if err != nil {
+// 			return err
+// 		}
+// 		userTest.WPMNormal = float64(wmp_time.Unix())
 
-		wpm_normal, err := time.Parse(time.RFC3339, Model.Value[2])
-		if err != nil {
-			return err
-		}
-		userTest.WPMNormal = float64(wpm_normal.Unix())
-		user.Tests = userTest
-		Collection.ReplaceOne(context.TODO(), bson.M{"name": Model.Username}, user)
+// 		wpm_normal, err := time.Parse(time.RFC3339, Model.Value[2])
+// 		if err != nil {
+// 			return err
+// 		}
+// 		userTest.WPMNormal = float64(wpm_normal.Unix())
+// 		user.Tests = userTest
+// 		Collection.ReplaceOne(context.TODO(), bson.M{"name": Model.Username}, user)
 
-	case "user_test_time":
-		username := Model.Value[0]
-		timeToIncrease, err := time.Parse(time.RFC3339, Model.Value[1])
-		if err != nil {
-			return err
-		}
-		err = UpdateUserTestTime(Collection, username, timeToIncrease.Unix()) // Convert timeToIncrease to int64
-		if err != nil {
-			return err
-		}
-	case "batch_test_time":
-		batchNumber := Model.Value[0]
-		timeToIncrease, err := time.Parse(time.RFC3339, Model.Value[1])
-		if err != nil {
-			return err
-		}
-		user, err := GetModelByBatchId(Collection, batchNumber, &common.User{})
-		if err != nil {
-			return err
-		}
+// 	case "user_test_time":
+// 		username := Model.Value[0]
+// 		timeToIncrease, err := time.Parse(time.RFC3339, Model.Value[1])
+// 		if err != nil {
+// 			return err
+// 		}
+// 		err = UpdateUserTestTime(Collection, username, timeToIncrease.Unix()) // Convert timeToIncrease to int64
+// 		if err != nil {
+// 			return err
+// 		}
+// 	case "batch_test_time":
+// 		batchNumber := Model.Value[0]
+// 		timeToIncrease, err := time.Parse(time.RFC3339, Model.Value[1])
+// 		if err != nil {
+// 			return err
+// 		}
+// 		user, err := GetModelByBatchId(Collection, batchNumber, &common.User{})
+// 		if err != nil {
+// 			return err
+// 		}
 
-		var usernames []string
-		for _, user := range user {
-			usernames = append(usernames, user.(*common.User).Username)
-		}
+// 		var usernames []string
+// 		for _, user := range user {
+// 			usernames = append(usernames, user.(*common.User).Username)
+// 		}
 
-		err = UpdateBatchTestTime(Collection, usernames, timeToIncrease.Unix())
+// 		err = UpdateBatchTestTime(Collection, usernames, timeToIncrease.Unix())
 
-		if err != nil {
-			return err
-		}
+// 		if err != nil {
+// 			return err
+// 		}
 
-		fmt.Printf("Batch id: %s, Time to increase: %d\n", batchNumber, timeToIncrease.Unix())
-	default:
-		return errors.New("invalid property")
-	}
+// 		fmt.Printf("Batch id: %s, Time to increase: %d\n", batchNumber, timeToIncrease.Unix())
+// 	default:
+// 		return errors.New("invalid property")
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-func UpdateUser(collection *mongo.Collection, userRequest *common.UserModelUpdateRequest) error {
+// func UpdateUser(collection *mongo.Collection, userRequest *common.UserModelUpdateRequest) error {
 
-	var user common.User
+// 	var user common.User
 
-	objectID, err := primitive.ObjectIDFromHex(userRequest.ID)
-	if err != nil {
-		return fmt.Errorf("invalid ID format: %v", err)
-	}
+// 	objectID, err := primitive.ObjectIDFromHex(userRequest.ID)
+// 	if err != nil {
+// 		return fmt.Errorf("invalid ID format: %v", err)
+// 	}
 
-	err = collection.FindOne(context.TODO(), bson.M{"_id": objectID}).Decode(&user)
-	if err != nil {
-		return err
-	}
+// 	err = collection.FindOne(context.TODO(), bson.M{"_id": objectID}).Decode(&user)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	user.Username = userRequest.Username
-	user.Password = userRequest.Password
-	user.TestPassword = userRequest.TestPassword
-	user.Batch = userRequest.Batch
+// 	user.Username = userRequest.Username
+// 	user.Password = userRequest.Password
+// 	user.TestPassword = userRequest.TestPassword
+// 	user.Batch = userRequest.Batch
 
-	collection.ReplaceOne(context.TODO(), bson.M{"_id": objectID}, user)
+// 	collection.ReplaceOne(context.TODO(), bson.M{"_id": objectID}, user)
 
-	return nil
+// 	return nil
 
-}
+// }
 
-func GetBatchWiseList(Collection *mongo.Collection, BatchNumber string) ([]map[string]string, error) {
-	var result []map[string]string
-	user, err := GetModelByBatchId(Collection, BatchNumber, &common.User{})
-	if err != nil {
-		return nil, err
-	}
+// func GetBatchWiseList(Collection *mongo.Collection, BatchNumber string) ([]map[string]string, error) {
+// 	var result []map[string]string
+// 	user, err := GetModelByBatchId(Collection, BatchNumber, &common.User{})
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	/*
-				userData[i].username,
-		        userData[i].merged_file_id,
-		        userData[i].submission_folder_id,
-	*/
+// 	/*
+// 				userData[i].username,
+// 		        userData[i].merged_file_id,
+// 		        userData[i].submission_folder_id,
+// 	*/
 
-	for _, user := range user {
-		userMap := map[string]string{
-			"username":             user.(*common.User).Username,
-			"merged_file_id":       user.(*common.User).Tests.MergedFileID,
-			"submission_folder_id": user.(*common.User).Tests.SubmissionFolderID,
-		}
-		result = append(result, userMap)
-	}
+// 	for _, user := range user {
+// 		userMap := map[string]string{
+// 			"username":             user.(*common.User).Username,
+// 			"merged_file_id":       user.(*common.User).Tests.MergedFileID,
+// 			"submission_folder_id": user.(*common.User).Tests.SubmissionFolderID,
+// 		}
+// 		result = append(result, userMap)
+// 	}
 
-	return result, nil
+// 	return result, nil
 
-}
+// }
 
-func GetBatchWiseListRoll(Collection *mongo.Collection, BatchNumber string, From, To int) ([]map[string]string, error) {
-	var result []map[string]string
-	user, err := GetModelByBatchId(Collection, BatchNumber, &common.User{})
-	if err != nil {
-		return nil, err
-	}
+// func GetBatchWiseListRoll(Collection *mongo.Collection, BatchNumber string, From, To int) ([]map[string]string, error) {
+// 	var result []map[string]string
+// 	user, err := GetModelByBatchId(Collection, BatchNumber, &common.User{})
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	/*
-		userData[i].username,
-		userData[i].merged_file_id,
-		userData[i].submission_folder_id,
-		userData[i].resultDownloaded,
-		userData[i].submission_received,
-	*/
+// 	/*
+// 		userData[i].username,
+// 		userData[i].merged_file_id,
+// 		userData[i].submission_folder_id,
+// 		userData[i].resultDownloaded,
+// 		userData[i].submission_received,
+// 	*/
 
-	for _, user := range user {
-		username, _ := strconv.Atoi(user.(*common.User).Username) // Convert username to integer
-		if username >= From && username <= To {
-			userMap := map[string]string{
-				"username":             user.(*common.User).Username,
-				"merged_file_id":       user.(*common.User).Tests.MergedFileID,
-				"submission_folder_id": user.(*common.User).Tests.SubmissionFolderID,
-				"resultDownloaded":     strconv.FormatBool(user.(*common.User).Tests.ResultDownloaded),
-				"submission_received":  strconv.FormatBool(user.(*common.User).Tests.SubmissionReceived),
-			}
-			result = append(result, userMap)
-		}
-	}
+// 	for _, user := range user {
+// 		username, _ := strconv.Atoi(user.(*common.User).Username) // Convert username to integer
+// 		if username >= From && username <= To {
+// 			userMap := map[string]string{
+// 				"username":             user.(*common.User).Username,
+// 				"merged_file_id":       user.(*common.User).Tests.MergedFileID,
+// 				"submission_folder_id": user.(*common.User).Tests.SubmissionFolderID,
+// 				"resultDownloaded":     strconv.FormatBool(user.(*common.User).Tests.ResultDownloaded),
+// 				"submission_received":  strconv.FormatBool(user.(*common.User).Tests.SubmissionReceived),
+// 			}
+// 			result = append(result, userMap)
+// 		}
+// 	}
 
-	return result, nil
-}
+// 	return result, nil
+// }
 
-func GetBatchDataForFrontend(Collection *mongo.Collection, BatchNumber string) ([]map[string]string, error) {
-	var result []map[string]string
-	user, err := GetModelByBatchId(Collection, BatchNumber, &common.User{})
-	if err != nil {
-		return nil, err
-	}
+// func GetBatchDataForFrontend(Collection *mongo.Collection, BatchNumber string) ([]map[string]string, error) {
+// 	var result []map[string]string
+// 	user, err := GetModelByBatchId(Collection, BatchNumber, &common.User{})
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	for _, user := range user {
-		start_time := user.(*common.User).Tests.StartTime
-		userArr := make(map[string]string)
-		userArr["username"] = user.(*common.User).Username
-		userArr["merged_file_id"] = user.(*common.User).Tests.MergedFileID
-		userArr["submission_folder_id"] = user.(*common.User).Tests.SubmissionFolderID
-		if start_time.IsZero() {
-			userArr["status"] = "Present"
-		} else {
-			userArr["status"] = "Absent"
-		}
+// 	for _, user := range user {
+// 		start_time := user.(*common.User).Tests.StartTime
+// 		userArr := make(map[string]string)
+// 		userArr["username"] = user.(*common.User).Username
+// 		userArr["merged_file_id"] = user.(*common.User).Tests.MergedFileID
+// 		userArr["submission_folder_id"] = user.(*common.User).Tests.SubmissionFolderID
+// 		if start_time.IsZero() {
+// 			userArr["status"] = "Present"
+// 		} else {
+// 			userArr["status"] = "Absent"
+// 		}
 
-		result = append(result, userArr)
-	}
+// 		result = append(result, userArr)
+// 	}
 
-	return result, nil
-}
+// 	return result, nil
+// }
 
 func UserLogin(Collection *mongo.Collection, userRequest *common.UserLoginRequest) (string, error) {
 	user, err := common.FindByUsername(Collection, userRequest.Username)
@@ -315,65 +315,65 @@ func UserLogin(Collection *mongo.Collection, userRequest *common.UserLoginReques
 	return tokenString, nil
 }
 
-func SetUserResultToDownloaded(Collection *mongo.Collection, request *common.UserBatchRequestData) error {
-	user, err := Get_All_Models(Collection, &common.User{})
-	if err != nil {
-		return err
-	}
+// func SetUserResultToDownloaded(Collection *mongo.Collection, request *common.UserBatchRequestData) error {
+// 	user, err := Get_All_Models(Collection, &common.User{})
+// 	if err != nil {
+// 		return err
+// 	}
 
-	from := request.From
-	to := request.To
-	resultDownloaded := request.ResultDownloaded
+// 	from := request.From
+// 	to := request.To
+// 	resultDownloaded := request.ResultDownloaded
 
-	filered_users := []ModelInterface{}
+// 	filered_users := []ModelInterface{}
 
-	for _, user := range user {
-		username, _ := strconv.Atoi(user.(*common.User).Username) // Convert username to integer
-		if username >= from && username <= to {
-			filered_users = append(filered_users, user)
-		}
-	}
+// 	for _, user := range user {
+// 		username, _ := strconv.Atoi(user.(*common.User).Username) // Convert username to integer
+// 		if username >= from && username <= to {
+// 			filered_users = append(filered_users, user)
+// 		}
+// 	}
 
-	for _, filtered_user := range filered_users {
-		if !filtered_user.(*common.User).Tests.SubmissionReceived {
-			continue
-		}
+// 	for _, filtered_user := range filered_users {
+// 		if !filtered_user.(*common.User).Tests.SubmissionReceived {
+// 			continue
+// 		}
 
-		filtered_user.(*common.User).Tests.ResultDownloaded = resultDownloaded
-		err = Update_Model_By_ID(Collection, filtered_user.(*common.User).ID.Hex(), filtered_user)
-		if err != nil {
-			return err
-		}
+// 		filtered_user.(*common.User).Tests.ResultDownloaded = resultDownloaded
+// 		err = Update_Model_By_ID(Collection, filtered_user.(*common.User).ID.Hex(), filtered_user)
+// 		if err != nil {
+// 			return err
+// 		}
 
-	}
-	return nil
-}
+// 	}
+// 	return nil
+// }
 
-func ResetUserData(Collection *mongo.Collection, username string) error {
-	user, err := common.FindByUsername(Collection, username)
-	if err != nil {
-		return err
-	}
+// func ResetUserData(Collection *mongo.Collection, username string) error {
+// 	user, err := common.FindByUsername(Collection, username)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	/*
-		userData.submission_received = false;
-		userData.reading_submission_received = false;
-		userData.reading_elapsed_time = 0;
-		userData.elapsed_time = 0;
-	*/
+// 	/*
+// 		userData.submission_received = false;
+// 		userData.reading_submission_received = false;
+// 		userData.reading_elapsed_time = 0;
+// 		userData.elapsed_time = 0;
+// 	*/
 
-	user.Tests.SubmissionReceived = false
-	user.Tests.ReadingSubmissionReceived = false
-	user.Tests.ReadingElapsedTime = 0
-	user.Tests.ElapsedTime = 0
+// 	user.Tests.SubmissionReceived = false
+// 	user.Tests.ReadingSubmissionReceived = false
+// 	user.Tests.ReadingElapsedTime = 0
+// 	user.Tests.ElapsedTime = 0
 
-	err = Update_Model_By_ID(Collection, user.ID.Hex(), user)
-	if err != nil {
-		return err
-	}
+// 	err = Update_Model_By_ID(Collection, user.ID.Hex(), user)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func GetTestsByBatch(batchCollection *mongo.Collection, testCollection *mongo.Collection, batchName string) ([]common.Test, error) {
 	var batchDoc common.Batch

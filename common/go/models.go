@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -47,7 +46,7 @@ type AdminRequest struct {
 type Batch struct {
 	Id    ID
 	Name  string
-	Tests []primitive.ObjectID
+	Tests []ID
 }
 
 type Test struct {
