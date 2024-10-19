@@ -88,63 +88,61 @@ func AdminRoutes(allControllers *Database, route *gin.Engine) {
 		})
 	})
 
-	// authenticatedAdminRoutes.POST("/add_users_from_csv", func(ctx *gin.Context) {
-	// 	file, _, err := ctx.Request.FormFile("file")
-	// 	if err != nil {
-	// 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "File upload failed"})
-	// 		return
-	// 	}
-	// 	defer file.Close()
+	authenticatedAdminRoutes.POST("/add_users_from_csv", func(ctx *gin.Context) {
+		file, _, err := ctx.Request.FormFile("file")
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "File upload failed"})
+			return
+		}
+		defer file.Close()
 
-	// 	reader := csv.NewReader(file)
-	// 	var users []common.User
+		reader := csv.NewReader(file)
+		var users []common.User
 
-	// 	if _, err := reader.Read(); err != nil {
-	// 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid CSV format"})
-	// 		return
-	// 	}
+		if _, err := reader.Read(); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid CSV format"})
+			return
+		}
 
-	// 	for {
-	// 		record, err := reader.Read()
-	// 		if err == io.EOF {
-	// 			break
-	// 		}
-	// 		if err != nil {
-	// 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Error reading CSV"})
-	// 			return
-	// 		}
+		for {
+			record, err := reader.Read()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": "Error reading CSV"})
+				return
+			}
 
-	// 		if len(record) != 5 {
-	// 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid CSV format"})
-	// 			return
-	// 		}
+			if len(record) != 5 {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid CSV format"})
+				return
+			}
 
-	// 		user := common.User{
-	// 			ID:           primitive.NewObjectID(),
-	// 			Username:     record[0],
-	// 			Password:     record[1],
-	// 			TestPassword: record[2],
-	// 			Batch:        record[3],
-	// 			Tests:        common.UserSubmission{},
-	// 		}
-	// 		users = append(users, user)
-	// 	}
+			user := common.User{
+				Id:        primitive.NewObjectID().String(),
+				Username:  record[0],
+				Password:  record[1],
+				BatchName: record[3],
+			}
+			users = append(users, user)
+		}
 
-	// 	userInterfaces := make([]interface{}, len(users))
-	// 	for i, u := range users {
-	// 		userInterfaces[i] = u
-	// 	}
+		userInterfaces := make([]interface{}, len(users))
+		for i, u := range users {
+			userInterfaces[i] = u
+		}
 
-	// 	insertedResult, err := allControllers.UserCollection.InsertMany(context.Background(), userInterfaces)
-	// 	if err != nil {
-	// 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert users"})
-	// 		return
-	// 	}
+		insertedResult, err := allControllers.UserCollection.InsertMany(context.Background(), userInterfaces)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert users"})
+			return
+		}
 
-	// 	ctx.JSON(http.StatusOK, gin.H{
-	// 		"message": fmt.Sprintf("Successfully added %d users", len(insertedResult.InsertedIDs)),
-	// 	})
-	// })
+		ctx.JSON(http.StatusOK, gin.H{
+			"message": fmt.Sprintf("Successfully added %d users", len(insertedResult.InsertedIDs)),
+		})
+	})
 
 	authenticatedAdminRoutes.POST("/add_batch", func(ctx *gin.Context) {
 		var batchData struct {
