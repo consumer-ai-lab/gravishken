@@ -10,41 +10,98 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type Admin struct {
-	ID       primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	Username string             `bson:"username" json:"username"`
-	Password string             `bson:"password" json:"password"`
+func (test *Test) GetCollectionName() string {
+	return "tests"
+}
+
+func (user *User) GetCollectionName() string {
+	return "users"
+}
+
+func (userTest *UserSubmission) GetCollectionName() string {
+	return "submissions"
 }
 
 func (admin *Admin) GetCollectionName() string {
 	return "admins"
 }
 
-type AdminRequest struct {
-	Username string `json:"username"`
-	Token    string `json:"token"`
+func (batch *Batch) GetCollectionName() string {
+	return "batches"
 }
 
-func FindAdminByUsername(collection *mongo.Collection, username string) (*Admin, error) {
-	filter := bson.M{"username": username}
+// primitive id converted to string
+type ID = string
 
-	var admin Admin
-	err := collection.FindOne(context.TODO(), filter).Decode(&admin)
-	if err != nil {
-		return nil, err
-	}
+type Admin struct {
+	Id       ID
+	Username string
+	Password string
+}
 
-	return &admin, nil
+type AdminRequest struct {
+	Username string
+	Token    string
 }
 
 type Batch struct {
-	ID    primitive.ObjectID   `bson:"_id,omitempty" json:"id,omitempty"`
-	Name  string               `bson:"name" json:"name"`
-	Tests []primitive.ObjectID `bson:"tests" json:"tests" ts_type:"string[]"`
+	Id    ID
+	Name  string
+	Tests []primitive.ObjectID
 }
 
-func (batch *Batch) GetCollectionName() string {
-	return "batches"
+type Test struct {
+	Id         ID
+	Type       TestType
+	Duration   int
+	File       string
+	TypingText string
+}
+
+type User struct {
+	Id        ID
+	Username  string
+	Password  string
+	BatchName string
+}
+
+type UserSubmission struct {
+	UserId ID
+	TestId ID
+
+	StartTime   time.Time
+	EndTime     time.Time
+	ElapsedTime int64
+
+	WPM       float64
+	WPMNormal float64
+
+	//?
+	ReadingSubmissionReceived bool
+	ReadingElapsedTime        int64
+	SubmissionReceived        bool
+	ResultDownloaded          bool
+	MergedFileID              string
+	SubmissionFolderID        string
+}
+
+type UserModelUpdateRequest struct {
+	Id           ID
+	Username     string
+	Password     string
+	TestPassword string
+	Batch        string
+}
+
+type UserBatchRequestData struct {
+	From             int
+	To               int
+	ResultDownloaded bool
+}
+
+type UserLoginRequest struct {
+	Username string
+	Password string
 }
 
 type TestType string
@@ -71,55 +128,16 @@ func (self TestType) TSName() string {
 	}
 }
 
-type Test struct {
-	ID         primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	Type       TestType           `bson:"type" json:"type"`
-	Duration   int                `bson:"duration" json:"duration"`
-	File       string             `bson:"file,omitempty" json:"file,omitempty"`
-	TypingText string             `bson:"typingText,omitempty" json:"typingText,omitempty"`
-}
+func FindAdminByUsername(collection *mongo.Collection, username string) (*Admin, error) {
+	filter := bson.M{"username": username}
 
-func (test *Test) GetCollectionName() string {
-	return "tests"
-}
+	var admin Admin
+	err := collection.FindOne(context.TODO(), filter).Decode(&admin)
+	if err != nil {
+		return nil, err
+	}
 
-type User struct {
-	ID        primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	Username  string             `bson:"username" json:"username" binding:"required"`
-	Password  string             `bson:"password" json:"password" binding:"required"`
-	BatchName string             `bson:"batch_name" json:"batch_name" binding:"required"`
-}
-
-type UserSubmission struct {
-	UserID                    primitive.ObjectID `bson:"user_id" json:"user_id"`
-	TestID                    primitive.ObjectID `bson:"test" json:"test"`
-	StartTime                 time.Time          `bson:"startTime" json:"startTime"`
-	EndTime                   time.Time          `bson:"endTime" json:"endTime"`
-	ElapsedTime               int64              `bson:"elapsedTime" json:"elapsedTime"` // Stored in seconds
-	SubmissionReceived        bool               `bson:"submissionReceived" json:"submissionReceived"`
-	ReadingElapsedTime        int64              `bson:"readingElapsedTime" json:"readingElapsedTime"` // Stored in seconds
-	ReadingSubmissionReceived bool               `bson:"readingSubmissionReceived" json:"readingSubmissionReceived"`
-	SubmissionFolderID        string             `bson:"submissionFolderId" json:"submissionFolderId"`
-	MergedFileID              string             `bson:"mergedFileId" json:"mergedFileId"`
-	WPM                       float64            `bson:"wpm" json:"wpm"`
-	WPMNormal                 float64            `bson:"wpmNormal" json:"wpmNormal"`
-	ResultDownloaded          bool               `bson:"resultDownloaded" json:"resultDownloaded"`
-}
-
-type UserModelUpdateRequest struct {
-	ID           string `bson:"id" json:"id"`
-	Username     string `bson:"username" json:"username" binding:"required"`
-	Password     string `bson:"password" json:"password" binding:"required"`
-	TestPassword string `bson:"testPassword" json:"testPassword" binding:"required"`
-	Batch        string `bson:"batch" json:"batch" binding:"required"`
-}
-
-func (user *User) GetCollectionName() string {
-	return "users"
-}
-
-func (userTest *UserSubmission) GetCollectionName() string {
-	return "user_tests"
+	return &admin, nil
 }
 
 func FindByUsername(Collection *mongo.Collection, userName string) (*User, error) {
@@ -133,23 +151,6 @@ func FindByUsername(Collection *mongo.Collection, userName string) (*User, error
 	}
 
 	return &user, nil
-}
-
-type UserBatchRequestData struct {
-	From             int
-	To               int
-	ResultDownloaded bool
-}
-
-type UserUpdateRequest struct {
-	Username string   `json:"username"`
-	Property string   `json:"property"`
-	Value    []string `json:"value"`
-}
-
-type UserLoginRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
 }
 
 func GetCollection(client *mongo.Client, collectionName string) *mongo.Collection {
