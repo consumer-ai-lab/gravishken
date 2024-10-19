@@ -8,14 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import axios from 'axios';
 import { useDebounce } from 'use-debounce';
-import { User as ImportedUser } from '@common/types';
-
-// @thrombe: fix this type in common, it is changing every time on compliation
-type UserWithoutId = Omit<ImportedUser, 'id'>;
-
-export interface User extends UserWithoutId {
-    id: string;
-}
+import { User } from '@common/types';
 
 interface UserDetailsProps {
     isAuthenticated: boolean;
@@ -111,8 +104,7 @@ export default function UserDetails({ isAuthenticated }: UserDetailsProps) {
                                     <TableHead className="w-[16.66%]">ID</TableHead>
                                     <TableHead className="w-[16.66%]">Username</TableHead>
                                     <TableHead className="w-[16.66%]">Password</TableHead>
-                                    <TableHead className="w-[16.66%]">Test Password</TableHead>
-                                    <TableHead className="w-[16.66%]">Batch</TableHead>
+                                    <TableHead className="w-[16.66%]">BatchName</TableHead>
                                     <TableHead className="w-[16.66%] text-right">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -128,26 +120,25 @@ export default function UserDetails({ isAuthenticated }: UserDetailsProps) {
 
                                 ) : (
                                     users.map((user: User) => {
-                                        if (user.id === undefined) {
+                                        if (user.Id === undefined) {
                                             return null;
                                         }
                                         return (
-                                            <TableRow key={user.id}>
+                                            <TableRow key={user.Id}>
                                                 <TableCell className="font-mono text-sm">
-                                                    {user.id.slice(0, 8)}...
+                                                    {user.Id.slice(0, 8)}...
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="flex items-center space-x-2">
                                                         <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center">
-                                                            {user.username.charAt(0).toUpperCase()}
+                                                            {user.Username.charAt(0).toUpperCase()}
                                                         </div>
-                                                        <span>{user.username}</span>
+                                                        <span>{user.Username}</span>
                                                     </div>
                                                 </TableCell>
-                                                <TableCell>{user.password}</TableCell>
-                                                <TableCell>{user.testPassword}</TableCell>
+                                                <TableCell>{user.Password}</TableCell>
                                                 <TableCell>
-                                                    <Badge variant="outline">{user.batch}</Badge>
+                                                    <Badge variant="outline">{user.BatchName}</Badge>
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                     <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(user.id)}>
