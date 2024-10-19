@@ -10,8 +10,8 @@ export type Message = {
     Typ: types.Varient.ExeNotFound,
     Val: types.TExeNotFound,
 } | {
-    Typ: types.Varient.UserLogin,
-    Val: types.TUserLogin,
+    Typ: types.Varient.UserLoginRequest,
+    Val: types.TUserLoginRequest,
 } | {
     Typ: types.Varient.Quit,
     Val: types.TQuit,
@@ -132,7 +132,7 @@ export class Server {
                 this.send_message(msg);
                 break;
             case types.Varient.Unknown:
-            case types.Varient.UserLogin: {
+            case types.Varient.UserLoginRequest: {
                 throw new Error(`message type '${msg.Typ}' can't be handled here`);
             } break;
             default:

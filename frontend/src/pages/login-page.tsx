@@ -15,7 +15,7 @@ export default function LoginPage() {
     localStorage.setItem('userPassword', userPassword);
 
     server.send_message({
-      Typ: types.Varient.UserLogin,
+      Typ: types.Varient.UserLoginRequest,
       Val: {
         Username: username,
         Password: userPassword,
