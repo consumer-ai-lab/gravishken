@@ -151,6 +151,20 @@ func (self *Runner) OpenApp(typ types.AppType, file string) error {
 	}
 	defer self.resetState()
 
+	// go (func() {
+	// 	timeout := time.After(time.Second * 100)
+	// 	for {
+	// 		err := self.forceSaveInApp()
+	// 		log.Println(err)
+	// 		select {
+	// 		case <-timeout:
+	// 			return
+	// 		default:
+	// 			time.Sleep(time.Millisecond * 50)
+	// 		}
+	// 	}
+	// })()
+
 	self.state.running_typ = typ
 	self.state.file = file
 	switch typ {
@@ -171,6 +185,13 @@ func (self *Runner) KillApp() error {
 	if self.state.running_app == nil {
 		return nil
 	}
+
+	// self.FocusOpenApp()
+	// self.waitForFocusApp(30)
+	// self.sendCtrlS()
+	// _ = win.PostMessage(self.state.hwnd, win.WM_CLOSE, 0, 0)
+	// self.resetState()
+	// return nil
 
 	err := self.state.running_app.Process.Kill()
 	if err != nil {
@@ -360,6 +381,7 @@ func (self *Runner) forceSaveInApp() error {
 }
 
 func (self *Runner) FocusOrOpenApp(typ types.AppType, file string) error {
+	// if self.isOpen() && self.state.running_typ == typ && self.state.file == file {
 	if self.isOpen() && self.state.running_typ == typ {
 		return self.FocusOpenApp()
 	} else {
@@ -517,6 +539,21 @@ func (self *Runner) open(exe string, file string) error {
 			}
 		}
 	})()
+	// go (func() {
+	// 	timeout := time.After(time.Second * 400000)
+	// 	for {
+	// 		select {
+	// 		case <-timeout:
+	// 			log.Println("ERROR: open app timeout")
+	// 			return
+	// 		default:
+	// 			hwnd := win.GetForegroundWindow()
+	// 			title, _ := getWindowTitle(hwnd)
+	// 			log.Println(hwnd, title)
+	// 			time.Sleep(time.Millisecond * 50)
+	// 		}
+	// 	}
+	// })()
 
 	// cmd := exec.Command(self.paths.explorer, file)
 	// cmd := exec.Command(self.paths.cmd, "/C", "start", file)
