@@ -279,7 +279,6 @@ func AdminRoutes(allControllers *Database, route *gin.Engine) {
 					),
 				})
 				if err != nil {
-
 					ctx.JSON(500, gin.H{"error": "Failed to create AWS session"})
 					return
 				}

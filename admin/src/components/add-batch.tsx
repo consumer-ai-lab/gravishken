@@ -95,17 +95,17 @@ export default function AddBatch() {
               <Label>Select Tests</Label>
               <div className="space-y-2">
                 {availableTests.map((test:Test) => {
-                  if (test.testName==="" || test.testName===null || test.id===undefined) {
+                  if (test.TestName==="" || test.TestName===null || test.Id===undefined) {
                     return null;
                   }
                   return (
-                    <div key={test.id} className="flex items-center space-x-2">
+                    <div key={test.Id} className="flex items-center space-x-2">
                       <Checkbox
-                        id={`test-${test.id}`}
-                        checked={selectedTests.includes(test.id)}
-                        onCheckedChange={() => handleTestSelection(test.id!)}
+                        id={`test-${test.Id}`}
+                        checked={selectedTests.includes(test.Id)}
+                        onCheckedChange={() => handleTestSelection(test.Id!)}
                       />
-                      <Label htmlFor={`test-${test.id}`}>{test.testName.charAt(0).toUpperCase() + test.testName.slice(1)}</Label>
+                      <Label htmlFor={`test-${test.Id}`}>{test.TestName.charAt(0).toUpperCase() + test.TestName.slice(1)}</Label>
                     </div>
                   )
                 })}
