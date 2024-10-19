@@ -77,7 +77,6 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 			return
 		}
 
-		// Remove sensitive information
 		adminInfo.Password = ""
 
 		ctx.JSON(200, gin.H{
@@ -97,7 +96,7 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 		reader := csv.NewReader(file)
 		var users []user.User
 
-		// Skip the header row
+		
 		if _, err := reader.Read(); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid CSV format"})
 			return
@@ -129,13 +128,13 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 			users = append(users, user)
 		}
 
-		// Insert users into the database
+		
 		userInterfaces := make([]interface{}, len(users))
 		for i, u := range users {
 			userInterfaces[i] = u
 		}
 
-		// Insert users into the database
+		
 		insertedResult, err := allControllers.UserCollection.InsertMany(context.Background(), userInterfaces)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert users"})
@@ -180,10 +179,12 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 	})
 
 	authenticatedAdminRoutes.POST("/add_test", func(ctx *gin.Context) {
+		
 		if err := ctx.Request.ParseMultipartForm(10 << 20); err != nil {
 			ctx.JSON(400, gin.H{"error": "File too large"})
 			return
 		}
+	
 	
 		testName := ctx.Request.FormValue("testName")
 		testType := ctx.Request.FormValue("type")
@@ -194,7 +195,9 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 		fmt.Println("testType: ", testType)
 		fmt.Println("duration: ", duration)
 		fmt.Println("typing text: ", typingText)
+		fmt.Println("file: ", ctx.Request.FormValue("file"))
 
+	
 		if testName == "" {
 			ctx.JSON(400, gin.H{"error": "Test name is required"})
 			return
@@ -214,9 +217,11 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 	
 		if testType == string(test.TypingTest) {
 			testModel.TypingText = typingText
+			
 		} else if testType == string(test.MCQTest) {
 			file, _, err := ctx.Request.FormFile("file")
 			if err != nil {
+				
 				ctx.JSON(400, gin.H{"error": "Error retrieving the CSV file"})
 				return
 			}
@@ -247,23 +252,28 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 				}
 				mcqQuestions = append(mcqQuestions, mcq)
 			}
+			
 	
 			if err := testModel.SetMCQQuestions(mcqQuestions); err != nil {
+				
 				ctx.JSON(500, gin.H{"error": "Failed to set MCQ questions"})
 				return
 			}
+			
 		} else {
 			file, header, err := ctx.Request.FormFile("file")
 			if err != nil {
 				if err == http.ErrMissingFile {
-					fmt.Println("No file uploaded, continuing without file")
+					
 				} else {
+				
 					ctx.JSON(400, gin.H{"error": "Error retrieving the file"})
 					return
 				}
 			}
 			if file != nil {
 				defer file.Close()
+	
 				sess, err := session.NewSession(&aws.Config{
 					Region: aws.String("ap-south-1"),
 					Credentials: credentials.NewStaticCredentials(
@@ -273,10 +283,11 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 					),
 				})
 				if err != nil {
+					
 					ctx.JSON(500, gin.H{"error": "Failed to create AWS session"})
 					return
 				}
-	
+				
 				uploader := s3manager.NewUploader(sess)
 	
 				filename := filepath.Base(header.Filename)
@@ -290,12 +301,12 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 					ctx.JSON(500, gin.H{"error": "Failed to upload file to S3"})
 					return
 				}
-	
+			
 				testModel.FilePath = result.Location
 			}
 		}
-	
-		allControllers.AddTestToDB(ctx, &testModel);
+		
+		allControllers.AddTestToDB(ctx, &testModel)
 	
 		ctx.JSON(200, gin.H{"message": "Test added successfully", "test": testModel})
 	})

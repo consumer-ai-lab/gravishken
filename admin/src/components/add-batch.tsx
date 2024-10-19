@@ -5,17 +5,19 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useToast } from '@/hooks/use-toast'
+import { Test } from '@common/types'
 import axios from 'axios'
 
 export default function AddBatch() {
 
   const [batchName, setBatchName] = useState('')
   const [selectedTests, setSelectedTests] = useState<string[]>([]);
-  const [availableTests, setAvailableTests] = useState<any[]>([]);
+  const [availableTests, setAvailableTests] = useState<Test[]>([]);
   const { toast } = useToast()
+  console.log("Available tests: ", availableTests)
 
   useEffect(() => {
-    const fetchTests = async () => {
+    async function fetchTests() {
       try {
         const response = await axios.get(`${import.meta.env.SERVER_URL}/test/get_all_tests`);
         console.log("Response: ", response)
@@ -30,7 +32,7 @@ export default function AddBatch() {
       }
     };
     fetchTests();
-    console.log("Available tests: ",availableTests)
+    console.log("Available tests: ", availableTests)
   }, []);
 
   const handleTestSelection = (testId: string) => {
@@ -92,16 +94,21 @@ export default function AddBatch() {
             <div className="space-y-2">
               <Label>Select Tests</Label>
               <div className="space-y-2">
-                {availableTests.map((test) => (
-                  <div key={test.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`test-${test.id}`}
-                      checked={selectedTests.includes(test.id)}
-                      onCheckedChange={() => handleTestSelection(test.id)}
-                    />
-                    <Label htmlFor={`test-${test.id}`}>{test.type.charAt(0).toUpperCase() + test.type.slice(1)} Test</Label>
-                  </div>
-                ))}
+                {availableTests.map((test:Test) => {
+                  if (test.testName==="" || test.testName===null || test.id===undefined) {
+                    return null;
+                  }
+                  return (
+                    <div key={test.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`test-${test.id}`}
+                        checked={selectedTests.includes(test.id)}
+                        onCheckedChange={() => handleTestSelection(test.id!)}
+                      />
+                      <Label htmlFor={`test-${test.id}`}>{test.testName.charAt(0).toUpperCase() + test.testName.slice(1)}</Label>
+                    </div>
+                  )
+                })}
               </div>
             </div>
 

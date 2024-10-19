@@ -105,7 +105,7 @@ export interface UserUpdateRequest {
     value: string[];
 }
 export interface Test {
-    id?: number[];
+    id?: string;
     testName: string;
     type: TestType;
     duration: number;
