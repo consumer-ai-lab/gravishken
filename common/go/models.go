@@ -33,7 +33,7 @@ func (batch *Batch) GetCollectionName() string {
 type ID = string
 
 type Admin struct {
-	Id       ID
+	Id       ID `bson:"_id"`
 	Username string
 	Password string
 }
@@ -44,13 +44,13 @@ type AdminRequest struct {
 }
 
 type Batch struct {
-	Id    ID
+	Id    ID `bson:"_id"`
 	Name  string
 	Tests []ID
 }
 
 type Test struct {
-	Id         ID
+	Id         ID `bson:"_id"`
 	Type       TestType
 	Duration   int
 	File       string
@@ -58,7 +58,7 @@ type Test struct {
 }
 
 type User struct {
-	Id       ID
+	Id       ID `bson:"_id"`
 	Username string
 	// TODO: plaintext password yo!
 	// passwords should be stored in another table hashed

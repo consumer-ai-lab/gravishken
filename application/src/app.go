@@ -99,13 +99,12 @@ func (self *App) handleServerMessages() {
 }
 
 func (self *App) startTest() error {
-	questionPaper, err := self.client.getTests(self.client.user.BatchName)
+	tests, err := self.client.getTests(self.client.user.BatchName)
+	self.client.tests = tests
 
 	if err != nil {
 		return err
 	}
-
-	log.Println("Question paper: ", questionPaper)
 
 	routeMessage := types.TLoadRoute{
 		Route: "/tests/1",

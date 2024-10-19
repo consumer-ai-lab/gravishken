@@ -350,10 +350,27 @@ func InitAuthRoutes(db *Database, route *gin.Engine) {
 
 func BatchRoutes(allControllers *Database, route *gin.Engine) {
 	batchRoute := route.Group("/batch")
-	// batchRoute.Use(UserJWTAuthMiddleware(allControllers.UserCollection))
+	authenticatedBatchRoutes := route.Group("/batch")
+	authenticatedBatchRoutes.Use(UserJWTAuthMiddleware(allControllers.UserCollection))
 
 	batchRoute.GET("/get_batches", func(ctx *gin.Context) {
 		allControllers.GetBatches(ctx)
+	})
+
+	authenticatedBatchRoutes.GET("/tests/:batch_name", func(ctx *gin.Context) {
+		batch_name := ctx.Param("batch_name")
+		log.Println(batch_name)
+
+		tests, err := allControllers.GetQuestionPaperHandler(ctx, batch_name)
+		if err != nil {
+			ctx.JSON(500, gin.H{
+				"message": "Error while fetching question paper",
+				"error":   err,
+			})
+			return
+		}
+
+		ctx.JSON(200, tests)
 	})
 }
 

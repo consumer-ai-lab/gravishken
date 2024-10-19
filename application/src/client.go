@@ -21,6 +21,7 @@ type Client struct {
 	client http.Client
 	jwt    string
 	user   *common.User
+	tests  []common.Test
 
 	server struct {
 		conn         *websocket.Conn
@@ -200,8 +201,7 @@ func (self *Client) connect(exit context.Context, cancel context.CancelFunc) err
 }
 
 func (self *Client) getTests(batchName string) ([]common.Test, error) {
-	// TODO: fetch all tests
-	url := server_url + "/test/get_question_paper/" + batchName
+	url := server_url + "/batch/tests/" + batchName
 	log.Println(url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -225,13 +225,12 @@ func (self *Client) getTests(batchName string) ([]common.Test, error) {
 		return []common.Test{}, err
 	}
 
-	var result struct {
-		Message  string      `json:"message"`
-		Response common.Test `json:"response"`
-	}
+	log.Println(string(body))
+
+	var result []common.Test
 	if err := json.Unmarshal(body, &result); err != nil {
 		return []common.Test{}, err
 	}
 
-	return []common.Test{result.Response}, nil
+	return result, nil
 }

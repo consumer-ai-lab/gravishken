@@ -5,7 +5,7 @@ import * as types from '@common/types';
 import { Button } from '@/components/ui/button';
 
 export default function LoginPage() {
-  const [username, setUsername] = useState('test');
+  const [username, setUsername] = useState('test4');
   const [userPassword, setUserPassword] = useState('test');
 
   const handleSubmit = (e: React.FormEvent) => {

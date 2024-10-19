@@ -59,6 +59,7 @@ func (this *Database) GetQuestionPaperHandler(ctx *gin.Context, batchName string
 	testCollection := this.TestCollection
 
 	tests, err := GetTestsByBatch(batchCollection, testCollection, batchName)
+	log.Println(tests, batchName, err)
 	if err != nil {
 		ctx.JSON(500, gin.H{"error": "Error while fetching question papers"})
 		return nil, err

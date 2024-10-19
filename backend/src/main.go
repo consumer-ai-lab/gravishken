@@ -1,6 +1,8 @@
 package main
 
 import (
+	// "common"
+	// "context"
 	"io/fs"
 	"net/http"
 	"os"
@@ -13,6 +15,7 @@ import (
 
 	helmet "github.com/danielkov/gin-helmet"
 	"github.com/joho/godotenv"
+	// "go.mongodb.org/mongo-driver/bson"
 
 	"log"
 
@@ -57,20 +60,26 @@ func main() {
 func SetupRouter() *gin.Engine {
 	db, err := connectDatabase()
 	// db.UserCollection.InsertOne(context.TODO(), common.User{
-	// 	Username:  "test",
+	// 	Username:  "test4",
 	// 	Password:  "test",
-	// 	BatchName: "testbatch",
+	// 	BatchName: "testbatch4",
 	// })
 	// db.TestCollection.InsertOne(context.TODO(), common.Test{
-	// 	Id:         "typing test id",
+	// 	Id:         "typing test id4",
 	// 	Type:       common.TypingTest,
 	// 	Duration:   500,
-	// 	TypingText: "some text to type",
+	// 	TypingText: "some text to type4",
+	// })
+	// db.TestCollection.InsertOne(context.TODO(), common.Test{
+	// 	Id:         "typing test id41",
+	// 	Type:       common.TypingTest,
+	// 	Duration:   500,
+	// 	TypingText: "some text to type41",
 	// })
 	// db.BatchCollection.InsertOne(context.TODO(), common.Batch{
-	// 	Id:    "testbatchid",
-	// 	Name:  "testbatch",
-	// 	Tests: []string{"typing test id"},
+	// 	Id:    "testbatchid4",
+	// 	Name:  "testbatch4",
+	// 	Tests: []string{"typing test id4", "typing test id41"},
 	// })
 
 	if err != nil {
