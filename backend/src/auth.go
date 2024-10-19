@@ -1,13 +1,12 @@
 package main
 
 import (
-	"common/models"
+	models "common"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"server/src/helper"
 	"strings"
 	"time"
 
@@ -15,6 +14,22 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/mongo"
 )
+
+type ModelInterface interface {
+	GetCollectionName() string
+}
+
+var _ ModelInterface = (*models.Admin)(nil)
+var _ ModelInterface = (*models.Batch)(nil)
+var _ ModelInterface = (*models.User)(nil)
+var _ ModelInterface = (*models.UserSubmission)(nil)
+var _ ModelInterface = (*models.Test)(nil)
+
+// Define your JWT claims structure
+type Claims struct {
+	Username string `json:"username"`
+	jwt.RegisteredClaims
+}
 
 var tokenKey = []byte("token")
 
@@ -145,7 +160,7 @@ func AdminJWTAuthMiddleware(userCollection *mongo.Collection) gin.HandlerFunc {
 		}
 		log.Println("Auth token cookie found")
 
-		claims, err := helper.ValidateAdminToken(token)
+		claims, err := ValidateAdminToken(token)
 		if err != nil {
 			log.Printf("Admin token validation failed: %v", err)
 			c.JSON(401, gin.H{

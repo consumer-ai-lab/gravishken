@@ -1,23 +1,24 @@
-package route
+package main
 
 import (
-	"common/models/admin"
-	"common/models/batch"
-	"common/models/test"
-	"common/models/user"
+	"common/models"
 	"context"
 	"encoding/csv"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson"
 	"io"
+	"log"
+	"math"
 	"net/http"
 	"os"
 	"path/filepath"
-	"server/src/controllers"
 	"server/src/middleware"
 	"server/src/types"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
@@ -27,11 +28,11 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
-func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine) {
+func AdminRoutes(allControllers *ControllerClass, route *gin.Engine) {
 	unauthenticatedAdminRoutes := route.Group("/admin")
 
 	unauthenticatedAdminRoutes.POST("/register", func(ctx *gin.Context) {
-		var adminModel admin.Admin
+		var adminModel models.Admin
 		if err := ctx.ShouldBindJSON(&adminModel); err != nil {
 			ctx.JSON(400, gin.H{"error": "Invalid request body"})
 			return
@@ -41,7 +42,7 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 	})
 
 	unauthenticatedAdminRoutes.POST("/login", func(ctx *gin.Context) {
-		var adminModel admin.Admin
+		var adminModel models.Admin
 		fmt.Println("Admin login route")
 		if err := ctx.ShouldBindJSON(&adminModel); err != nil {
 			ctx.JSON(400, gin.H{"error": "Invalid request body"})
@@ -66,7 +67,7 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 		}
 		claims := anyclaims.(*types.Claims)
 
-		var adminInfo admin.Admin
+		var adminInfo models.Admin
 		err := allControllers.AdminCollection.FindOne(context.TODO(), bson.M{"username": claims.Username}).Decode(&adminInfo)
 		if err != nil {
 			ctx.JSON(200, gin.H{
@@ -94,7 +95,7 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 		defer file.Close()
 
 		reader := csv.NewReader(file)
-		var users []user.User
+		var users []models.User
 
 		// Skip the header row
 		if _, err := reader.Read(); err != nil {
@@ -117,13 +118,13 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 				return
 			}
 
-			user := user.User{
+			user := models.User{
 				ID:           primitive.NewObjectID(),
 				Username:     record[0],
 				Password:     record[1],
 				TestPassword: record[2],
 				Batch:        record[3],
-				Tests:        user.UserSubmission{},
+				Tests:        models.UserSubmission{},
 			}
 			users = append(users, user)
 		}
@@ -168,7 +169,7 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 			testObjectIDs = append(testObjectIDs, objectID)
 		}
 
-		newBatch := batch.Batch{
+		newBatch := models.Batch{
 			Name:  batchData.BatchName,
 			Tests: testObjectIDs,
 		}
@@ -199,8 +200,8 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 			return
 		}
 
-		testModel := test.Test{
-			Type:       test.TestType(testType),
+		testModel := models.Test{
+			Type:       models.TestType(testType),
 			Duration:   durationInt,
 			TypingText: typingText,
 		}
@@ -257,7 +258,7 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 	})
 
 	authenticatedAdminRoutes.POST("/update_user_data", func(ctx *gin.Context) {
-		var userUpdateRequest user.UserUpdateRequest
+		var userUpdateRequest models.UserUpdateRequest
 
 		if err := ctx.ShouldBindJSON(&userUpdateRequest); err != nil {
 			ctx.JSON(500, gin.H{"error": "Invalid request body"})
@@ -318,7 +319,7 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 			return
 		}
 
-		allControllers.SetUserData(ctx, userRequest.Param, &user.UserBatchRequestData{
+		allControllers.SetUserData(ctx, userRequest.Param, &models.UserBatchRequestData{
 			From:             userRequest.From,
 			To:               userRequest.To,
 			ResultDownloaded: userRequest.ResultDownloaded,
@@ -337,6 +338,208 @@ func AdminRoutes(allControllers *controllers.ControllerClass, route *gin.Engine)
 		}
 
 		allControllers.UpdateTypingTestText(ctx, UpdateTypingTestTextRequest.TypingTestText, UpdateTypingTestTextRequest.TestPassword)
+	})
+
+}
+
+func InitAuthRoutes(db *mongo.Client, route *gin.Engine) {
+	adminCollection := db.Database("GRAVTEST").Collection("Admin")
+	userCollection := db.Database("GRAVTEST").Collection("Users")
+	testCollection := db.Database("GRAVTEST").Collection("Tests")
+	batchCollection := db.Database("GRAVTEST").Collection("Batch")
+
+	allControllers := ControllerClass{
+		Client:          db,
+		AdminCollection: adminCollection,
+		UserCollection:  userCollection,
+		TestCollection:  testCollection,
+		BatchCollection: batchCollection,
+	}
+
+	AdminRoutes(&allControllers, route)
+	UserRoutes(&allControllers, route)
+	BatchRoutes(&allControllers, route)
+	TestRoutes(&allControllers, route)
+}
+
+func BatchRoutes(allControllers *ControllerClass, route *gin.Engine) {
+	batchRoute := route.Group("/batch")
+	// batchRoute.Use(middleware.UserJWTAuthMiddleware(allControllers.UserCollection))
+
+	batchRoute.GET("/get_batches", func(ctx *gin.Context) {
+		allControllers.GetBatches(ctx)
+	})
+}
+
+func TestRoutes(allControllers *ControllerClass, route *gin.Engine) {
+	unauthenticatedTestRoute := route.Group("/test")
+	authenticatedTestRoute := route.Group("/test")
+	authenticatedTestRoute.Use(middleware.UserJWTAuthMiddleware(allControllers.UserCollection))
+
+	authenticatedTestRoute.GET("/get_question_paper/:batch_name", func(ctx *gin.Context) {
+
+		batch_name := ctx.Param("batch_name")
+
+		questionPaper, err := allControllers.GetQuestionPaperHandler(ctx, batch_name)
+		if err != nil {
+			ctx.JSON(500, gin.H{
+				"message": "Error while fetching question paper",
+				"error":   err,
+			})
+			return
+		}
+
+		ctx.JSON(200, gin.H{
+			"message":       "Question paper fetched successfully",
+			"questionPaper": questionPaper,
+		})
+	})
+
+	unauthenticatedTestRoute.GET("/test_types", func(ctx *gin.Context) {
+		testTypes := []string{
+			string(models.TypingTest),
+			string(models.DocxTest),
+			string(models.ExcelTest),
+			string(models.WordTest),
+		}
+
+		ctx.JSON(200, gin.H{
+			"message":   "Test types fetched successfully",
+			"testTypes": testTypes,
+		})
+	})
+
+	unauthenticatedTestRoute.GET("/get_all_tests", func(ctx *gin.Context) {
+		tests, err := allControllers.GetAllTests(ctx)
+		if err != nil {
+			ctx.JSON(500, gin.H{
+				"message": "Error while fetching tests",
+				"error":   err.Error(),
+			})
+			return
+		}
+
+		ctx.JSON(200, gin.H{
+			"message": "Tests fetched successfully",
+			"tests":   tests,
+		})
+	})
+}
+
+func UserRoutes(allControllers *ControllerClass, route *gin.Engine) {
+	userRoute := route.Group("/user")
+
+	userRoute.POST("/login", func(ctx *gin.Context) {
+		var userModel models.UserLoginRequest
+		if err := ctx.ShouldBindJSON(&userModel); err != nil {
+			ctx.JSON(400, gin.H{"error": "Invalid request body"})
+			return
+		}
+
+		allControllers.UserLoginHandler(ctx, &userModel)
+	})
+
+	authenticated := userRoute.Group("/")
+
+	authenticated.Use(middleware.AdminJWTAuthMiddleware(allControllers.UserCollection))
+
+	authenticated.GET("/get_all_users", func(ctx *gin.Context) {
+		var users []models.User
+		cursor, err := allControllers.UserCollection.Find(context.Background(), bson.M{})
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve users"})
+			return
+		}
+		defer cursor.Close(context.Background())
+
+		if err = cursor.All(context.Background(), &users); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode users"})
+			return
+		}
+
+		ctx.JSON(http.StatusOK, gin.H{"users": users})
+	})
+
+	authenticated.GET("/paginated_users", func(ctx *gin.Context) {
+		page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
+		limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "50"))
+		skip := (page - 1) * limit
+
+		var users []models.User
+
+		opts := options.Find().SetSkip(int64(skip)).SetLimit(int64(limit))
+		cursor, err := allControllers.UserCollection.Find(context.Background(), bson.M{}, opts)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve users"})
+			return
+		}
+		defer cursor.Close(context.Background())
+
+		if err = cursor.All(context.Background(), &users); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode users"})
+			return
+		}
+
+		totalUsers, err := allControllers.UserCollection.CountDocuments(context.Background(), bson.M{})
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to count total users"})
+			return
+		}
+
+		totalPages := int(math.Ceil(float64(totalUsers) / float64(limit)))
+
+		ctx.JSON(http.StatusOK, gin.H{
+			"users":       users,
+			"totalPages":  totalPages,
+			"currentPage": page,
+		})
+	})
+
+	userRoute.PUT("/update_user", func(ctx *gin.Context) {
+		var updateRequest models.UserModelUpdateRequest
+		if err := ctx.ShouldBindJSON(&updateRequest); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+			return
+		}
+
+		log.Default().Println("User Request: ", updateRequest)
+
+		err := allControllers.UpdateUser(ctx, &updateRequest)
+
+		if err != nil {
+			ctx.JSON(500, gin.H{
+				"message": "Error in updating user!",
+				"error":   err,
+			})
+			return
+		}
+
+		ctx.JSON(200, gin.H{
+			"message": "user updated successfully!!",
+		})
+	})
+
+	userRoute.DELETE("/delete_user", func(ctx *gin.Context) {
+		var deleteRequest struct {
+			UserId string `json:"userId"`
+		}
+		if err := ctx.ShouldBindJSON(&deleteRequest); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+			return
+		}
+
+		if deleteRequest.UserId == "" {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "User ID is required"})
+			return
+		}
+
+		err := allControllers.DeleteUser(ctx, deleteRequest.UserId)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user"})
+			return
+		}
+
+		ctx.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
 	})
 
 }
