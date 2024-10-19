@@ -141,7 +141,7 @@ export default function UserDetails({ isAuthenticated }: UserDetailsProps) {
                                                     <Badge variant="outline">{user.BatchName}</Badge>
                                                 </TableCell>
                                                 <TableCell className="text-right">
-                                                    <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(user.id)}>
+                                                    <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(user.Id)}>
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
                                                 </TableCell>
