@@ -12,7 +12,7 @@ interface MCQTestProps {
         question: string;
         options: string[];
     }[];
-    handleFinishTest: (result: any) => void;
+    handleFinishTest: () => void;
 }
 
 export default function MCQTest({
@@ -56,7 +56,8 @@ export default function MCQTest({
           },
           body: JSON.stringify(submission),
         })
-        handleFinishTest(answers);
+
+        handleFinishTest();
     };
 
     return (

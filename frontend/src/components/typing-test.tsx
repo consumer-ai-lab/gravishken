@@ -11,7 +11,7 @@ import * as server from '@common/server';
 interface TypingTestProps {
     testData: types.Test,
     typingText: string;
-    handleFinishTest: (result: any) => void;
+    handleFinishTest: () => void;
     isTestActive: boolean;
     setIsTestActive: (isActive: boolean) => void;
 }
@@ -139,7 +139,7 @@ export default function TypingTest({
           body: JSON.stringify(submission),
         })
 
-        handleFinishTest(result);
+        handleFinishTest();
     };
 
     const calculateAccuracy = (input: string, original: string) => {

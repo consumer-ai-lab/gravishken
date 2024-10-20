@@ -13,7 +13,7 @@ const appMapping = {
 
 interface DocumentTestsProps {
   testData: types.Test;
-  handleFinishTest: (result: any) => void;
+  handleFinishTest: () => void;
 }
 
 export default function DocumentTests({
@@ -46,6 +46,8 @@ export default function DocumentTests({
       },
       body: JSON.stringify(submission),
     })
+
+    handleFinishTest()
   };
 
   // @ts-ignore
