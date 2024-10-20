@@ -15,7 +15,6 @@ export default function TestsPage() {
     const [testData, setTestData] = useState<types.Test[]>([]);
     const [selectedTestIndex, setSelectedTestIndex] = useState<number | null>(0);
     const [completedTests, setCompletedTests] = useState<string[]>([]);
-    const [testResults, setTestResults] = useState<any[]>([]);
 
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [isTestActive, setIsTestActive] = useState(false);
@@ -50,34 +49,18 @@ export default function TestsPage() {
         });
     },[])
 
-    const handleFinishTest = (result: any) => {
+    const handleFinishTest = async () => {
         if (selectedTestIndex !== null) {
-            const currentTest = testData[selectedTestIndex];
-            const newTestResult = {
-                TestId: currentTest.Id,
-                result: result
-            };
-
-            setTestResults([...testResults, newTestResult]);
-            setCompletedTests([...completedTests, currentTest.Id]);
+            let res = await fetch(server.base_url + "/get-submitted-ids")
+            let ids: Object = await res.json();
+            setCompletedTests(Object.keys(ids));
             setSelectedTestIndex(null);
             setIsTestActive(false);
-            
-            if (completedTests.length + 1 === testData.length) {
-                setShowConfirmDialog(true);
-            }
         }
     };
 
 
     const handleConfirmSubmit = () => {
-        console.log("Submitting all tests to server");
-        console.log("Test results:", testResults);
-        // @thrombe: Here you would send testResults to your server
-        // For example:
-        // sendResultsToServer(testResults).then(() => {
-        //     navigate('/test-results');
-        // });
         navigate('/end');
         setShowConfirmDialog(false);
     };
