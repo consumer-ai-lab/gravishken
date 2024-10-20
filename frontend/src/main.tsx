@@ -1,5 +1,5 @@
 "use client"
-import { StrictMode, useEffect } from 'react'
+import { StrictMode, useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client';
 import {
   createBrowserRouter,
@@ -14,10 +14,10 @@ import TestsPage from './pages/tests';
 import EndPage from './pages/end';
 import * as server from "@common/server.ts";
 import * as types from "@common/types.ts";
-import { TestProvider } from '@/components/TestContext';
 import OfflineToast from './components/offline-toast';
 import { toast, useToast } from './hooks/use-toast';
 import { Toaster } from './components/ui/toaster';
+import { StateContextProvider } from './context/app-context';
 
 function WebSocketHandler() {
   const navigate = useNavigate();
@@ -75,9 +75,9 @@ function WebSocketHandler() {
   }, [navigate]);
 
   return (
-    <div>
+    <StateContextProvider>
       <Outlet />
-    </div>
+    </StateContextProvider>
   );
 }
 
@@ -88,7 +88,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <LoginPage />,
+        element: <LoginPage/>,
       },
       {
         path: "/instructions",
@@ -96,22 +96,24 @@ const router = createBrowserRouter([
       },
       {
         path: "/tests",
-        element: <TestProvider><TestsPage /></TestProvider>
-      },
-      {
-        path: "/tests/:testId",
-        element: <TestProvider><TestsPage /></TestProvider>
+        element: <TestsPage />
       },
       {
         path: "/end",
         element: <EndPage />
-      }
+      },
+      
     ],
   },
 ]);
 
 
 server.init().then(async () => {
+  toast({
+    title: "Connected",
+    description: "Connected to the application server",
+    variant: "default"
+  })
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <RouterProvider router={router} />

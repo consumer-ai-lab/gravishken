@@ -151,7 +151,7 @@ func (self *Client) connect(exit context.Context, cancel context.CancelFunc) err
 	if err != nil {
 		return err
 	}
-	url.Scheme = "ws"
+	url.Scheme = "wss"
 	url.Path = "/ws"
 
 	header := http.Header{}

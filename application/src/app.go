@@ -107,7 +107,7 @@ func (self *App) startTest() error {
 	}
 
 	routeMessage := types.TLoadRoute{
-		Route: "/tests/1",
+		Route: "/tests",
 	}
 	message := types.NewMessage(routeMessage)
 
