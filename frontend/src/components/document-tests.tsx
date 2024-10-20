@@ -1,4 +1,4 @@
-import { FileText, NotepadText, Sheet } from 'lucide-react';
+import { FileText, NotepadText, Sheet, Presentation } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import * as server from '@common/server';
@@ -7,7 +7,8 @@ import * as types from '@common/types';
 const appMapping = {
   'docx': { icon: FileText, color: 'text-blue-600', appType: types.AppType.DOCX },
   'xlsx': { icon: Sheet, color: 'text-green-600', appType: types.AppType.XLSX },
-  'pptx': { icon: NotepadText, color: 'text-red-600', appType: types.AppType.TXT },
+  'pptx': { icon: Presentation, color: 'text-red-600', appType: types.AppType.PPTX },
+  'txt': { icon: NotepadText, color: 'text-blue-600', appType: types.AppType.TXT },
 };
 
 interface DocumentTestsProps {
