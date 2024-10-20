@@ -8,22 +8,19 @@ import { match } from 'assert';
 import { server } from '@common/server.ts';
 import * as types from "@common/types.ts"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useTest } from '@/components/TestContext';
 
 interface TypingTestProps {
-    testId: string;
-    rollNumber: number;
-    candidateName: string;
-    testPassword: string;
+    typingText: string;
+    handleFinishTest: (result: any) => void;
+    isTestActive: boolean;
+    setIsTestActive: (isActive: boolean) => void;
 }
 
 export default function TypingTest({
-    testId,
-    rollNumber,
-    candidateName,
-    testPassword,
+    typingText,
+    handleFinishTest,
+    setIsTestActive
 }: TypingTestProps) {
-    const { setIsTestActive } = useTest();
     const testime = 300;
     const [totalCharsTyped, setTotalCharsTyped] = useState(0);
     const [totalCorrectCharacters, setTotalCorrectCharacters] = useState(0);
@@ -40,23 +37,6 @@ export default function TypingTest({
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
-
-    console.log("Test Password inside typing : ", testPassword);
-
-    const getTypingTestText = async () => {
-        // const response = await fetch(`${import.meta.env.SERVER_URL}/test/get_question_paper/${testPassword}`);
-        // const data = await response.json();
-        // setTypingTestText(data.questionPaper.typingTestText);
-        setTypingTestText("TODO: fix")
-    };
- 
-
-    useEffect(() => {
-        getTypingTestText();
-    }, [testPassword]);
-
-
-    // getTypingTestText();
     
     useEffect(() => {
         if (isStarted && timeLeft > 0) {
@@ -134,15 +114,16 @@ export default function TypingTest({
         console.log('TotalCharsTyped:', totalCharsTyped);
         console.log('TotalCorrectCharacters:', totalCorrectCharacters);
 
-        console.log('Submitting results:', {
-            testId,
-            rollNumber,
-            candidateName,
-            timeTaken: 300 - timeLeft,
+        const result = {
+            timeTaken: testime - timeLeft,
             wpm,
             rawWPM,
             accuracy: calculateAccuracy(inputText, typingTestText)
-        });
+        }
+
+        console.log('Submitting results:', result);
+        handleFinishTest(result);
+
     };
 
     const calculateAccuracy = (input:string, original:string) => {

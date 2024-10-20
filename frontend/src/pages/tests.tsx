@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from "react-router-dom";
-import TestSelector from "@/components/main-test";
+import DocumentTests from "@/components/document-tests";
 import TypingTest from "@/components/typing-test";
 import { Button } from "@/components/ui/button";
 import * as types from "@common/types";
 import { UserIcon } from 'lucide-react';
-import { useTest } from '@/components/TestContext';
 import * as server from "@common/server.ts";
+import { useStateContext } from '@/context/app-context';
 
 const testList = [
     { id: '1', name: 'Typing Test' },
@@ -16,6 +16,8 @@ const testList = [
 ];
 
 export default function TestsPage() {
+    const [isTestActive, setIsTestActive] = useState(false);
+    const { username } = useStateContext();
     const { testId } = useParams();
     const navigate = useNavigate();
     const [leftWidth, setLeftWidth] = useState(250); // Initial width of left panel
@@ -24,24 +26,12 @@ export default function TestsPage() {
     const startXRef = useRef<number>(0);
     const startWidthRef = useRef<number>(0);
 
-    const [username, setUsername] = useState<string>('');
-    const [userPassword, setUserPassword] = useState<string>('');
-    const [testPassword, setTestPassword] = useState<string>('');
-    const [rollNumber, setRollNumber] = useState<number>(0);
-
     const [timeLeft, setTimeLeft] = useState(3600); // 1 hour in seconds
 
     useEffect(() => {
         const timer = setInterval(() => {
             setTimeLeft((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
         }, 1000);
-
-        fetch(server.base_url + "/get-tests").then(async (r) => {
-            console.log(await r.json())
-        })
-        fetch(server.base_url + "/get-user").then(async (r) => {
-            console.log(await r.json())
-        })
 
         return () => clearInterval(timer);
     }, []);
@@ -52,34 +42,17 @@ export default function TestsPage() {
         return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
     };
 
+    // fetch(server.base_url + "/get-tests").then(async (r) => {
+    //     console.log(await r.json())
+    // })
+    // fetch(server.base_url + "/get-user").then(async (r) => {
+    //     console.log(await r.json())
+    // })
+
     const handleFinishTest = () => {
         // Implement finish test logic here
         console.log('Finishing test');
         // You might want to navigate to a results page or show a confirmation dialog
-    };
-
-    // Load stored data from localStorage when the component mounts
-    useEffect(() => {
-        const storedUsername = localStorage.getItem('username');
-        const storedUserPassword = localStorage.getItem('userPassword');
-
-        console.log("Username: ", storedUsername);
-        console.log("UserPassword: ", storedUserPassword);
-
-        if (storedUsername) setUsername(storedUsername);
-        if (storedUserPassword) {
-            setUserPassword(storedUserPassword);
-            const digits = storedUserPassword.split('_')[1];
-            setRollNumber(parseInt(digits));
-            console.log("Digits: ", digits);
-            console.log("Roll Number: ", rollNumber);
-        }
-    }, []);
-
-    const testData = {
-        rollNumber: rollNumber,
-        candidateName: username,
-        testPassword: testPassword
     };
 
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -114,24 +87,22 @@ export default function TestsPage() {
         };
     }, [isResizing, handleMouseMove, handleMouseUp]);
 
-    const { isTestActive } = useTest();
-
     const renderTestContent = () => {
-        const effectiveTestId = testId || '1'; // Default to '1' if testId is undefined
+        const effectiveTestId = testId || '1'; 
         const selectedTest = testList.find(test => test.id === effectiveTestId);
 
         if (selectedTest) {
             if (selectedTest.id === '1') {
                 return (
                     <TypingTest
-                        testId={selectedTest.id}
-                        rollNumber={testData.rollNumber}
-                        candidateName={testData.candidateName}
-                        testPassword={testData.testPassword}
+                        typingText={'The quick brown fox jumps over the lazy dog'}
+                        handleFinishTest={handleFinishTest}
+                        isTestActive={isTestActive}
+                        setIsTestActive={setIsTestActive}
                     />
                 );
             } else {
-                return <TestSelector test={selectedTest} />;
+                return <DocumentTests test={selectedTest} />;
             }
         } else {
             return <div>Test not found</div>;
@@ -140,12 +111,10 @@ export default function TestsPage() {
 
     return (
         <div className="flex flex-col h-screen">
-            {/* Updated top bar */}
-            <div className="bg-gray-200 py-2 px-4 flex justify-between items-center">
+            <div className="bg-blue-600 text-white py-2 px-4 flex justify-between items-center">
                 <div className="flex items-center space-x-4">
                     <UserIcon size={20} />
                     <span className="font-semibold">{username}</span>
-                    <span>Roll: {rollNumber}</span>
                 </div>
                 <div className="font-bold">Time Left: {formatTime(timeLeft)}</div>
                 <Button onClick={handleFinishTest} variant="destructive">Finish Test</Button>

@@ -21,7 +21,7 @@ interface TestSelectorProps {
   };
 }
 
-const TestSelector: React.FC<TestSelectorProps> = ({ test }: TestSelectorProps) => {
+function TestSelector({ test }: TestSelectorProps){
   const handleOpenApp = (appType: types.AppType) => {
     server.send_message({
       Typ: types.Varient.OpenApp,
@@ -48,6 +48,7 @@ const TestSelector: React.FC<TestSelectorProps> = ({ test }: TestSelectorProps) 
               const { icon: Icon, color } = appIcons[appType];
               return (
                 <Button
+                  variant={"ghost"}
                   key={appType}
                   onClick={() => handleOpenApp(appType)}
                   className="flex items-center space-x-2"

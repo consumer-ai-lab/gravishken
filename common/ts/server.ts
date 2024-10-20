@@ -46,16 +46,17 @@ type Callback<T extends types.Varient> = (res: ValType<T>) => PromiseLike<void>;
 type DisableCallback = () => Promise<void>;
 
 // @ts-ignore
-export const base_url = `http://localhost:${import.meta.env.APP_PORT}`
+// export const base_url = `http://localhost:${import.meta.env.APP_PORT}`
+export const base_url = `https://solid-succotash-gwjp9pr7r59265g-6200.app.github.dev`
 
 export class Server {
     ws: WebSocket;
 
     protected wait: Promise<void>;
     protected constructor() {
-        // this.ws = new WebSocket(`wss://solid-succotash-gwjp9pr7r59265g-6200.app.github.dev/ws`);
+        this.ws = new WebSocket(`wss://solid-succotash-gwjp9pr7r59265g-6200.app.github.dev/ws`);
         // @ts-ignore
-        this.ws = new WebSocket(`ws://localhost:${import.meta.env.APP_PORT}/ws`);
+        // this.ws = new WebSocket(`ws://localhost:${import.meta.env.APP_PORT}/ws`);
 
         this.ws.addEventListener('message', async (e) => {
             let mesg: Message = JSON.parse(e.data);

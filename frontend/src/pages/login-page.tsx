@@ -1,19 +1,22 @@
-import React, { useState } from 'react';
-import { UserIcon, KeyIcon, LockOpenIcon, XCircle } from 'lucide-react';
+import { UserIcon, KeyIcon,  } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useStateContext } from '@/context/app-context';
 import { server } from '@common/server';
 import * as types from '@common/types';
-import { Button } from '@/components/ui/button';
+
+
 
 export default function LoginPage() {
-  const [username, setUsername] = useState('kavya.saxena');
-  const [userPassword, setUserPassword] = useState('fortress901');
+
+  const {
+    username, 
+    userPassword, 
+    setUsername, 
+    setUserPassword,
+  } = useStateContext();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    localStorage.setItem('username', username);
-    localStorage.setItem('userPassword', userPassword);
-
     server.send_message({
       Typ: types.Varient.UserLoginRequest,
       Val: {
@@ -31,6 +34,8 @@ export default function LoginPage() {
     });
   };
 
+
+  
   return (
     <div className="min-h-screen bg-blue-700 flex flex-col lg:flex-row items-center justify-around p-4">
 
@@ -76,19 +81,18 @@ export default function LoginPage() {
             </div>
           </div>
           <div className="flex justify-between">
-            <button
+            <Button
               type="submit"
               className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out"
             >
-              LOGIN
-            </button>
+              Login
+            </Button>
             <Button
               type="button"
               onClick={handleQuit}
               variant="destructive"
               className="flex items-center"
             >
-              <XCircle className="mr-2" size={16} />
               Quit
             </Button>
           </div>
