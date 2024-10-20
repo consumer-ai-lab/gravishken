@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { UserUpdateRequest } from '@common/types';
 
 const UpdateUserData: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -15,7 +14,7 @@ const UpdateUserData: React.FC = () => {
     setSuccessMessage('');
     setErrorMessage('');
 
-    const updateRequest: UserUpdateRequest = {
+    const updateRequest = {
       username,
       property,
       value: [value], // Assuming the value is always an array of strings

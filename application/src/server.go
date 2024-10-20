@@ -351,6 +351,7 @@ func (self *App) handleMessages() {
 					self.notifyErr(err)
 					continue
 				}
+				self.test_state.tests[val.TestId] = dest
 			}
 			go (func() {
 				err = self.runner.FocusOrOpenApp(val.Typ, dest)
