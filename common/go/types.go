@@ -27,6 +27,7 @@ type Varient int
 
 const (
 	Err Varient = iota
+	Notification
 	ExeNotFound
 	Quit
 	UserLoginRequest
@@ -44,6 +45,8 @@ func (self Varient) TSName() string {
 	switch self {
 	case Err:
 		return "Err"
+	case Notification:
+		return "Notification"
 	case ExeNotFound:
 		return "ExeNotFound"
 	case Quit:
@@ -72,6 +75,8 @@ func varientFromName(typ string) Varient {
 	switch typ {
 	case "Err":
 		return Err
+	case "Notification":
+		return Notification
 	case "ExeNotFound":
 		return ExeNotFound
 	case "Quit":
@@ -99,6 +104,10 @@ func varientFromName(typ string) Varient {
 
 // only for unexpected errors / for errors that we can't do much about, other than telling the user about it
 type TErr struct {
+	Message string
+}
+
+type TNotification struct {
 	Message string
 }
 
@@ -202,6 +211,7 @@ func DumpTypes(dir string) {
 		WithInterface(true).
 		WithBackupDir("").
 		Add(TErr{}).
+		Add(TNotification{}).
 		Add(Message{}).
 		Add(TExeNotFound{}).
 		Add(TQuit{}).

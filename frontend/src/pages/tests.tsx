@@ -128,6 +128,7 @@ export default function TestsPage() {
             case 'typing':
                 return (
                     <TypingTest
+                        testData={currentTest}
                         typingText={currentTest.TypingText!}
                         handleFinishTest={handleFinishTest}
                         isTestActive={isTestActive}
@@ -139,7 +140,7 @@ export default function TestsPage() {
             case 'pptx':
                 return <DocumentTests testData={currentTest} handleFinishTest={handleFinishTest} />;
             case 'mcq':
-                return <MCQTest testData={JSON.parse(currentTest.McqJson!)} handleFinishTest={handleFinishTest} />;
+                return <MCQTest Test={currentTest} testData={JSON.parse(currentTest.McqJson!)} handleFinishTest={handleFinishTest} />;
             default:
                 return <div>Unknown test type</div>;
         }

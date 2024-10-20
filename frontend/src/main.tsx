@@ -38,6 +38,17 @@ function WebSocketHandler() {
       disable.push(d);
     });
 
+    server.server.add_callback(types.Varient.Notification, async (res) => {
+      console.log('Notification from App:', res.Message);
+      toast({
+        title: "Notification",
+        description: res.Message,
+        variant:"destructive"
+      })
+    }).then(d => {
+      disable.push(d);
+    });
+
     server.server.add_callback(types.Varient.LoadRoute, async (res) => {
       console.log(res);
       navigate(res.Route)

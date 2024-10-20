@@ -28,6 +28,9 @@ export type Message = {
     Typ: types.Varient.Err,
     Val: types.TErr,
 } | {
+    Typ: types.Varient.Notification,
+    Val: types.TNotification,
+} | {
     Typ: types.Varient.StartTest,
     Val: types.TStartTest,
 } | {
@@ -126,6 +129,7 @@ export class Server {
             case types.Varient.ExeNotFound:
             case types.Varient.LoadRoute:
             case types.Varient.Err:
+            case types.Varient.Notification:
             case types.Varient.WarnUser:
             case types.Varient.StartTest:
             case types.Varient.TestFinished:

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"os"
-	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -81,10 +80,13 @@ type AppTestInfo struct {
 	FileData string
 }
 type McqTestInfo struct {
-	Data string
+	Answers []*int // indices to answers
 }
 type TypingTestInfo struct {
-	WPM float64
+	TimeTaken float64
+	WPM       float64
+	RawWPM    float64
+	Accuracy  float64
 }
 type TestInfo struct {
 	Type           TestType
@@ -98,9 +100,6 @@ type TestInfo struct {
 type TestSubmission struct {
 	UserId ID `ts_type:"string"`
 	TestId ID `ts_type:"string"`
-
-	StartTime time.Time
-	EndTime   time.Time
 
 	TestInfo TestInfo
 }

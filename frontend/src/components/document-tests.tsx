@@ -1,7 +1,7 @@
 import { FileText, NotepadText, Sheet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { server } from '@common/server';
+import * as server from '@common/server';
 import * as types from '@common/types';
 
 const appMapping = {
@@ -18,18 +18,33 @@ interface DocumentTestsProps {
 export default function DocumentTests({
   testData,
   handleFinishTest,
-}: DocumentTestsProps){
+}: DocumentTestsProps) {
   const handleOpenApp = (app: types.Test) => {
     /// @ts-ignore
-    let typ: types.AppType = appMapping[testData.Type];
-    server.send_message({
+    let typ: types.AppType = appMapping[testData.Type].appType;
+    server.server.send_message({
       Typ: types.Varient.OpenApp,
       Val: { Typ: typ, TestId: app.Id },
     });
   };
 
-  const handleSubmitWork = () => {
-    handleFinishTest({ /*TODO:Test data here */ });
+  const handleSubmitWork = async () => {
+    let resp = await fetch(server.base_url + "/get-user");
+    let user: types.User = await resp.json()
+    let submission: types.TestSubmission = {
+      TestId: testData.Id,
+      UserId: user.Id,
+      TestInfo: {
+        Type: testData.Type,
+      },
+    };
+    await fetch(server.base_url + "/submit-test", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(submission),
+    })
   };
 
   // @ts-ignore
@@ -47,13 +62,13 @@ export default function DocumentTests({
           <h3 className="text-lg font-semibold mb-2">Associated Apps:</h3>
           <div className="flex space-x-2 mb-4">
 
-                <Button
-                  variant={"default"}
-                  onClick={() => handleOpenApp(testData)}
-                  className="flex items-center space-x-2"
-                >
-                  <span>Open Associated App</span>
-                </Button>
+            <Button
+              variant={"default"}
+              onClick={() => handleOpenApp(testData)}
+              className="flex items-center space-x-2"
+            >
+              <span>Open Associated App</span>
+            </Button>
 
           </div>
         </div>

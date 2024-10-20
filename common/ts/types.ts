@@ -9,17 +9,18 @@ export enum AppType {
 }
 export enum Varient {
     Err = 0,
-    ExeNotFound = 1,
-    Quit = 2,
-    UserLoginRequest = 3,
-    WarnUser = 4,
-    LoadRoute = 5,
-    ReloadUi = 6,
-    StartTest = 7,
-    TestFinished = 8,
-    OpenApp = 9,
-    QuitApp = 10,
-    Unknown = 11,
+    Notification = 1,
+    ExeNotFound = 2,
+    Quit = 3,
+    UserLoginRequest = 4,
+    WarnUser = 5,
+    LoadRoute = 6,
+    ReloadUi = 7,
+    StartTest = 8,
+    TestFinished = 9,
+    OpenApp = 10,
+    QuitApp = 11,
+    Unknown = 12,
 }
 export enum TestType {
     TypingTest = "typing",
@@ -29,6 +30,9 @@ export enum TestType {
     MCQTest = "mcq",
 }
 export interface TErr {
+    Message: string;
+}
+export interface TNotification {
     Message: string;
 }
 export interface Message {
@@ -78,10 +82,13 @@ export interface AppTestInfo {
     FileData: string;
 }
 export interface McqTestInfo {
-    Data: string;
+    Answers: number[];
 }
 export interface TypingTestInfo {
+    TimeTaken: number;
     WPM: number;
+    RawWPM: number;
+    Accuracy: number;
 }
 export interface TestInfo {
     Type: TestType;
@@ -91,14 +98,9 @@ export interface TestInfo {
     ExcelTestInfo?: AppTestInfo;
     PptTestInfo?: AppTestInfo;
 }
-export interface Time {
-
-}
 export interface TestSubmission {
     UserId: string;
     TestId: string;
-    StartTime: Time;
-    EndTime: Time;
     TestInfo: TestInfo;
 }
 

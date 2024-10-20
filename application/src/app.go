@@ -43,6 +43,8 @@ func newApp() (*App, error) {
 		exitCtx: ctx,
 		exitFn:  cancel,
 	}
+	app.test_state.submitted = make(map[common.ID]bool)
+	app.test_state.tests = make(map[common.ID]string)
 	var err error
 
 	client, err := newClient(app.send)

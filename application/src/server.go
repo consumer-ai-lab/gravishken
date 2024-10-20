@@ -126,6 +126,16 @@ func (self *App) serve() {
 	})
 	mux.HandleFunc("/submit-test", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("access-control-allow-origin", "*")
+
+		if r.Method == http.MethodOptions {
+			w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+			w.Header().Set("Allow", "POST, OPTIONS")
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
 		if r.Method != http.MethodPost {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
@@ -155,6 +165,7 @@ func (self *App) serve() {
 		case common.DocxTest, common.ExcelTest, common.PptTest:
 			path, ok := self.test_state.tests[test.Id]
 			if !ok {
+				self.notifyErr(fmt.Errorf("No data found. Did you complete the test?"))
 				http.Error(w, "No test data found", http.StatusBadRequest)
 				return
 			}
@@ -202,6 +213,10 @@ func (self *App) serve() {
 		self.test_state.submitted[submission.TestId] = true
 
 		self.maybeFinishTest()
+		w.WriteHeader(http.StatusNoContent)
+		self.send <- common.NewMessage(common.TNotification{
+			Message: fmt.Sprintf("Test submitted Sucessfully"),
+		})
 	})
 
 	var contentReplacements = map[string]string{
