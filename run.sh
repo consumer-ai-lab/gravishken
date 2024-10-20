@@ -15,8 +15,8 @@ export URITA_ENABLED=0
 
 # TODO: make webui + robotgo under this togglable feature for easier compilation
 # export ENABLE_WEBUI=0
-export SERVER_URL="https://solid-succotash-gwjp9pr7r59265g-6201.app.github.dev"
-# export SERVER_URL="http://localhost:$SERVER_PORT"
+# export SERVER_URL="https://solid-succotash-gwjp9pr7r59265g-6201.app.github.dev"
+export SERVER_URL="http://localhost:$SERVER_PORT"
 
 # for urita
 # - [Can't find .so in the same directory as the executable?](https://serverfault.com/questions/279068/cant-find-so-in-the-same-directory-as-the-executable)

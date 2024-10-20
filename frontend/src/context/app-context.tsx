@@ -17,10 +17,8 @@ interface StateContextProviderProps {
 }
 
 export function StateContextProvider({ children }: StateContextProviderProps) {
-    const [username, setUsername] = useState('kavya.saxena');
+    const [username, setUsername] = useState('jhingole.pingole');
     const [userPassword, setUserPassword] = useState('fortress901');
-
-    
 
     return (
         <StateContext.Provider

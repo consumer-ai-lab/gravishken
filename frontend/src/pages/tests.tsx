@@ -11,62 +11,11 @@ import { useStateContext } from '@/context/app-context';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 
-
-// @thrombe: Fetch the data in this format and replace it.
-const mockData = [
-    {
-        'testType': 'TypingTest',
-        'testId': '1',
-        'testText': 'The quick brown fox jumps over the lazy dog',
-    },
-    {
-        'testType': 'DocxTest',
-        'testId': '2',
-        'imagePath':'https://placehold.co/600x400'
-    },
-    {
-        'testType':'ExcelTest',
-        'testId':'3',
-        'imagePath':'https://placehold.co/600x400'
-    },
-    {
-        'testType':'WordTest',
-        'testId':'4',
-        'imagePath':'https://placehold.co/600x400'
-    },
-    {
-        'testType':'MCQTest',
-        'testId':'5',
-        'questions':[
-            {
-                'question':'What is the capital of India?',
-                'options':['Mumbai','Delhi','Kolkata','Chennai'],
-            },
-            {
-                'question':'What is the capital of USA?',
-                'options':['New York','Washington D.C.','Los Angeles','Chicago'],
-            },
-            {
-                'question':'What is the capital of UK?',
-                'options':['London','Manchester','Birmingham','Liverpool'],
-            },
-        ]
-    }
-    
-]
-
-interface TestResult {
-    testId: string;
-    testType: string;
-    result: any; 
-}
-
-
 export default function TestsPage() {
-    const [testData, setTestData] = useState<any>(mockData);
+    const [testData, setTestData] = useState<types.Test[]>([]);
     const [selectedTestIndex, setSelectedTestIndex] = useState<number | null>(0);
     const [completedTests, setCompletedTests] = useState<string[]>([]);
-    const [testResults, setTestResults] = useState<TestResult[]>([]);
+    const [testResults, setTestResults] = useState<any[]>([]);
 
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [isTestActive, setIsTestActive] = useState(false);
@@ -94,22 +43,23 @@ export default function TestsPage() {
         return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
     };
 
-    // useEffect(() => {
-    //     // @thrombe: Fetch test data from server
-    //     // use setTestData to update the state
-    // },[])
+    useEffect(() => {
+        fetch(server.base_url + "/get-tests").then(r => r.json()).then(json => {
+            console.log(json);
+            setTestData(json);
+        });
+    },[])
 
     const handleFinishTest = (result: any) => {
         if (selectedTestIndex !== null) {
             const currentTest = testData[selectedTestIndex];
-            const newTestResult: TestResult = {
-                testId: currentTest.testId,
-                testType: currentTest.testType,
+            const newTestResult = {
+                TestId: currentTest.Id,
                 result: result
             };
 
             setTestResults([...testResults, newTestResult]);
-            setCompletedTests([...completedTests, currentTest.testId]);
+            setCompletedTests([...completedTests, currentTest.Id]);
             setSelectedTestIndex(null);
             setIsTestActive(false);
             
@@ -171,22 +121,26 @@ export default function TestsPage() {
         }
 
         const currentTest = testData[selectedTestIndex];
-        switch (currentTest.testType) {
-            case 'TypingTest':
+        if (!currentTest) {
+            return <div></div>;
+        }
+        switch (currentTest.Type) {
+            case 'typing':
                 return (
                     <TypingTest
-                        typingText={currentTest.testText}
+                        testData={currentTest}
+                        typingText={currentTest.TypingText!}
                         handleFinishTest={handleFinishTest}
                         isTestActive={isTestActive}
                         setIsTestActive={setIsTestActive}
                     />
                 );
-            case 'DocxTest':
-            case 'ExcelTest':
-            case 'WordTest':
+            case 'docx':
+            case 'xlsx':
+            case 'pptx':
                 return <DocumentTests testData={currentTest} handleFinishTest={handleFinishTest} />;
-            case 'MCQTest':
-                return <MCQTest testData={currentTest.questions} handleFinishTest={handleFinishTest} />;
+            case 'mcq':
+                return <MCQTest Test={currentTest} testData={JSON.parse(currentTest.McqJson!)} handleFinishTest={handleFinishTest} />;
             default:
                 return <div>Unknown test type</div>;
         }
@@ -211,16 +165,16 @@ export default function TestsPage() {
                     className="bg-gray-100 p-4 overflow-y-auto"
                 >
                     <h2 className="text-xl font-bold mb-4">Tests</h2>
-                    {testData.map((test:any, index:number) => (
+                    {testData.map((test: types.Test, index:number) => (
                         <Button
-                            key={test.testId}
+                            key={test.Id}
                             onClick={() => !isTestActive && setSelectedTestIndex(index)}
                             variant={selectedTestIndex === index ? 'default' : 'outline'}
                             className={`w-full mb-2 justify-start text-left whitespace-normal ${isTestActive ? 'opacity-50 cursor-not-allowed' : ''}`}
                             disabled={isTestActive}
                         >
-                            <span className="truncate flex-grow">{test.testType.replace(/([a-z])([A-Z])/g, '$1 $2')}</span>
-                            {completedTests.includes(test.testId) && (
+                            <span className="truncate flex-grow">{test.Type.replace(/([a-z])([A-Z])/g, '$1 $2')}</span>
+                            {completedTests.includes(test.Id) && (
                                 <CheckCircle className="ml-2 text-green-500" size={16} />
                             )}
                         </Button>

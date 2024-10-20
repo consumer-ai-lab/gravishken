@@ -1,7 +1,7 @@
 package main
 
 import (
-	types "common"
+	"common"
 	"context"
 	"fmt"
 	"log"
@@ -9,8 +9,8 @@ import (
 )
 
 type App struct {
-	send   chan types.Message
-	recv   chan types.Message
+	send   chan common.Message
+	recv   chan common.Message
 	runner IRunner
 	client *Client
 
@@ -20,6 +20,10 @@ type App struct {
 	state struct {
 		webview_opened     bool
 		connection_started bool
+	}
+	test_state struct {
+		submitted map[common.ID]bool
+		tests     map[common.ID]string
 	}
 }
 
@@ -34,11 +38,13 @@ func (self *App) destroy() {
 func newApp() (*App, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	app := &App{
-		send:    make(chan types.Message, 100),
-		recv:    make(chan types.Message, 100),
+		send:    make(chan common.Message, 100),
+		recv:    make(chan common.Message, 100),
 		exitCtx: ctx,
 		exitFn:  cancel,
 	}
+	app.test_state.submitted = make(map[common.ID]bool)
+	app.test_state.tests = make(map[common.ID]string)
 	var err error
 
 	client, err := newClient(app.send)
@@ -55,10 +61,10 @@ func newApp() (*App, error) {
 	return app, nil
 }
 
-func (self *App) login(user_login *types.TUserLoginRequest) error {
+func (self *App) login(user_login *common.TUserLoginRequest) error {
 	err := self.client.login(user_login)
 	if err != nil {
-		errorMessage := types.NewMessage(types.TErr{
+		errorMessage := common.NewMessage(common.TErr{
 			Message: "Failed to log in user: " + err.Error(),
 		})
 		self.send <- errorMessage
@@ -80,7 +86,7 @@ func (self *App) maintainConnection() {
 
 func (self *App) handleServerMessages() {
 	for {
-		var msg types.Message
+		var msg common.Message
 		var ok bool
 		select {
 		case <-self.exitCtx.Done():
@@ -106,10 +112,10 @@ func (self *App) startTest() error {
 		return err
 	}
 
-	routeMessage := types.TLoadRoute{
+	routeMessage := common.TLoadRoute{
 		Route: "/tests",
 	}
-	message := types.NewMessage(routeMessage)
+	message := common.NewMessage(routeMessage)
 
 	self.send <- message
 
@@ -138,7 +144,7 @@ func (self *App) wait() {
 
 func (self *App) notifyErr(err error) {
 	if err != nil {
-		self.send <- types.NewMessage(types.TErr{
+		self.send <- common.NewMessage(common.TErr{
 			Message: fmt.Sprintf("Error: %s", err),
 		})
 		log.Printf("Error: %s\n", err)

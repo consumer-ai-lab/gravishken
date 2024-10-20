@@ -5,8 +5,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { PlayCircle, StopCircle, Send } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import * as types from "@common/types";
+import * as server from '@common/server';
 
 interface TypingTestProps {
+    testData: types.Test,
     typingText: string;
     handleFinishTest: (result: any) => void;
     isTestActive: boolean;
@@ -14,6 +17,7 @@ interface TypingTestProps {
 }
 
 export default function TypingTest({
+    testData,
     typingText,
     handleFinishTest,
     setIsTestActive
@@ -101,7 +105,7 @@ export default function TypingTest({
         setShowConfirmDialog(true);
     };
 
-    const confirmSubmit = () => {
+    const confirmSubmit = async () => {
         if (timerRef.current) clearInterval(timerRef.current);
         setIsStarted(false);
         setIsTestActive(false);
@@ -110,16 +114,32 @@ export default function TypingTest({
         console.log('TotalCharsTyped:', totalCharsTyped);
         console.log('TotalCorrectCharacters:', totalCorrectCharacters);
 
-        const result = {
-            timeTaken: testime - timeLeft,
-            wpm,
-            rawWPM,
-            accuracy: calculateAccuracy(inputText, typingText)
+        const result: types.TypingTestInfo = {
+            TimeTaken: testime - timeLeft,
+            WPM: wpm,
+            RawWPM: rawWPM,
+            Accuracy: calculateAccuracy(inputText, typingText)
         }
-
         console.log('Submitting results:', result);
-        handleFinishTest(result);
+        let resp = await fetch(server.base_url + "/get-user");
+        let user: types.User = await resp.json()
+        let submission: types.TestSubmission = {
+          TestId: testData.Id,
+          UserId: user.Id,
+          TestInfo: {
+            Type: testData.Type,
+            TypingTestInfo: result,
+          },
+        };
+        await fetch(server.base_url + "/submit-test", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(submission),
+        })
 
+        handleFinishTest(result);
     };
 
     const calculateAccuracy = (input: string, original: string) => {

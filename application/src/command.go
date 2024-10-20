@@ -26,6 +26,7 @@ type IRunner interface {
 	OpenApp(typ types.AppType, file_path string) error
 	FocusOrOpenApp(typ types.AppType, file_path string) error
 	FocusOpenApp() error
+	IsAppOpen() bool
 	KillApp() error
 	ListAllProcess() (map[uint32]string, error)
 }

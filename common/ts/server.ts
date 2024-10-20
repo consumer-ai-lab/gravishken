@@ -28,8 +28,14 @@ export type Message = {
     Typ: types.Varient.Err,
     Val: types.TErr,
 } | {
+    Typ: types.Varient.Notification,
+    Val: types.TNotification,
+} | {
     Typ: types.Varient.StartTest,
     Val: types.TStartTest,
+} | {
+    Typ: types.Varient.TestFinished,
+    Val: types.TTestFinished,
 } | {
     Typ: types.Varient.OpenApp,
     Val: types.TOpenApp,
@@ -46,17 +52,17 @@ type Callback<T extends types.Varient> = (res: ValType<T>) => PromiseLike<void>;
 type DisableCallback = () => Promise<void>;
 
 // @ts-ignore
-// export const base_url = `http://localhost:${import.meta.env.APP_PORT}`
-export const base_url = `https://solid-succotash-gwjp9pr7r59265g-6200.app.github.dev`
+export const base_url = `http://localhost:${import.meta.env.APP_PORT}`
+// export const base_url = `https://solid-succotash-gwjp9pr7r59265g-6200.app.github.dev`
 
 export class Server {
     ws: WebSocket;
 
     protected wait: Promise<void>;
     protected constructor() {
-        this.ws = new WebSocket(`wss://solid-succotash-gwjp9pr7r59265g-6200.app.github.dev/ws`);
+        // this.ws = new WebSocket(`wss://solid-succotash-gwjp9pr7r59265g-6200.app.github.dev/ws`);
         // @ts-ignore
-        // this.ws = new WebSocket(`ws://localhost:${import.meta.env.APP_PORT}/ws`);
+        this.ws = new WebSocket(`ws://localhost:${import.meta.env.APP_PORT}/ws`);
 
         this.ws.addEventListener('message', async (e) => {
             let mesg: Message = JSON.parse(e.data);
@@ -123,8 +129,10 @@ export class Server {
             case types.Varient.ExeNotFound:
             case types.Varient.LoadRoute:
             case types.Varient.Err:
+            case types.Varient.Notification:
             case types.Varient.WarnUser:
             case types.Varient.StartTest:
+            case types.Varient.TestFinished:
                 break;
             case types.Varient.ReloadUi:
                 window.location.href = "/";

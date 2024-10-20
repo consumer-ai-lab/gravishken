@@ -3,8 +3,11 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import test from 'node:test';
+import * as server from '@common/server';
+import * as types from '@common/types';
 
 interface MCQTestProps {
+    Test: types.Test,
     testData: {
         question: string;
         options: string[];
@@ -13,6 +16,7 @@ interface MCQTestProps {
 }
 
 export default function MCQTest({
+    Test,
     testData,
     handleFinishTest,
 }: MCQTestProps) {
@@ -32,7 +36,26 @@ export default function MCQTest({
         setCurrentQuestion(prev => Math.max(0, Math.min(testData.length, prev + direction)));
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
+        let resp = await fetch(server.base_url + "/get-user");
+        let user: types.User = await resp.json()
+        let submission: types.TestSubmission = {
+          TestId: Test.Id,
+          UserId: user.Id,
+          TestInfo: {
+            Type: Test.Type,
+            McqTestInfo: {
+                Answers: answers,
+            }
+          },
+        };
+        await fetch(server.base_url + "/submit-test", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(submission),
+        })
         handleFinishTest(answers);
     };
 

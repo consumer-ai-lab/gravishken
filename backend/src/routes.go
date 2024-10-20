@@ -446,13 +446,31 @@ func TestRoutes(allControllers *Database, route *gin.Engine) {
 			"questionPaper": questionPaper,
 		})
 	})
+	authenticatedTestRoute.POST("/submit", func(ctx *gin.Context) {
+		var submission common.TestSubmission
+		if err := ctx.ShouldBindJSON(&submission); err != nil {
+			ctx.JSON(500, gin.H{"error": "Invalid request body"})
+			return
+		}
+
+		_, err := allControllers.SubmissionCollection.InsertOne(context.TODO(), submission)
+		if err != nil {
+			ctx.JSON(500, gin.H{
+				"message": "Error while inserting submission data",
+				"error":   err,
+			})
+			return
+		}
+
+		ctx.Status(200)
+	})
 
 	unauthenticatedTestRoute.GET("/test_types", func(ctx *gin.Context) {
 		testTypes := []string{
 			string(common.TypingTest),
 			string(common.DocxTest),
 			string(common.ExcelTest),
-			string(common.WordTest),
+			string(common.PptTest),
 			string(common.MCQTest),
 		}
 

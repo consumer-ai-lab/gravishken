@@ -27,6 +27,7 @@ type Varient int
 
 const (
 	Err Varient = iota
+	Notification
 	ExeNotFound
 	Quit
 	UserLoginRequest
@@ -34,6 +35,7 @@ const (
 	LoadRoute
 	ReloadUi
 	StartTest
+	TestFinished
 	OpenApp
 	QuitApp
 	Unknown // NOTE: keep this as the last constant here.
@@ -43,6 +45,8 @@ func (self Varient) TSName() string {
 	switch self {
 	case Err:
 		return "Err"
+	case Notification:
+		return "Notification"
 	case ExeNotFound:
 		return "ExeNotFound"
 	case Quit:
@@ -57,6 +61,8 @@ func (self Varient) TSName() string {
 		return "ReloadUi"
 	case StartTest:
 		return "StartTest"
+	case TestFinished:
+		return "TestFinished"
 	case OpenApp:
 		return "OpenApp"
 	case QuitApp:
@@ -69,6 +75,8 @@ func varientFromName(typ string) Varient {
 	switch typ {
 	case "Err":
 		return Err
+	case "Notification":
+		return Notification
 	case "ExeNotFound":
 		return ExeNotFound
 	case "Quit":
@@ -83,6 +91,8 @@ func varientFromName(typ string) Varient {
 		return LoadRoute
 	case "StartTest":
 		return StartTest
+	case "TestFinished":
+		return TestFinished
 	case "OpenApp":
 		return OpenApp
 	case "QuitApp":
@@ -94,6 +104,10 @@ func varientFromName(typ string) Varient {
 
 // only for unexpected errors / for errors that we can't do much about, other than telling the user about it
 type TErr struct {
+	Message string
+}
+
+type TNotification struct {
 	Message string
 }
 
@@ -123,11 +137,10 @@ type TLoadRoute struct {
 
 type TReloadUi struct{}
 
-type TStartTestRequest struct{}
+type TStartTest struct{}
 
-type TStartTest struct {
-	tests []Test
-}
+// TODO: Send this to every client from server when time ends and submit whatever stuff the client can submit
+type TTestFinished struct{}
 
 type AppType int
 
@@ -154,7 +167,8 @@ func (self AppType) TSName() string {
 }
 
 type TOpenApp struct {
-	Typ AppType
+	Typ    AppType
+	TestId ID `ts_type:"string"`
 }
 
 type TQuitApp struct{}
@@ -197,6 +211,7 @@ func DumpTypes(dir string) {
 		WithInterface(true).
 		WithBackupDir("").
 		Add(TErr{}).
+		Add(TNotification{}).
 		Add(Message{}).
 		Add(TExeNotFound{}).
 		Add(TQuit{}).
@@ -204,8 +219,8 @@ func DumpTypes(dir string) {
 		Add(TWarnUser{}).
 		Add(TLoadRoute{}).
 		Add(TReloadUi{}).
-		Add(TStartTestRequest{}).
 		Add(TStartTest{}).
+		Add(TTestFinished{}).
 		Add(TOpenApp{}).
 		Add(TQuitApp{}).
 		AddEnum([]AppType{TXT, DOCX, XLSX, PPTX}).
@@ -213,13 +228,16 @@ func DumpTypes(dir string) {
 
 	converter = converter.
 		Add(User{}).
-		Add(UserSubmission{}).
+		Add(TestSubmission{}).
+		Add(TypingTestInfo{}).
+		Add(AppTestInfo{}).
+		Add(McqTestInfo{}).
 		// Add(UserBatchRequestData{}).
 		Add(Test{}).
 		Add(Admin{}).
 		// Add(AdminRequest{}).
 		Add(Batch{}).
-		AddEnum([]TestType{TypingTest, DocxTest, ExcelTest, WordTest})
+		AddEnum([]TestType{TypingTest, DocxTest, ExcelTest, PptTest, MCQTest})
 
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"os"
-	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -19,7 +18,7 @@ func (user *User) GetCollectionName() string {
 	return "users"
 }
 
-func (userTest *UserSubmission) GetCollectionName() string {
+func (userTest *TestSubmission) GetCollectionName() string {
 	return "submissions"
 }
 
@@ -36,7 +35,7 @@ func (batch *Batch) GetCollectionName() string {
 type ID = primitive.ObjectID
 
 type Admin struct {
-	Id       ID `bson:"_id,omitempty" json:"Id,omitempty" ts_type:"string"`
+	Id       ID `bson:"_id,omitempty" ts_type:"string"`
 	Username string
 	Password string
 }
@@ -47,7 +46,7 @@ type Admin struct {
 // }
 
 type Batch struct {
-	Id    ID `bson:"_id,omitempty" json:"Id,omitempty" ts_type:"string"`
+	Id    ID `bson:"_id,omitempty" ts_type:"string"`
 	Name  string
 	Tests []ID `ts_type:"string[]"`
 }
@@ -58,7 +57,7 @@ type MCQ struct {
 	Answer   string
 }
 type Test struct {
-	Id       ID `bson:"_id,omitempty" json:"Id,omitempty" ts_type:"string"`
+	Id       ID `bson:"_id,omitempty" ts_type:"string"`
 	TestName string
 	Duration int
 
@@ -69,7 +68,7 @@ type Test struct {
 }
 
 type User struct {
-	Id       ID `bson:"_id,omitempty" json:"Id,omitempty" ts_type:"string"`
+	Id       ID `bson:"_id,omitempty" ts_type:"string"`
 	Username string
 	// TODO: plaintext password yo!
 	// passwords should be stored in another table hashed
@@ -77,24 +76,32 @@ type User struct {
 	Batch    string
 }
 
-type UserSubmission struct {
+type AppTestInfo struct {
+	FileData string
+}
+type McqTestInfo struct {
+	Answers []*int // indices to answers
+}
+type TypingTestInfo struct {
+	TimeTaken float64
+	WPM       float64
+	RawWPM    float64
+	Accuracy  float64
+}
+type TestInfo struct {
+	Type           TestType
+	TypingTestInfo *TypingTestInfo `bson:"typingtestinfo,omitempty" json:"TypingTestInfo,omitempty"`
+	McqTestInfo    *McqTestInfo    `bson:"mcqtestinfo,omitempty" json:"McqTestInfo,omitempty"`
+	DocxTestInfo   *AppTestInfo    `bson:"docxtestinfo,omitempty" json:"DocxTestInfo,omitempty"`
+	ExcelTestInfo  *AppTestInfo    `bson:"exceltestinfo,omitempty" json:"ExcelTestInfo,omitempty"`
+	PptTestInfo    *AppTestInfo    `bson:"ppttestinfo,omitempty" json:"PptTestInfo,omitempty"`
+}
+
+type TestSubmission struct {
 	UserId ID `ts_type:"string"`
 	TestId ID `ts_type:"string"`
 
-	StartTime   time.Time
-	EndTime     time.Time
-	ElapsedTime int64
-
-	WPM       float64
-	WPMNormal float64
-
-	//?
-	ReadingSubmissionReceived bool
-	ReadingElapsedTime        int64
-	SubmissionReceived        bool
-	ResultDownloaded          bool
-	MergedFileID              string
-	SubmissionFolderID        string
+	TestInfo TestInfo
 }
 
 // type UserModelUpdateRequest struct {
@@ -121,8 +128,8 @@ type TestType string
 const (
 	TypingTest TestType = "typing"
 	DocxTest   TestType = "docx"
-	ExcelTest  TestType = "excel"
-	WordTest   TestType = "word"
+	ExcelTest  TestType = "xlsx"
+	PptTest    TestType = "pptx"
 	MCQTest    TestType = "mcq"
 )
 
@@ -134,8 +141,8 @@ func (self TestType) TSName() string {
 		return "DocxTest"
 	case ExcelTest:
 		return "ExcelTest"
-	case WordTest:
-		return "WordTest"
+	case PptTest:
+		return "PptTest"
 	case MCQTest:
 		return "MCQTest"
 	default:
