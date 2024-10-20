@@ -99,13 +99,10 @@ const router = createBrowserRouter([
         element: <TestsPage />
       },
       {
-        path: "/tests/:testId",
-        element: <TestsPage />
-      },
-      {
         path: "/end",
         element: <EndPage />
-      }
+      },
+      
     ],
   },
 ]);

@@ -2,23 +2,75 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from "react-router-dom";
 import DocumentTests from "@/components/document-tests";
 import TypingTest from "@/components/typing-test";
+import MCQTest from '@/components/mcq-test';
 import { Button } from "@/components/ui/button";
 import * as types from "@common/types";
-import { UserIcon } from 'lucide-react';
+import { CheckCircle, UserIcon } from 'lucide-react';
 import * as server from "@common/server.ts";
 import { useStateContext } from '@/context/app-context';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
-const testList = [
-    { id: '1', name: 'Typing Test' },
-    { id: '2', name: 'Basic Office Skills', description: 'Test your skills in Word, Excel, and PowerPoint.', apps: [types.AppType.DOCX, types.AppType.XLSX, types.AppType.PPTX] },
-    { id: '3', name: 'Advanced Word Processing', description: 'Demonstrate your advanced Microsoft Word skills.', apps: [types.AppType.DOCX] },
-    { id: '4', name: 'NotePad test', description: 'Demonstrate your notepad skills.', apps: [types.AppType.TXT] },
-];
+
+
+// @thrombe: Fetch the data in this format and replace it.
+const mockData = [
+    {
+        'testType': 'TypingTest',
+        'testId': '1',
+        'testText': 'The quick brown fox jumps over the lazy dog',
+    },
+    {
+        'testType': 'DocxTest',
+        'testId': '2',
+        'imagePath':'https://placehold.co/600x400'
+    },
+    {
+        'testType':'ExcelTest',
+        'testId':'3',
+        'imagePath':'https://placehold.co/600x400'
+    },
+    {
+        'testType':'WordTest',
+        'testId':'4',
+        'imagePath':'https://placehold.co/600x400'
+    },
+    {
+        'testType':'MCQTest',
+        'testId':'5',
+        'questions':[
+            {
+                'question':'What is the capital of India?',
+                'options':['Mumbai','Delhi','Kolkata','Chennai'],
+            },
+            {
+                'question':'What is the capital of USA?',
+                'options':['New York','Washington D.C.','Los Angeles','Chicago'],
+            },
+            {
+                'question':'What is the capital of UK?',
+                'options':['London','Manchester','Birmingham','Liverpool'],
+            },
+        ]
+    }
+    
+]
+
+interface TestResult {
+    testId: string;
+    testType: string;
+    result: any; 
+}
+
 
 export default function TestsPage() {
+    const [testData, setTestData] = useState<any>(mockData);
+    const [selectedTestIndex, setSelectedTestIndex] = useState<number | null>(0);
+    const [completedTests, setCompletedTests] = useState<string[]>([]);
+    const [testResults, setTestResults] = useState<TestResult[]>([]);
+
+    const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [isTestActive, setIsTestActive] = useState(false);
     const { username } = useStateContext();
-    const { testId } = useParams();
     const navigate = useNavigate();
     const [leftWidth, setLeftWidth] = useState(250); // Initial width of left panel
     const [isResizing, setIsResizing] = useState(false);
@@ -42,18 +94,44 @@ export default function TestsPage() {
         return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
     };
 
-    // fetch(server.base_url + "/get-tests").then(async (r) => {
-    //     console.log(await r.json())
-    // })
-    // fetch(server.base_url + "/get-user").then(async (r) => {
-    //     console.log(await r.json())
-    // })
+    // useEffect(() => {
+    //     // @thrombe: Fetch test data from server
+    //     // use setTestData to update the state
+    // },[])
 
-    const handleFinishTest = () => {
-        // Implement finish test logic here
-        console.log('Finishing test');
-        // You might want to navigate to a results page or show a confirmation dialog
+    const handleFinishTest = (result: any) => {
+        if (selectedTestIndex !== null) {
+            const currentTest = testData[selectedTestIndex];
+            const newTestResult: TestResult = {
+                testId: currentTest.testId,
+                testType: currentTest.testType,
+                result: result
+            };
+
+            setTestResults([...testResults, newTestResult]);
+            setCompletedTests([...completedTests, currentTest.testId]);
+            setSelectedTestIndex(null);
+            setIsTestActive(false);
+            
+            if (completedTests.length + 1 === testData.length) {
+                setShowConfirmDialog(true);
+            }
+        }
     };
+
+
+    const handleConfirmSubmit = () => {
+        console.log("Submitting all tests to server");
+        console.log("Test results:", testResults);
+        // @thrombe: Here you would send testResults to your server
+        // For example:
+        // sendResultsToServer(testResults).then(() => {
+        //     navigate('/test-results');
+        // });
+        navigate('/end');
+        setShowConfirmDialog(false);
+    };
+
 
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
         e.preventDefault();
@@ -88,26 +166,32 @@ export default function TestsPage() {
     }, [isResizing, handleMouseMove, handleMouseUp]);
 
     const renderTestContent = () => {
-        const effectiveTestId = testId || '1'; 
-        const selectedTest = testList.find(test => test.id === effectiveTestId);
+        if (selectedTestIndex === null) {
+            return <div className="text-center text-xl mt-10">Select a test from the sidebar to begin.</div>;
+        }
 
-        if (selectedTest) {
-            if (selectedTest.id === '1') {
+        const currentTest = testData[selectedTestIndex];
+        switch (currentTest.testType) {
+            case 'TypingTest':
                 return (
                     <TypingTest
-                        typingText={'The quick brown fox jumps over the lazy dog'}
+                        typingText={currentTest.testText}
                         handleFinishTest={handleFinishTest}
                         isTestActive={isTestActive}
                         setIsTestActive={setIsTestActive}
                     />
                 );
-            } else {
-                return <DocumentTests test={selectedTest} />;
-            }
-        } else {
-            return <div>Test not found</div>;
+            case 'DocxTest':
+            case 'ExcelTest':
+            case 'WordTest':
+                return <DocumentTests testData={currentTest} handleFinishTest={handleFinishTest} />;
+            case 'MCQTest':
+                return <MCQTest testData={currentTest.questions} handleFinishTest={handleFinishTest} />;
+            default:
+                return <div>Unknown test type</div>;
         }
     };
+
 
     return (
         <div className="flex flex-col h-screen">
@@ -127,15 +211,18 @@ export default function TestsPage() {
                     className="bg-gray-100 p-4 overflow-y-auto"
                 >
                     <h2 className="text-xl font-bold mb-4">Tests</h2>
-                    {testList.map((test) => (
+                    {testData.map((test:any, index:number) => (
                         <Button
-                            key={test.id}
-                            onClick={() => !isTestActive && navigate(`/tests/${test.id}`)}
-                            variant={(testId || '1') === test.id ? 'default' : 'outline'}
+                            key={test.testId}
+                            onClick={() => !isTestActive && setSelectedTestIndex(index)}
+                            variant={selectedTestIndex === index ? 'default' : 'outline'}
                             className={`w-full mb-2 justify-start text-left whitespace-normal ${isTestActive ? 'opacity-50 cursor-not-allowed' : ''}`}
                             disabled={isTestActive}
                         >
-                            <span className="truncate">{test.name}</span>
+                            <span className="truncate flex-grow">{test.testType.replace(/([a-z])([A-Z])/g, '$1 $2')}</span>
+                            {completedTests.includes(test.testId) && (
+                                <CheckCircle className="ml-2 text-green-500" size={16} />
+                            )}
                         </Button>
                     ))}
                 </div>
@@ -159,6 +246,20 @@ export default function TestsPage() {
                     <div className="absolute inset-0 bg-transparent cursor-col-resize" />
                 )}
             </div>
+            <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure you want to submit all tests?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. All your test results will be submitted.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleConfirmSubmit}>Submit All Tests</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

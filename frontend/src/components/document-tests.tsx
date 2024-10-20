@@ -1,27 +1,28 @@
-import React from 'react';
-import { File, FileText, NotepadText, Sheet } from 'lucide-react';
+import { FileText, NotepadText, Sheet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { server } from '@common/server';
 import * as types from '@common/types';
 
-const appIcons = {
-  [types.AppType.TXT]: { icon: NotepadText, color: 'text-green-600' },
-  [types.AppType.PPTX]: { icon: File, color: 'text-orange-600' },
-  [types.AppType.DOCX]: { icon: FileText, color: 'text-blue-600' },
-  [types.AppType.XLSX]: { icon: Sheet, color: 'text-green-600' },
+const appMapping = {
+  'DocTest': { icon: FileText, color: 'text-blue-600', appType: types.AppType.DOCX },
+  'ExcelTest': { icon: Sheet, color: 'text-green-600', appType: types.AppType.XLSX },
+  'WordTest': { icon: NotepadText, color: 'text-red-600', appType: types.AppType.TXT },
 };
 
-interface TestSelectorProps {
-  test: {
-    id: string;
-    name: string;
-    description?: string;
-    apps?: types.AppType[];
+interface DocumentTestsProps {
+  testData: {
+    testType: string;
+    testId: string;
+    imagePath:string;
   };
+  handleFinishTest: (result: any) => void;
 }
 
-function TestSelector({ test }: TestSelectorProps){
+export default function DocumentTests({
+  testData,
+  handleFinishTest,
+}: DocumentTestsProps){
   const handleOpenApp = (appType: types.AppType) => {
     server.send_message({
       Typ: types.Varient.OpenApp,
@@ -30,35 +31,35 @@ function TestSelector({ test }: TestSelectorProps){
   };
 
   const handleSubmitWork = () => {
-    console.log('Submitting work for test:', test.name);
-    // Implement submission logic here
+    handleFinishTest({ /*TODO:Test data here */ });
   };
+
+  const appConfig = appMapping[testData.testType as keyof typeof appMapping];
 
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>
-        <CardTitle>{test.name}</CardTitle>
+        <CardTitle>
+          {testData.testType.replace(/([a-z])([A-Z])/g, '$1 $2')}
+        </CardTitle>
       </CardHeader>
       <CardContent className="flex-grow">
-        <p className="mb-4">{test.description}</p>
         <div className="mb-4">
           <h3 className="text-lg font-semibold mb-2">Associated Apps:</h3>
           <div className="flex space-x-2 mb-4">
-            {test.apps!.map((appType) => {
-              const { icon: Icon, color } = appIcons[appType];
-              return (
+
                 <Button
-                  variant={"ghost"}
-                  key={appType}
-                  onClick={() => handleOpenApp(appType)}
+                  variant={"default"}
+                  onClick={() => handleOpenApp(appConfig.appType)}
                   className="flex items-center space-x-2"
                 >
-                  <Icon className={`h-5 w-5 ${color}`} />
-                  <span>{types.AppType[appType]}</span>
+                  <span>Open Associated App</span>
                 </Button>
-              );
-            })}
+
           </div>
+        </div>
+        <div className='w-full h-[400px] overflow-hidden rounded-lg mb-2'>
+          <img src={testData.imagePath} alt={`${testData.testId} Test`} className="w-full object-cover" />
         </div>
         <Button onClick={handleSubmitWork} className="w-full">
           Submit Work
@@ -67,5 +68,3 @@ function TestSelector({ test }: TestSelectorProps){
     </Card>
   );
 };
-
-export default TestSelector;
