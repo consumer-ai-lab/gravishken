@@ -5,17 +5,13 @@ import { server } from '@common/server';
 import * as types from '@common/types';
 
 const appMapping = {
-  'DocTest': { icon: FileText, color: 'text-blue-600', appType: types.AppType.DOCX },
-  'ExcelTest': { icon: Sheet, color: 'text-green-600', appType: types.AppType.XLSX },
-  'WordTest': { icon: NotepadText, color: 'text-red-600', appType: types.AppType.TXT },
+  'docx': { icon: FileText, color: 'text-blue-600', appType: types.AppType.DOCX },
+  'excel': { icon: Sheet, color: 'text-green-600', appType: types.AppType.XLSX },
+  'word': { icon: NotepadText, color: 'text-red-600', appType: types.AppType.TXT },
 };
 
 interface DocumentTestsProps {
-  testData: {
-    testType: string;
-    testId: string;
-    imagePath:string;
-  };
+  testData: types.Test;
   handleFinishTest: (result: any) => void;
 }
 
@@ -34,13 +30,13 @@ export default function DocumentTests({
     handleFinishTest({ /*TODO:Test data here */ });
   };
 
-  const appConfig = appMapping[testData.testType as keyof typeof appMapping];
+  const appConfig = appMapping[testData.Type as keyof typeof appMapping];
 
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>
         <CardTitle>
-          {testData.testType.replace(/([a-z])([A-Z])/g, '$1 $2')}
+          {testData.Type.replace(/([a-z])([A-Z])/g, '$1 $2')}
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-grow">
@@ -59,7 +55,7 @@ export default function DocumentTests({
           </div>
         </div>
         <div className='w-full h-[400px] overflow-hidden rounded-lg mb-2'>
-          <img src={testData.imagePath} alt={`${testData.testId} Test`} className="w-full object-cover" />
+          <img src={testData.FilePath} alt={`${testData.Id} Test`} className="w-full object-cover" />
         </div>
         <Button onClick={handleSubmitWork} className="w-full">
           Submit Work
