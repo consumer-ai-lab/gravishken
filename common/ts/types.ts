@@ -23,8 +23,8 @@ export enum Varient {
 export enum TestType {
     TypingTest = "typing",
     DocxTest = "docx",
-    ExcelTest = "excel",
-    WordTest = "word",
+    ExcelTest = "xlsx",
+    PptTest = "pptx",
     MCQTest = "mcq",
 }
 export interface TErr {

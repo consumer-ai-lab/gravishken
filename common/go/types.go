@@ -219,7 +219,7 @@ func DumpTypes(dir string) {
 		Add(Admin{}).
 		// Add(AdminRequest{}).
 		Add(Batch{}).
-		AddEnum([]TestType{TypingTest, DocxTest, ExcelTest, WordTest, MCQTest})
+		AddEnum([]TestType{TypingTest, DocxTest, ExcelTest, PptTest, MCQTest})
 
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {

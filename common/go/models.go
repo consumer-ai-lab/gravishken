@@ -121,8 +121,8 @@ type TestType string
 const (
 	TypingTest TestType = "typing"
 	DocxTest   TestType = "docx"
-	ExcelTest  TestType = "excel"
-	WordTest   TestType = "word"
+	ExcelTest  TestType = "xlsx"
+	PptTest    TestType = "pptx"
 	MCQTest    TestType = "mcq"
 )
 
@@ -134,8 +134,8 @@ func (self TestType) TSName() string {
 		return "DocxTest"
 	case ExcelTest:
 		return "ExcelTest"
-	case WordTest:
-		return "WordTest"
+	case PptTest:
+		return "PptTest"
 	case MCQTest:
 		return "MCQTest"
 	default:

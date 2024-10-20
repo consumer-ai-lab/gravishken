@@ -452,7 +452,7 @@ func TestRoutes(allControllers *Database, route *gin.Engine) {
 			string(common.TypingTest),
 			string(common.DocxTest),
 			string(common.ExcelTest),
-			string(common.WordTest),
+			string(common.PptTest),
 			string(common.MCQTest),
 		}
 

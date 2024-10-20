@@ -11,50 +11,6 @@ import { useStateContext } from '@/context/app-context';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 
-
-// @thrombe: Fetch the data in this format and replace it.
-const mockData = [
-    {
-        'testType': 'TypingTest',
-        'testId': '1',
-        'testText': 'The quick brown fox jumps over the lazy dog',
-    },
-    {
-        'testType': 'DocxTest',
-        'testId': '2',
-        'imagePath':'https://placehold.co/600x400'
-    },
-    {
-        'testType':'ExcelTest',
-        'testId':'3',
-        'imagePath':'https://placehold.co/600x400'
-    },
-    {
-        'testType':'WordTest',
-        'testId':'4',
-        'imagePath':'https://placehold.co/600x400'
-    },
-    {
-        'testType':'MCQTest',
-        'testId':'5',
-        'questions':[
-            {
-                'question':'What is the capital of India?',
-                'options':['Mumbai','Delhi','Kolkata','Chennai'],
-            },
-            {
-                'question':'What is the capital of USA?',
-                'options':['New York','Washington D.C.','Los Angeles','Chicago'],
-            },
-            {
-                'question':'What is the capital of UK?',
-                'options':['London','Manchester','Birmingham','Liverpool'],
-            },
-        ]
-    }
-    
-]
-
 interface TestResult {
     testId: string;
     testType: string;
@@ -66,7 +22,7 @@ export default function TestsPage() {
     const [testData, setTestData] = useState<types.Test[]>([]);
     const [selectedTestIndex, setSelectedTestIndex] = useState<number | null>(0);
     const [completedTests, setCompletedTests] = useState<string[]>([]);
-    const [testResults, setTestResults] = useState<TestResult[]>([]);
+    const [testResults, setTestResults] = useState<types.UserSubmission[]>([]);
 
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [isTestActive, setIsTestActive] = useState(false);
@@ -104,9 +60,8 @@ export default function TestsPage() {
     const handleFinishTest = (result: any) => {
         if (selectedTestIndex !== null) {
             const currentTest = testData[selectedTestIndex];
-            const newTestResult: TestResult = {
-                testId: currentTest.Id,
-                testType: currentTest.Type,
+            const newTestResult: types.UserSubmission = {
+                TestId: currentTest.Id,
                 result: result
             };
 
@@ -187,8 +142,8 @@ export default function TestsPage() {
                     />
                 );
             case 'docx':
-            case 'excel':
-            case 'word':
+            case 'xlsx':
+            case 'pptx':
                 return <DocumentTests testData={currentTest} handleFinishTest={handleFinishTest} />;
             case 'mcq':
                 return <MCQTest testData={JSON.parse(currentTest.McqJson!)} handleFinishTest={handleFinishTest} />;
