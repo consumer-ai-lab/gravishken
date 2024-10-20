@@ -36,7 +36,7 @@ func (batch *Batch) GetCollectionName() string {
 type ID = primitive.ObjectID
 
 type Admin struct {
-	Id       ID `bson:"_id,omitempty" json:"Id,omitempty" ts_type:"string"`
+	Id       ID `bson:"_id,omitempty" ts_type:"string"`
 	Username string
 	Password string
 }
@@ -47,7 +47,7 @@ type Admin struct {
 // }
 
 type Batch struct {
-	Id    ID `bson:"_id,omitempty" json:"Id,omitempty" ts_type:"string"`
+	Id    ID `bson:"_id,omitempty" ts_type:"string"`
 	Name  string
 	Tests []ID `ts_type:"string[]"`
 }
@@ -58,7 +58,7 @@ type MCQ struct {
 	Answer   string
 }
 type Test struct {
-	Id       ID `bson:"_id,omitempty" json:"Id,omitempty" ts_type:"string"`
+	Id       ID `bson:"_id,omitempty" ts_type:"string"`
 	TestName string
 	Duration int
 
@@ -69,7 +69,7 @@ type Test struct {
 }
 
 type User struct {
-	Id       ID `bson:"_id,omitempty" json:"Id,omitempty" ts_type:"string"`
+	Id       ID `bson:"_id,omitempty" ts_type:"string"`
 	Username string
 	// TODO: plaintext password yo!
 	// passwords should be stored in another table hashed

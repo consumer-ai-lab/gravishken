@@ -25,6 +25,7 @@ export enum TestType {
     DocxTest = "docx",
     ExcelTest = "excel",
     WordTest = "word",
+    MCQTest = "mcq",
 }
 export interface TErr {
     Message: string;
@@ -66,7 +67,7 @@ export interface TQuitApp {
 
 }
 export interface User {
-    Id?: string;
+    Id: string;
     Username: string;
     Password: string;
     Batch: string;
@@ -90,7 +91,7 @@ export interface UserSubmission {
     SubmissionFolderID: string;
 }
 export interface Test {
-    Id?: string;
+    Id: string;
     TestName: string;
     Duration: number;
     Type: TestType;
@@ -99,12 +100,12 @@ export interface Test {
     McqJson?: string;
 }
 export interface Admin {
-    Id?: string;
+    Id: string;
     Username: string;
     Password: string;
 }
 export interface Batch {
-    Id?: string;
+    Id: string;
     Name: string;
     Tests: string[];
 }
