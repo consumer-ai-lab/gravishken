@@ -89,7 +89,7 @@ build-windows-app() {
 
   echo "NOTE: building with SERVER_URL as $SERVER_URL"
 
-  go build $APP_TAGS -ldflags "$VARS -H windowsgui" -o ../build/gravtest.exe ./src/.
+  go build $APP_TAGS -ldflags "$VARS -H windowsgui" -o ../build/gravishken.exe ./src/.
 }
 
 build-windows-server() {
@@ -145,7 +145,7 @@ build-app() {
 
   echo "NOTE: building with SERVER_URL as $SERVER_URL"
 
-  go build $APP_TAGS -ldflags "$VARS" -o ../build/gravtest ./src/.
+  go build $APP_TAGS -ldflags "$VARS" -o ../build/gravishken ./src/.
 }
 
 build-server() {
@@ -203,8 +203,8 @@ app() {
   mkdir -p ./dist
   touch ./dist/ignore
 
-  go build $APP_TAGS -ldflags "$VARS" -o ../build/gravtest ./src/.
-  ../build/gravtest $@
+  go build $APP_TAGS -ldflags "$VARS" -o ../build/gravishken ./src/.
+  ../build/gravishken $@
 }
 
 setup() {

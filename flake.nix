@@ -49,7 +49,7 @@
         ];
       };
       gravishken = pkgs.buildGoModule {
-        name = "gravtest";
+        name = "gravishken";
         src = ./.;
         vendorHash = "";
 
