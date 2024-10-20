@@ -11,18 +11,11 @@ import { useStateContext } from '@/context/app-context';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 
-interface TestResult {
-    testId: string;
-    testType: string;
-    result: any; 
-}
-
-
 export default function TestsPage() {
     const [testData, setTestData] = useState<types.Test[]>([]);
     const [selectedTestIndex, setSelectedTestIndex] = useState<number | null>(0);
     const [completedTests, setCompletedTests] = useState<string[]>([]);
-    const [testResults, setTestResults] = useState<types.UserSubmission[]>([]);
+    const [testResults, setTestResults] = useState<any[]>([]);
 
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [isTestActive, setIsTestActive] = useState(false);
@@ -60,7 +53,7 @@ export default function TestsPage() {
     const handleFinishTest = (result: any) => {
         if (selectedTestIndex !== null) {
             const currentTest = testData[selectedTestIndex];
-            const newTestResult: types.UserSubmission = {
+            const newTestResult = {
                 TestId: currentTest.Id,
                 result: result
             };

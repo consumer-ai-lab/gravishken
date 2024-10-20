@@ -31,6 +31,9 @@ export type Message = {
     Typ: types.Varient.StartTest,
     Val: types.TStartTest,
 } | {
+    Typ: types.Varient.TestFinished,
+    Val: types.TTestFinished,
+} | {
     Typ: types.Varient.OpenApp,
     Val: types.TOpenApp,
 } | {
@@ -125,6 +128,7 @@ export class Server {
             case types.Varient.Err:
             case types.Varient.WarnUser:
             case types.Varient.StartTest:
+            case types.Varient.TestFinished:
                 break;
             case types.Varient.ReloadUi:
                 window.location.href = "/";

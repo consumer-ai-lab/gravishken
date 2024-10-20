@@ -19,7 +19,7 @@ func (user *User) GetCollectionName() string {
 	return "users"
 }
 
-func (userTest *UserSubmission) GetCollectionName() string {
+func (userTest *TestSubmission) GetCollectionName() string {
 	return "submissions"
 }
 
@@ -77,24 +77,32 @@ type User struct {
 	Batch    string
 }
 
-type UserSubmission struct {
+type AppTestInfo struct {
+	FileData string
+}
+type McqTestInfo struct {
+	Data string
+}
+type TypingTestInfo struct {
+	WPM float64
+}
+type TestInfo struct {
+	Type           TestType
+	TypingTestInfo *TypingTestInfo `bson:"typingtestinfo,omitempty" json:"TypingTestInfo,omitempty"`
+	McqTestInfo    *McqTestInfo    `bson:"mcqtestinfo,omitempty" json:"McqTestInfo,omitempty"`
+	DocxTestInfo   *AppTestInfo    `bson:"docxtestinfo,omitempty" json:"DocxTestInfo,omitempty"`
+	ExcelTestInfo  *AppTestInfo    `bson:"exceltestinfo,omitempty" json:"ExcelTestInfo,omitempty"`
+	PptTestInfo    *AppTestInfo    `bson:"ppttestinfo,omitempty" json:"PptTestInfo,omitempty"`
+}
+
+type TestSubmission struct {
 	UserId ID `ts_type:"string"`
 	TestId ID `ts_type:"string"`
 
-	StartTime   time.Time
-	EndTime     time.Time
-	ElapsedTime int64
+	StartTime time.Time
+	EndTime   time.Time
 
-	WPM       float64
-	WPMNormal float64
-
-	//?
-	ReadingSubmissionReceived bool
-	ReadingElapsedTime        int64
-	SubmissionReceived        bool
-	ResultDownloaded          bool
-	MergedFileID              string
-	SubmissionFolderID        string
+	TestInfo TestInfo
 }
 
 // type UserModelUpdateRequest struct {

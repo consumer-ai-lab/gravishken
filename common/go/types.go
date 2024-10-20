@@ -34,7 +34,7 @@ const (
 	LoadRoute
 	ReloadUi
 	StartTest
-	SubmitTest
+	TestFinished
 	OpenApp
 	QuitApp
 	Unknown // NOTE: keep this as the last constant here.
@@ -58,8 +58,8 @@ func (self Varient) TSName() string {
 		return "ReloadUi"
 	case StartTest:
 		return "StartTest"
-	case SubmitTest:
-		return "SubmitTest"
+	case TestFinished:
+		return "TestFinished"
 	case OpenApp:
 		return "OpenApp"
 	case QuitApp:
@@ -86,8 +86,8 @@ func varientFromName(typ string) Varient {
 		return LoadRoute
 	case "StartTest":
 		return StartTest
-	case "SubmitTest":
-		return SubmitTest
+	case "TestFinished":
+		return TestFinished
 	case "OpenApp":
 		return OpenApp
 	case "QuitApp":
@@ -130,9 +130,8 @@ type TReloadUi struct{}
 
 type TStartTest struct{}
 
-type TSubmitTest struct {
-	TestId ID `ts_type:"string"`
-}
+// TODO: Send this to every client from server when time ends and submit whatever stuff the client can submit
+type TTestFinished struct{}
 
 type AppType int
 
@@ -211,7 +210,7 @@ func DumpTypes(dir string) {
 		Add(TLoadRoute{}).
 		Add(TReloadUi{}).
 		Add(TStartTest{}).
-		Add(TSubmitTest{}).
+		Add(TTestFinished{}).
 		Add(TOpenApp{}).
 		Add(TQuitApp{}).
 		AddEnum([]AppType{TXT, DOCX, XLSX, PPTX}).
@@ -219,7 +218,10 @@ func DumpTypes(dir string) {
 
 	converter = converter.
 		Add(User{}).
-		Add(UserSubmission{}).
+		Add(TestSubmission{}).
+		Add(TypingTestInfo{}).
+		Add(AppTestInfo{}).
+		Add(McqTestInfo{}).
 		// Add(UserBatchRequestData{}).
 		Add(Test{}).
 		Add(Admin{}).

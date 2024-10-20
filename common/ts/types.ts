@@ -16,7 +16,7 @@ export enum Varient {
     LoadRoute = 5,
     ReloadUi = 6,
     StartTest = 7,
-    SubmitTest = 8,
+    TestFinished = 8,
     OpenApp = 9,
     QuitApp = 10,
     Unknown = 11,
@@ -58,8 +58,8 @@ export interface TReloadUi {
 export interface TStartTest {
 
 }
-export interface TSubmitTest {
-    TestId: string;
+export interface TTestFinished {
+
 }
 export interface TOpenApp {
     Typ: AppType;
@@ -74,24 +74,36 @@ export interface User {
     Password: string;
     Batch: string;
 }
+export interface AppTestInfo {
+    FileData: string;
+}
+export interface McqTestInfo {
+    Data: string;
+}
+export interface TypingTestInfo {
+    WPM: number;
+}
+export interface TestInfo {
+    Type: TestType;
+    TypingTestInfo?: TypingTestInfo;
+    McqTestInfo?: McqTestInfo;
+    DocxTestInfo?: AppTestInfo;
+    ExcelTestInfo?: AppTestInfo;
+    PptTestInfo?: AppTestInfo;
+}
 export interface Time {
 
 }
-export interface UserSubmission {
+export interface TestSubmission {
     UserId: string;
     TestId: string;
     StartTime: Time;
     EndTime: Time;
-    ElapsedTime: number;
-    WPM: number;
-    WPMNormal: number;
-    ReadingSubmissionReceived: boolean;
-    ReadingElapsedTime: number;
-    SubmissionReceived: boolean;
-    ResultDownloaded: boolean;
-    MergedFileID: string;
-    SubmissionFolderID: string;
+    TestInfo: TestInfo;
 }
+
+
+
 export interface Test {
     Id: string;
     TestName: string;

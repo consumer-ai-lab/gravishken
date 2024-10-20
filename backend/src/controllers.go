@@ -15,11 +15,12 @@ import (
 )
 
 type Database struct {
-	Client          *mongo.Client
-	AdminCollection *mongo.Collection
-	UserCollection  *mongo.Collection
-	TestCollection  *mongo.Collection
-	BatchCollection *mongo.Collection
+	Client               *mongo.Client
+	AdminCollection      *mongo.Collection
+	UserCollection       *mongo.Collection
+	TestCollection       *mongo.Collection
+	BatchCollection      *mongo.Collection
+	SubmissionCollection *mongo.Collection
 }
 
 func connectDatabase() (*Database, error) {
@@ -43,13 +44,15 @@ func connectDatabase() (*Database, error) {
 	userCollection := client.Database("GRAVTEST").Collection("Users")
 	testCollection := client.Database("GRAVTEST").Collection("Tests")
 	batchCollection := client.Database("GRAVTEST").Collection("Batch")
+	SubmissionCollection := client.Database("GRAVTEST").Collection("Submission")
 
 	db := Database{
-		Client:          client,
-		AdminCollection: adminCollection,
-		UserCollection:  userCollection,
-		TestCollection:  testCollection,
-		BatchCollection: batchCollection,
+		Client:               client,
+		AdminCollection:      adminCollection,
+		UserCollection:       userCollection,
+		TestCollection:       testCollection,
+		BatchCollection:      batchCollection,
+		SubmissionCollection: SubmissionCollection,
 	}
 	return &db, nil
 }

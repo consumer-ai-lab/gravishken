@@ -22,7 +22,7 @@ type ModelInterface interface {
 var _ ModelInterface = (*models.Admin)(nil)
 var _ ModelInterface = (*models.Batch)(nil)
 var _ ModelInterface = (*models.User)(nil)
-var _ ModelInterface = (*models.UserSubmission)(nil)
+var _ ModelInterface = (*models.TestSubmission)(nil)
 var _ ModelInterface = (*models.Test)(nil)
 
 // Define your JWT claims structure

@@ -235,3 +235,31 @@ func (self *Client) getTests(batchName string) ([]common.Test, error) {
 
 	return result, nil
 }
+
+func (self *Client) submitTest(submission common.TestSubmission) error {
+	url := server_url + "/test/submit"
+
+	jsonData, err := json.Marshal(submission)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("content-type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+self.jwt)
+
+	resp, err := self.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
+		return fmt.Errorf("%s", resp.Status)
+	}
+
+	return nil
+}

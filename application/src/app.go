@@ -21,6 +21,10 @@ type App struct {
 		webview_opened     bool
 		connection_started bool
 	}
+	test_state struct {
+		submitted map[common.ID]bool
+		tests     map[common.ID]string
+	}
 }
 
 func (self *App) destroy() {

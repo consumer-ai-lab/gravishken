@@ -2,10 +2,12 @@ package main
 
 import (
 	assets "app"
-	types "common"
+	"common"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/fs"
 	"log"
 	"net/http"
@@ -56,7 +58,7 @@ func (self *App) serve() {
 				case <-time.After(time.Millisecond * 1):
 					//
 				}
-				var msg types.Message
+				var msg common.Message
 				err := ws.ReadJSON(&msg)
 				if err != nil {
 					log.Println("frontend ws closed 2 :/", err)
@@ -115,6 +117,92 @@ func (self *App) serve() {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	})
+	mux.HandleFunc("/get-submitted-ids", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("content-type", "application/json")
+		w.Header().Add("access-control-allow-origin", "*")
+		if err := json.NewEncoder(w).Encode(self.test_state.submitted); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	})
+	mux.HandleFunc("/submit-test", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("access-control-allow-origin", "*")
+		if r.Method != http.MethodPost {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		var submission common.TestSubmission
+		decoder := json.NewDecoder(r.Body)
+		if err := decoder.Decode(&submission); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if self.runner.IsAppOpen() {
+			_ = self.runner.FocusOpenApp()
+			msg := "An Application is open. Please save your work, close the app and retry"
+			self.notifyErr(fmt.Errorf(msg))
+			http.Error(w, msg, http.StatusBadRequest)
+			return
+		}
+
+		test, err := self.findTestById(submission.TestId)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		switch test.Type {
+		case common.TypingTest, common.MCQTest:
+		case common.DocxTest, common.ExcelTest, common.PptTest:
+			path, ok := self.test_state.tests[test.Id]
+			if !ok {
+				http.Error(w, "No test data found", http.StatusBadRequest)
+				return
+			}
+
+			file, err := os.Open(path)
+			if err != nil {
+				err = fmt.Errorf("failed opening test file")
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			defer file.Close()
+
+			filedata, err := io.ReadAll(file)
+			if err != nil {
+				err = fmt.Errorf("failed reading test file")
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			encodedData := base64.StdEncoding.EncodeToString(filedata)
+			info := common.AppTestInfo{
+				FileData: encodedData,
+			}
+			switch test.Type {
+			case common.DocxTest:
+				submission.TestInfo.DocxTestInfo = &info
+			case common.ExcelTest:
+				submission.TestInfo.ExcelTestInfo = &info
+			case common.PptTest:
+				submission.TestInfo.PptTestInfo = &info
+			default:
+				panic("unreachable")
+			}
+		default:
+			if err != nil {
+				http.Error(w, "Unknown test", http.StatusBadRequest)
+				return
+			}
+		}
+
+		err = self.client.submitTest(submission)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		self.test_state.submitted[submission.TestId] = true
+
+		self.maybeFinishTest()
+	})
 
 	var contentReplacements = map[string]string{
 		"%SERVER_URL%": os.Getenv("SERVER_URL"),
@@ -165,9 +253,29 @@ func (self *App) serve() {
 	<-self.exitCtx.Done()
 }
 
+func (self *App) findTestById(id common.ID) (*common.Test, error) {
+	for _, test := range self.client.tests {
+		if test.Id == id {
+			return &test, nil
+		}
+	}
+	return nil, fmt.Errorf("Unknown test")
+}
+
+func (self *App) maybeFinishTest() {
+	for _, test := range self.client.tests {
+		_, ok := self.test_state.submitted[test.Id]
+		if !ok {
+			return
+		}
+	}
+
+	self.send <- common.NewMessage(common.TTestFinished{})
+}
+
 func (self *App) handleMessages() {
 	for {
-		var msg types.Message
+		var msg common.Message
 		var ok bool
 		select {
 		case <-self.exitCtx.Done():
@@ -181,15 +289,15 @@ func (self *App) handleMessages() {
 		log.Println(msg.Typ.TSName(), msg)
 
 		switch msg.Typ {
-		case types.LoadRoute:
-			val, err := types.Get[types.TLoadRoute](msg)
+		case common.LoadRoute:
+			val, err := common.Get[common.TLoadRoute](msg)
 			if err != nil {
 				self.notifyErr(err)
 				continue
 			}
-			self.send <- types.NewMessage(*val)
-		case types.UserLoginRequest:
-			val, err := types.Get[types.TUserLoginRequest](msg)
+			self.send <- common.NewMessage(*val)
+		case common.UserLoginRequest:
+			val, err := common.Get[common.TUserLoginRequest](msg)
 			if err != nil {
 				self.notifyErr(err)
 				continue
@@ -202,48 +310,51 @@ func (self *App) handleMessages() {
 
 			self.maintainConnection()
 
-			routeMessage := types.TLoadRoute{
+			routeMessage := common.TLoadRoute{
 				Route: "/instructions",
 			}
-			message := types.NewMessage(routeMessage)
+			message := common.NewMessage(routeMessage)
 			self.send <- message
-		case types.StartTest:
+		case common.StartTest:
 			err := self.startTest()
 			if err != nil {
 				self.notifyErr(err)
 				continue
 			}
-		case types.OpenApp:
-			val, err := types.Get[types.TOpenApp](msg)
+		case common.OpenApp:
+			val, err := common.Get[common.TOpenApp](msg)
 			if err != nil {
 				self.notifyErr(err)
 				continue
 			}
-			// TODO: use fixed paths instead of generating a random path
-			// this will help in cases where someone restarts the test
-			dest, err := self.runner.NewTemplate(val.Typ)
-			if err != nil {
-				self.notifyErr(err)
-				continue
+			var dest string
+			// TODO: self.state.tests will be wiped if app restarts. :) but i don't care rn
+			dest, ok := self.test_state.tests[val.TestId]
+			if !ok {
+				dest, err = self.runner.NewTemplate(val.Typ)
+				if err != nil {
+					self.notifyErr(err)
+					continue
+				}
 			}
 			go (func() {
 				err = self.runner.FocusOrOpenApp(val.Typ, dest)
 				self.notifyErr(err)
 			})()
-		case types.Quit:
+		case common.Quit:
 			self.exitFn()
-		case types.QuitApp:
+		case common.QuitApp:
 			self.runner.KillApp()
-		case types.Err:
-			val, err := types.Get[types.TErr](msg)
+		case common.Err:
+			val, err := common.Get[common.TErr](msg)
 			if err != nil {
 				log.Println(err)
 				continue
 			}
 			log.Println(val)
-		case types.ExeNotFound:
+		case common.ExeNotFound, common.TestFinished:
 			log.Printf("message of type '%s' cannot be handled here: '%s'\n", msg.Typ.TSName(), msg.Val)
-		case types.Unknown:
+		case common.Unknown:
 			log.Printf("unknown message type received: '%s'\n", msg.Val)
 		default:
 			log.Printf("message type '%s' not handled ('%s')\n", msg.Typ.TSName(), msg.Val)

@@ -45,6 +45,13 @@ function WebSocketHandler() {
       disable.push(d);
     });
 
+    server.server.add_callback(types.Varient.TestFinished, async (res) => {
+      console.log(res);
+      navigate("/end")
+    }).then(d => {
+      disable.push(d);
+    });
+
     server.server.add_callback(types.Varient.Err, async (res) => {
       console.error('Error from server:', res.Message);
       toast({
@@ -98,11 +105,11 @@ const router = createBrowserRouter([
         path: "/tests",
         element: <TestsPage />
       },
+      // TODO: add a quit button to this page. send common.Quit message on that button press
       {
         path: "/end",
         element: <EndPage />
       },
-      
     ],
   },
 ]);

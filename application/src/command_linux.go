@@ -126,6 +126,10 @@ func (self *Runner) KillApp() error {
 	return nil
 }
 
+func (self *Runner) IsAppOpen() bool {
+	return self.isOpen()
+}
+
 func (self *Runner) FocusOrOpenApp(typ types.AppType, file string) error {
 	if self.isOpen() && self.state.running_typ == typ {
 		return self.FocusOpenApp()
