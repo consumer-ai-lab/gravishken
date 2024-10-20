@@ -34,6 +34,7 @@ const (
 	LoadRoute
 	ReloadUi
 	StartTest
+	SubmitTest
 	OpenApp
 	QuitApp
 	Unknown // NOTE: keep this as the last constant here.
@@ -57,6 +58,8 @@ func (self Varient) TSName() string {
 		return "ReloadUi"
 	case StartTest:
 		return "StartTest"
+	case SubmitTest:
+		return "SubmitTest"
 	case OpenApp:
 		return "OpenApp"
 	case QuitApp:
@@ -83,6 +86,8 @@ func varientFromName(typ string) Varient {
 		return LoadRoute
 	case "StartTest":
 		return StartTest
+	case "SubmitTest":
+		return SubmitTest
 	case "OpenApp":
 		return OpenApp
 	case "QuitApp":
@@ -123,10 +128,10 @@ type TLoadRoute struct {
 
 type TReloadUi struct{}
 
-type TStartTestRequest struct{}
+type TStartTest struct{}
 
-type TStartTest struct {
-	tests []Test
+type TSubmitTest struct {
+	TestId ID `ts_type:"string"`
 }
 
 type AppType int
@@ -154,7 +159,8 @@ func (self AppType) TSName() string {
 }
 
 type TOpenApp struct {
-	Typ AppType
+	Typ    AppType
+	TestId ID `ts_type:"string"`
 }
 
 type TQuitApp struct{}
@@ -204,8 +210,8 @@ func DumpTypes(dir string) {
 		Add(TWarnUser{}).
 		Add(TLoadRoute{}).
 		Add(TReloadUi{}).
-		Add(TStartTestRequest{}).
 		Add(TStartTest{}).
+		Add(TSubmitTest{}).
 		Add(TOpenApp{}).
 		Add(TQuitApp{}).
 		AddEnum([]AppType{TXT, DOCX, XLSX, PPTX}).

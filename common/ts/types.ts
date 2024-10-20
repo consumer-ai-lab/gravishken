@@ -16,9 +16,10 @@ export enum Varient {
     LoadRoute = 5,
     ReloadUi = 6,
     StartTest = 7,
-    OpenApp = 8,
-    QuitApp = 9,
-    Unknown = 10,
+    SubmitTest = 8,
+    OpenApp = 9,
+    QuitApp = 10,
+    Unknown = 11,
 }
 export enum TestType {
     TypingTest = "typing",
@@ -54,14 +55,15 @@ export interface TLoadRoute {
 export interface TReloadUi {
 
 }
-export interface TStartTestRequest {
-
-}
 export interface TStartTest {
 
 }
+export interface TSubmitTest {
+    TestId: string;
+}
 export interface TOpenApp {
     Typ: AppType;
+    TestId: string;
 }
 export interface TQuitApp {
 

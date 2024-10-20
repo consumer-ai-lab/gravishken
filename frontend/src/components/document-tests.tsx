@@ -6,8 +6,8 @@ import * as types from '@common/types';
 
 const appMapping = {
   'docx': { icon: FileText, color: 'text-blue-600', appType: types.AppType.DOCX },
-  'excel': { icon: Sheet, color: 'text-green-600', appType: types.AppType.XLSX },
-  'word': { icon: NotepadText, color: 'text-red-600', appType: types.AppType.TXT },
+  'xlsx': { icon: Sheet, color: 'text-green-600', appType: types.AppType.XLSX },
+  'pptx': { icon: NotepadText, color: 'text-red-600', appType: types.AppType.TXT },
 };
 
 interface DocumentTestsProps {
@@ -19,10 +19,12 @@ export default function DocumentTests({
   testData,
   handleFinishTest,
 }: DocumentTestsProps){
-  const handleOpenApp = (appType: types.AppType) => {
+  const handleOpenApp = (app: types.Test) => {
+    /// @ts-ignore
+    let typ: types.AppType = appMapping[testData.Type];
     server.send_message({
       Typ: types.Varient.OpenApp,
-      Val: { Typ: appType },
+      Val: { Typ: typ, TestId: app.Id },
     });
   };
 
@@ -30,7 +32,8 @@ export default function DocumentTests({
     handleFinishTest({ /*TODO:Test data here */ });
   };
 
-  const appConfig = appMapping[testData.Type as keyof typeof appMapping];
+  // @ts-ignore
+  const appConfig = appMapping[testData.Type];
 
   return (
     <Card className="h-full flex flex-col">
@@ -46,7 +49,7 @@ export default function DocumentTests({
 
                 <Button
                   variant={"default"}
-                  onClick={() => handleOpenApp(appConfig.appType)}
+                  onClick={() => handleOpenApp(testData)}
                   className="flex items-center space-x-2"
                 >
                   <span>Open Associated App</span>
