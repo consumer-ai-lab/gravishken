@@ -135,6 +135,8 @@
           unstable.rust-analyzer
           unstable.rustfmt
 
+          nodejs
+
           nodePackages_latest.typescript-language-server
           tailwindcss-language-server
         ])
