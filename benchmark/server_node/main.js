@@ -5,6 +5,7 @@ const port = 8081;
 
 app.use(bodyParser.json());
 
+const MAX_MESSAGES = 10; // Keep only the 100 most recent messages
 let messages = [];
 let lastMessageId = 0;
 
@@ -55,6 +56,12 @@ app.post('/message', (req, res) => {
         timestamp: new Date().toISOString()
     };
     messages.push(newMessage);
+    
+    // Keep only the MAX_MESSAGES most recent messages
+    if (messages.length > MAX_MESSAGES) {
+        messages = messages.slice(-MAX_MESSAGES);
+    }
+    
     res.status(201).json(newMessage);
 });
 

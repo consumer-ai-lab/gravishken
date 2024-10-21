@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -19,7 +20,8 @@ const (
 	messageURL      = "http://localhost:8081/message"
 	maxClients      = 1000
 	messagesPerClient = 10
-	clientStep      = 10
+	clientStep      = 50
+	pollTimeout       = 5 * time.Second
 )
 
 type Message struct {
@@ -73,22 +75,25 @@ func benchmarkPolling(numClients int) time.Duration {
 
 	for i := 0; i < numClients; i++ {
 		wg.Add(1)
-		go func() {
+		go func(clientID int) {
 			defer wg.Done()
 			lastID := 0
 
 			for j := 0; j < messagesPerClient; j++ {
 				// Post a message
-				message := fmt.Sprintf("Message %d from client %d", j, i)
+				message := fmt.Sprintf("Message %d from client %d", j, clientID)
 				postMessage(message)
 
-				// Poll for new messages
-				newMessages := pollMessages(lastID)
+				// Poll for new messages with a timeout
+				ctx, cancel := context.WithTimeout(context.Background(), pollTimeout)
+				newMessages := pollMessages(ctx, lastID)
+				cancel()
+
 				if len(newMessages) > 0 {
 					lastID = newMessages[len(newMessages)-1].ID
 				}
 			}
-		}()
+		}(i)
 	}
 
 	wg.Wait()
@@ -98,7 +103,15 @@ func benchmarkPolling(numClients int) time.Duration {
 func postMessage(text string) {
 	message := map[string]string{"text": text}
 	jsonData, _ := json.Marshal(message)
-	resp, err := http.Post(messageURL, "application/json", bytes.NewBuffer(jsonData))
+	
+	ctx, cancel := context.WithTimeout(context.Background(), pollTimeout)
+	defer cancel()
+	
+	req, _ := http.NewRequestWithContext(ctx, "POST", messageURL, bytes.NewBuffer(jsonData))
+	req.Header.Set("Content-Type", "application/json")
+	
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		log.Printf("Error posting message: %v", err)
 		return
@@ -106,11 +119,18 @@ func postMessage(text string) {
 	defer resp.Body.Close()
 }
 
-func pollMessages(lastID int) []Message {
+func pollMessages(ctx context.Context, lastID int) []Message {
 	url := fmt.Sprintf("%s?lastId=%d", pollURL, lastID)
-	resp, err := http.Get(url)
+	req, _ := http.NewRequestWithContext(ctx, "GET", url, nil)
+	
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
-		log.Printf("Error polling messages: %v", err)
+		if err == context.DeadlineExceeded {
+			log.Printf("Polling request timed out")
+		} else {
+			log.Printf("Error polling messages: %v", err)
+		}
 		return nil
 	}
 	defer resp.Body.Close()
@@ -137,6 +157,10 @@ func main() {
 		fmt.Printf("Clients: %d\n", numClients)
 		fmt.Printf("WebSocket - Total: %v, Latency: %v\n", wsDuration, wsLatency)
 		fmt.Printf("Polling   - Total: %v, Latency: %v\n", pollDuration, pollLatency)
+
+		// Calculate percent difference
+		percentDiff := (float64(pollLatency) - float64(wsLatency)) / float64(wsLatency) * 100
+		fmt.Printf("Percent difference: %.2f%% (positive means polling is slower)\n", percentDiff)
 
 		if numClients > clientStep {
 			wsLatencyChange := (wsLatency - lastWSLatency) / lastWSLatency * 100
