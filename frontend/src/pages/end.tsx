@@ -1,9 +1,18 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from 'lucide-react';
+import { server } from '@common/server';
+import * as types from '@common/types';
+
 
 export default function ResultPage() {
-    const navigate = useNavigate();
+    
+    function handleEnd() {
+        server.send_message({
+            Typ:types.Varient.Quit,
+            Val: {}
+        });
+    }
 
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
@@ -21,8 +30,8 @@ export default function ResultPage() {
                         - Team Gravishken
                     </p>
                 </div>
-                <Button 
-                    onClick={() => navigate('/')} 
+                <Button
+                    onClick={handleEnd}
                     className="w-full"
                 >
                     Return to Login

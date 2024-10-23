@@ -12,10 +12,18 @@ export default function InstructionsPage() {
     const handleStartTest = () => {
 
         server.send_message({
-            Typ: types.Varient.StartTest, 
-            Val: { }
+            Typ: types.Varient.StartTest,
+            Val: {}
         });
     };
+
+    function handleEnd() {
+        server.send_message({
+            Typ: types.Varient.Quit,
+            Val: {}
+        });
+    }
+
 
     return (
         <div className="min-h-screen bg-gray-100 p-4 flex items-center justify-center">
@@ -37,9 +45,14 @@ export default function InstructionsPage() {
                             Ensure you have a stable internet connection before starting the test.
                         </AlertDescription>
                     </Alert>
-                    <Button className="bg-green-600 hover:bg-green-700 text-white py-3" onClick={handleStartTest}>
-                        <Clock className="mr-2 h-4 w-4" /> Start Test
-                    </Button>
+                    <div className="w-full flex flex-row gap-2">
+                        <Button className="bg-green-600 hover:bg-green-700 text-white py-3 w-full" onClick={handleStartTest}>
+                            <Clock className="mr-2 h-4 w-4" /> Start Test
+                        </Button>
+                        <Button className="bg-blue-600 hover:bg-blue-700 text-white py-3 mr-2 w-full" onClick={handleEnd}>
+                            End Test
+                        </Button>
+                    </div>
                 </CardFooter>
             </Card>
         </div>
