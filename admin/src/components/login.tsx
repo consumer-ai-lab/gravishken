@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '@/lib/api';
 import { UserIcon, KeyIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from "@/hooks/use-toast"
@@ -15,14 +15,7 @@ export default function Login() {
     useEffect(() => {
         const checkAuthStatus = async () => {
             try {
-                const response = await axios.get(`${import.meta.env.SERVER_URL}/admin/auth-status`, {
-                    withCredentials: true,
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        'Origin': window.location.origin
-                      }
-                });
+                const response = await api.get(`${import.meta.env.SERVER_URL}/admin/auth-status`);
                 
                 if(response.data.isAuthenticated){
                     navigate("/dashboard");
@@ -38,16 +31,9 @@ export default function Login() {
         e.preventDefault();
 
         try {
-            const response = await axios.post(`${import.meta.env.SERVER_URL}/admin/login`, {
+            const response = await api.post(`${import.meta.env.SERVER_URL}/admin/login`, {
                 username,
                 password: userPassword
-            }, {
-                withCredentials: true,
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'Origin': window.location.origin
-                  }
             });
 
             console.log('Login successful:', response.data);

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '@/lib/api';
 import { Navigate, Outlet, useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast"
 
@@ -13,13 +13,7 @@ export default function Layout() {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.SERVER_URL}/admin/auth-status`, {
-          withCredentials: true,
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Origin': window.location.origin
-          }
+        const response = await api.get(`${import.meta.env.SERVER_URL}/admin/auth-status`, {
         });
 
 

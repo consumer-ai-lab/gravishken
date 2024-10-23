@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import axios from "axios";
+import api from '@/lib/api';
 import { X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -30,7 +30,7 @@ export default function AddTest() {
   useEffect(() => {
     const fetchTestTypes = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.SERVER_URL}/test/test_types`);
+        const response = await api.get(`${import.meta.env.SERVER_URL}/test/test_types`);
         setTestTypes(response.data.testTypes.map((type: any) => ({ value: type, label: `${type.charAt(0).toUpperCase() + type.slice(1)} Test` })));
         if (response.data.testTypes.length > 0) {
           setTestType(response.data.testTypes[0]);
@@ -80,14 +80,11 @@ export default function AddTest() {
     }
 
     try {
-      const response = await axios.post(`${import.meta.env.SERVER_URL}/admin/add_test`, formData, {
+      const response = await api.post(`${import.meta.env.SERVER_URL}/admin/add_test`, formData, {
         headers: {
-          'Accept': 'multipart/form-data',
           'Content-Type': 'multipart/form-data',
-          'Origin': window.location.origin
-        },
-        withCredentials: true
-      },);
+        }
+      });
       console.log('Test added:', response.data);
       toast({
         title: "Test added",

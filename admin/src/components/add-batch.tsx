@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useToast } from '@/hooks/use-toast'
 import { Test } from '@common/types'
-import axios from 'axios'
+import api from '@/lib/api'
 
 export default function AddBatch() {
 
@@ -19,7 +19,7 @@ export default function AddBatch() {
   useEffect(() => {
     async function fetchTests() {
       try {
-        const response = await axios.get(`${import.meta.env.SERVER_URL}/test/get_all_tests`);
+        const response = await api.get(`${import.meta.env.SERVER_URL}/test/get_all_tests`);
         console.log("Response: ", response)
         setAvailableTests(response.data.tests);
       } catch (error) {
@@ -48,16 +48,9 @@ export default function AddBatch() {
 
     try {
 
-      await axios.post(`${import.meta.env.SERVER_URL}/admin/add_batch`, {
+      await api.post(`${import.meta.env.SERVER_URL}/admin/add_batch`, {
         batchName,
         selectedTests
-      }, {
-        withCredentials: true,
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Origin': window.location.origin
-        }
       });
 
       toast({

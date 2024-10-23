@@ -4,7 +4,8 @@ import { Button } from './ui/button';
 import { Card,  CardContent, CardFooter } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Upload, FileText, Users } from 'lucide-react';
-import axios from "axios"
+import api from '@/lib/api';
+import axios from 'axios';
 import { useToast } from '@/hooks/use-toast';
 
 export default function AddUser() {
@@ -37,13 +38,10 @@ export default function AddUser() {
     formData.append('file', file);
 
     try {
-      const response = await axios.post(`${import.meta.env.SERVER_URL}/admin/add_users_from_csv`, formData, {
+      const response = await api.post(`${import.meta.env.SERVER_URL}/admin/add_users_from_csv`, formData, {
         headers: {
-          'Accept': 'multipart/form-data',
           'Content-Type': 'multipart/form-data',
-          'Origin': window.location.origin
         },
-        withCredentials:true
       });
 
       
@@ -54,7 +52,7 @@ export default function AddUser() {
       })
       setFile(null);
       setFileName('');
-    } catch (error) {
+    } catch (error:any) {
       if (axios.isAxiosError(error) && error.response) {
         toast({
           variant:"destructive",
