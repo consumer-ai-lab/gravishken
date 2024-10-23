@@ -40,8 +40,8 @@ export type Message = {
     Typ: types.Varient.OpenApp,
     Val: types.TOpenApp,
 } | {
-    Typ: types.Varient.CheckApps,
-    Val: types.TCheckApps,
+    Typ: types.Varient.CheckSystem,
+    Val: types.TCheckSystem,
 } | {
     Typ: types.Varient.QuitApp,
     Val: types.TQuitApp,
@@ -141,7 +141,7 @@ export class Server {
                 window.location.href = "/";
                 break;
             case types.Varient.Quit:
-            case types.Varient.CheckApps:
+            case types.Varient.CheckSystem:
             case types.Varient.OpenApp:
             case types.Varient.QuitApp:
                 // redirect this message back to the app :|

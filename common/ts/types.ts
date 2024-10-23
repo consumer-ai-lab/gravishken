@@ -18,7 +18,7 @@ export enum Varient {
     ReloadUi = 7,
     StartTest = 8,
     TestFinished = 9,
-    CheckApps = 10,
+    CheckSystem = 10,
     OpenApp = 11,
     QuitApp = 12,
     Unknown = 13,
@@ -67,7 +67,7 @@ export interface TStartTest {
 export interface TTestFinished {
 
 }
-export interface TCheckApps {
+export interface TCheckSystem {
 
 }
 export interface TOpenApp {

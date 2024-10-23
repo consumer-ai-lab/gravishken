@@ -36,7 +36,7 @@ export default function LoginPage() {
 
   const handleCheckSystem = () => {
     server.send_message({
-      Typ: types.Varient.CheckApps,
+      Typ: types.Varient.CheckSystem,
       Val: {}
     });
   }

@@ -337,7 +337,7 @@ func (self *App) handleMessages() {
 				self.notifyErr(err)
 				continue
 			}
-		case common.CheckApps:
+		case common.CheckSystem:
 			self.runner.CheckApps()
 		case common.OpenApp:
 			val, err := common.Get[common.TOpenApp](msg)
