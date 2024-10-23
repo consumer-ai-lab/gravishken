@@ -34,7 +34,12 @@ export default function LoginPage() {
     });
   };
 
-
+  const handleCheckSystem = () => {
+    server.send_message({
+      Typ: types.Varient.CheckSystem,
+      Val: {}
+    });
+  }
   
   return (
     <div className="min-h-screen bg-blue-700 flex flex-col lg:flex-row items-center justify-around p-4">
@@ -86,6 +91,13 @@ export default function LoginPage() {
               className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out"
             >
               Login
+            </Button>
+            <Button
+              type="button"
+              variant="default"
+              onClick={handleCheckSystem}
+            >
+              Check System
             </Button>
             <Button
               type="button"

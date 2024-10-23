@@ -216,6 +216,7 @@ func (self *App) serve() {
 		w.WriteHeader(http.StatusNoContent)
 		self.send <- common.NewMessage(common.TNotification{
 			Message: fmt.Sprintf("Test submitted Sucessfully"),
+			Typ:     "success",
 		})
 	})
 
@@ -336,6 +337,8 @@ func (self *App) handleMessages() {
 				self.notifyErr(err)
 				continue
 			}
+		case common.CheckSystem:
+			self.runner.CheckApps()
 		case common.OpenApp:
 			val, err := common.Get[common.TOpenApp](msg)
 			if err != nil {

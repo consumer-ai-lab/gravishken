@@ -22,13 +22,13 @@ type IRunner interface {
 	SetupEnv() error
 	RestoreEnv() error
 	NewTemplate(types.AppType) (string, error)
+	CheckApps()
 	// waits until app is finished runninig
 	OpenApp(typ types.AppType, file_path string) error
 	FocusOrOpenApp(typ types.AppType, file_path string) error
 	FocusOpenApp() error
 	IsAppOpen() bool
 	KillApp() error
-	ListAllProcess() (map[uint32]string, error)
 }
 
 func (self *Runner) NewTemplate(typ types.AppType) (string, error) {

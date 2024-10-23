@@ -36,6 +36,7 @@ const (
 	ReloadUi
 	StartTest
 	TestFinished
+	CheckSystem
 	OpenApp
 	QuitApp
 	Unknown // NOTE: keep this as the last constant here.
@@ -63,6 +64,8 @@ func (self Varient) TSName() string {
 		return "StartTest"
 	case TestFinished:
 		return "TestFinished"
+	case CheckSystem:
+		return "CheckSystem"
 	case OpenApp:
 		return "OpenApp"
 	case QuitApp:
@@ -93,6 +96,8 @@ func varientFromName(typ string) Varient {
 		return StartTest
 	case "TestFinished":
 		return TestFinished
+	case "CheckSystem":
+		return CheckSystem
 	case "OpenApp":
 		return OpenApp
 	case "QuitApp":
@@ -109,12 +114,15 @@ type TErr struct {
 
 type TNotification struct {
 	Message string
+	Typ     string
 }
 
 type Message struct {
 	Typ Varient
 	Val string
 }
+
+type TCheckSystem struct{}
 
 type TExeNotFound struct {
 	Name   string
@@ -221,6 +229,7 @@ func DumpTypes(dir string) {
 		Add(TReloadUi{}).
 		Add(TStartTest{}).
 		Add(TTestFinished{}).
+		Add(TCheckSystem{}).
 		Add(TOpenApp{}).
 		Add(TQuitApp{}).
 		AddEnum([]AppType{TXT, DOCX, XLSX, PPTX}).
