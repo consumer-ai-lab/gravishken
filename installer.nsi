@@ -1,6 +1,6 @@
 !include "MUI2.nsh"
 
-Name "Gravishken Setup"
+Name "Gravishken"
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_DIRECTORY
