@@ -118,6 +118,10 @@
           #!/usr/bin/env bash
           $PROJECT_ROOT/run.sh $@
         '')
+        (pkgs.writeShellScriptBin "build-windows-installer" ''
+          #!/usr/bin/env bash
+          nix develop .#windows -c run build-windows-installer
+        '')
         (pkgs.writeShellScriptBin "build-windows-app" ''
           #!/usr/bin/env bash
           nix develop .#windows -c run build-windows-app
@@ -130,10 +134,23 @@
 
       env-packages = pkgs:
         (with pkgs; [
+          (python311.withPackages (ps:
+            with ps; [
+              pandas
+              numpy
+              seaborn
+              matplotlib
+            ]))
+          python311Packages.pip
+          python311Packages.virtualenv
+
           # go-tools
           unstable.gopls
           unstable.rust-analyzer
           unstable.rustfmt
+
+          # easy opensource installer creator
+          nsis
 
           nodejs
 

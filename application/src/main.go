@@ -3,11 +3,13 @@ package main
 import (
 	types "common"
 	"log"
+	"runtime"
 
 	"fmt"
 	"os"
 	"path/filepath"
 
+	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 )
 
@@ -23,6 +25,26 @@ func main() {
 		}
 		ts_dir := filepath.Join(root, "common", "ts")
 		types.DumpTypes(ts_dir)
+	}
+
+	// .env by default
+	_ = godotenv.Overload()
+
+	if runtime.GOOS == "windows" {
+		// NOTE: APPDATA is set on windows automatically
+		datadir := filepath.Join(os.Getenv("APPDATA"), "Gravishken")
+		_ = os.Mkdir(datadir, os.ModePerm)
+
+		_ = godotenv.Overload(filepath.Join(datadir, ".env"))
+	}
+
+	url, ok := os.LookupEnv("SERVER_URL")
+	if ok {
+		server_url = url
+	}
+	secure, ok := os.LookupEnv("SERVER_SECURE")
+	if ok {
+		server_is_secure = secure
 	}
 
 	var command = &cobra.Command{
