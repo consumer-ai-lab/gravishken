@@ -25,16 +25,25 @@ fn wry_open(url: String) -> wry::Result<()> {
         .unwrap();
 
     #[cfg(target_os = "windows")]
-    let builder = WebViewBuilder::new(&window);
+    let (datadir, builder) = {
+        // NOTE: APPDATA is set on windows automatically
+        let datadir = Some(std::path::PathBuf::from(std::env::var("APPDATA").unwrap()));
+        let wv = WebViewBuilder::new(&window);
+        (datadir, wv)
+    };
     #[cfg(target_os = "linux")]
-    let builder = {
+    let (datadir, builder) = {
         use tao::platform::unix::WindowExtUnix;
         use wry::WebViewBuilderExtUnix;
         let vbox = window.default_vbox().unwrap();
-        WebViewBuilder::new_gtk(vbox)
+        let wv = WebViewBuilder::new_gtk(vbox);
+        let datadir = None;
+        (datadir, wv)
     };
 
-    let _webview = builder.with_url(url).build()?;
+    // - [TODO: proxy yo!](https://docs.rs/wry/latest/wry/struct.WebViewAttributes.html#structfield.proxy_config)
+    let mut ctx = wry::WebContext::new(datadir);
+    let _webview = builder.with_url(url).with_web_context(&mut ctx).build()?;
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Wait;
