@@ -92,6 +92,18 @@ build-windows-app() {
   go build $APP_TAGS -ldflags "$VARS -H windowsgui" -o ../build/gravishken.exe ./src/.
 }
 
+build-windows-installer() {
+  build-windows-app
+
+  cd "$PROJECT_ROOT"
+
+  if [[ ! -f ./build/.env ]]; then
+    touch ./build/.env
+  fi
+
+  makensis installer.nsi
+}
+
 build-windows-server() {
   admin-web-build
 
@@ -239,6 +251,9 @@ run() {
     ;;
     "build-windows-app")
       build-windows-app
+    ;;
+    "build-windows-installer")
+      build-windows-installer
     ;;
     "build-windows-server")
       build-windows-server

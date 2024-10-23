@@ -118,6 +118,10 @@
           #!/usr/bin/env bash
           $PROJECT_ROOT/run.sh $@
         '')
+        (pkgs.writeShellScriptBin "build-windows-installer" ''
+          #!/usr/bin/env bash
+          nix develop .#windows -c run build-windows-installer
+        '')
         (pkgs.writeShellScriptBin "build-windows-app" ''
           #!/usr/bin/env bash
           nix develop .#windows -c run build-windows-app
@@ -144,6 +148,9 @@
           unstable.gopls
           unstable.rust-analyzer
           unstable.rustfmt
+
+          # easy opensource installer creator
+          nsis
 
           nodejs
 
