@@ -130,6 +130,16 @@
 
       env-packages = pkgs:
         (with pkgs; [
+          (python311.withPackages (ps:
+            with ps; [
+              pandas
+              numpy
+              seaborn
+              matplotlib
+            ]))
+          python311Packages.pip
+          python311Packages.virtualenv
+
           # go-tools
           unstable.gopls
           unstable.rust-analyzer

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -142,42 +143,62 @@ func pollMessages(ctx context.Context, lastID int) []Message {
 }
 
 func main() {
-	fmt.Println("Benchmarking WebSocket and Polling servers")
-	fmt.Println("==========================================")
+    fmt.Println("Benchmarking WebSocket and Polling servers")
+    fmt.Println("==========================================")
 
-	var lastWSLatency, lastPollLatency time.Duration
+    // Create and open a CSV file
+    file, err := os.Create("benchmark_results.csv")
+    if err != nil {
+        log.Fatal("Cannot create file", err)
+    }
+    defer file.Close()
 
-	for numClients := clientStep; numClients <= maxClients; numClients += clientStep {
-		wsDuration := benchmarkWebSocket(numClients)
-		wsLatency := wsDuration / time.Duration(numClients*messagesPerClient)
+    // Write CSV header
+    file.WriteString("Clients,WebSocket Total (ms),WebSocket Latency (ms),Polling Total (ms),Polling Latency (ms),Percent Difference (%)\n")
 
-		pollDuration := benchmarkPolling(numClients)
-		pollLatency := pollDuration / time.Duration(numClients*messagesPerClient)
+    var lastWSLatency, lastPollLatency time.Duration
 
-		fmt.Printf("Clients: %d\n", numClients)
-		fmt.Printf("WebSocket - Total: %v, Latency: %v\n", wsDuration, wsLatency)
-		fmt.Printf("Polling   - Total: %v, Latency: %v\n", pollDuration, pollLatency)
+    for numClients := clientStep; numClients <= maxClients; numClients += clientStep {
+        wsDuration := benchmarkWebSocket(numClients)
+        wsLatency := wsDuration / time.Duration(numClients*messagesPerClient)
 
-		// Calculate percent difference
-		percentDiff := (float64(pollLatency) - float64(wsLatency)) / float64(wsLatency) * 100
-		fmt.Printf("Percent difference: %.2f%% (positive means polling is slower)\n", percentDiff)
+        pollDuration := benchmarkPolling(numClients)
+        pollLatency := pollDuration / time.Duration(numClients*messagesPerClient)
 
-		if numClients > clientStep {
-			wsLatencyChange := (wsLatency - lastWSLatency) / lastWSLatency * 100
-			pollLatencyChange := (pollLatency - lastPollLatency) / lastPollLatency * 100
+        fmt.Printf("Clients: %d\n", numClients)
+        fmt.Printf("WebSocket - Total: %v, Latency: %v\n", wsDuration, wsLatency)
+        fmt.Printf("Polling   - Total: %v, Latency: %v\n", pollDuration, pollLatency)
 
-			if wsLatencyChange > 10 && pollLatencyChange > 10 {
-				fmt.Println("Both latencies increased by more than 10%. Stopping benchmark.")
-				break
-			}
-		}
+        // Calculate percent difference
+        percentDiff := (float64(pollLatency) - float64(wsLatency)) / float64(wsLatency) * 100
+        fmt.Printf("Percent difference: %.2f%% (positive means polling is slower)\n", percentDiff)
 
-		lastWSLatency = wsLatency
-		lastPollLatency = pollLatency
+        // Write results to CSV
+        csvLine := fmt.Sprintf("%d,%d,%d,%d,%d,%.2f\n",
+            numClients,
+            wsDuration.Milliseconds(),
+            wsLatency.Milliseconds(),
+            pollDuration.Milliseconds(),
+            pollLatency.Milliseconds(),
+            percentDiff)
+        file.WriteString(csvLine)
 
-		fmt.Println("------------------------------------------")
+        if numClients > clientStep {
+            wsLatencyChange := (wsLatency - lastWSLatency) / lastWSLatency * 100
+            pollLatencyChange := (pollLatency - lastPollLatency) / lastPollLatency * 100
 
-		// Optional: add a small delay between tests to allow servers to stabilize
-		time.Sleep(1 * time.Second)
-	}
+            if wsLatencyChange > 10 && pollLatencyChange > 10 {
+                fmt.Println("Both latencies increased by more than 10%. Stopping benchmark.")
+                break
+            }
+        }
+
+        lastWSLatency = wsLatency
+        lastPollLatency = pollLatency
+
+        fmt.Println("------------------------------------------")
+
+        // Optional: add a small delay between tests to allow servers to stabilize
+        time.Sleep(1 * time.Second)
+    }
 }
