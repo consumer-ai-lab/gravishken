@@ -109,6 +109,7 @@ type TErr struct {
 
 type TNotification struct {
 	Message string
+	Typ     string
 }
 
 type Message struct {

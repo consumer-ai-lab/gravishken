@@ -34,6 +34,7 @@ export interface TErr {
 }
 export interface TNotification {
     Message: string;
+    Typ: string;
 }
 export interface Message {
     Typ: Varient;

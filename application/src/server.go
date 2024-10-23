@@ -216,6 +216,7 @@ func (self *App) serve() {
 		w.WriteHeader(http.StatusNoContent)
 		self.send <- common.NewMessage(common.TNotification{
 			Message: fmt.Sprintf("Test submitted Sucessfully"),
+			Typ:     "success",
 		})
 	})
 

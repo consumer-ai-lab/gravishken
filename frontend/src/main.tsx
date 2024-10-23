@@ -43,7 +43,9 @@ function WebSocketHandler() {
       toast({
         title: "Notification",
         description: res.Message,
-        variant:"default"
+
+        // @ts-ignore
+        variant: res.Typ,
       })
     }).then(d => {
       disable.push(d);
@@ -79,7 +81,7 @@ function WebSocketHandler() {
       toast({
         title: "Warning",
         description: res.Message,
-        variant:"destructive"
+        variant: "warning"
       })  
     }).then(d => {
       disable.push(d);
