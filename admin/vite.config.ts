@@ -8,7 +8,9 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // TODO: somehow don't copy ./common into admin/src for deployment
       "@common": path.resolve(__dirname, "./src/common/ts"),
+      // "@common": path.resolve(__dirname, "../common/ts"),
     },
   },
   define: {

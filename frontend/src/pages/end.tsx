@@ -32,9 +32,9 @@ export default function ResultPage() {
                 </div>
                 <Button
                     onClick={handleEnd}
-                    className="w-full"
+                    className="bg-blue-600 hover:bg-blue-700 text-white w-full"
                 >
-                    Return to Login
+                    Quit
                 </Button>
             </div>
         </div>

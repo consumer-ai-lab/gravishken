@@ -24,10 +24,12 @@ export default function LandingPage() {
                 <section className="text-center min-h-[400px] flex flex-col justify-center items-center">
                     <h2 className="text-6xl md:text-7xl font-bold mb-6 bg-clip-text text-black">Cheating-Proof Testing Platform</h2>
                     <p className="text-xl md:text-2xl mb-10 text-muted-foreground max-w-2xl">Secure, reliable, and easy to use. Elevate your testing experience with Gravishken.</p>
-                    <Button size="lg" className="text-lg bg-blue-600 hover:bg-blue-700 hover:text-white transition-colors duration-300">
-                        <Download className="mr-2 h-5 w-5" />
-                        Download Test App
-                    </Button>
+                    <a href={`${import.meta.env.SERVER_URL}/release/latest/windows`} target="_blank" rel="noopener noreferrer">
+                        <Button size="lg" className="text-lg bg-blue-600 hover:bg-blue-700 hover:text-white transition-colors duration-300">
+                            <Download className="mr-2 h-5 w-5" />
+                            Download Test App
+                        </Button>
+                    </a>
                 </section>
 
                 <section className="grid md:grid-cols-3 gap-8 mb-16 px-12">

@@ -3,6 +3,8 @@ package main
 import (
 	// "common"
 	// "context"
+	"encoding/json"
+	"fmt"
 	"io/fs"
 	"net/http"
 	"os"
@@ -15,6 +17,7 @@ import (
 
 	helmet "github.com/danielkov/gin-helmet"
 	"github.com/joho/godotenv"
+
 	// "go.mongodb.org/mongo-driver/bson"
 
 	"log"
@@ -138,12 +141,77 @@ func SetupRouter() *gin.Engine {
 	// route.InitOtherRoutes(db, router)
 
 	AppRoutes(router)
-	AdminUiRoutes(router)
+	WebsiteRoutes(router)
 
 	return router
 }
 
-func AdminUiRoutes(router *gin.Engine) {
+func DownloadRoutes(route *gin.Engine) {
+	releaseRoute := route.Group("/release")
+
+	releaseRoute.GET("/latest/:os", func(ctx *gin.Context) {
+		owner := "consumer-ai-lab"
+		repo := "gravishken"
+		targetOS := strings.ToLower(ctx.Param("os"))
+		apiUrl := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", owner, repo)
+
+		resp, err := http.Get(apiUrl)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch latest release"})
+			return
+		}
+		defer resp.Body.Close()
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read response body"})
+			return
+		}
+
+		var release struct {
+			Assets []struct {
+				Name               string `json:"name"`
+				BrowserDownloadURL string `json:"browser_download_url"`
+			} `json:"assets"`
+		}
+
+		if err := json.Unmarshal(body, &release); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse release data"})
+			return
+		}
+
+		var targetAsset struct {
+			Name string
+			URL  string
+		}
+
+		filename := ""
+		if targetOS == "windows" {
+			filename = "GravishkenSetup.exe"
+		}
+
+		for _, asset := range release.Assets {
+			if asset.Name == filename {
+				targetAsset.Name = asset.Name
+				targetAsset.URL = asset.BrowserDownloadURL
+				break
+			}
+		}
+
+		log.Printf("redirecting to %s: %s\n", targetAsset.Name, targetAsset.URL)
+
+		if targetAsset.URL == "" {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("No release found for OS: %s", targetOS)})
+			return
+		}
+
+		ctx.Redirect(http.StatusFound, targetAsset.URL)
+	})
+}
+
+func WebsiteRoutes(router *gin.Engine) {
+	DownloadRoutes(router)
+
 	var contentReplacements = map[string]string{
 		"%SERVER_URL%": os.Getenv("SERVER_URL"),
 	}

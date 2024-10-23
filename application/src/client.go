@@ -61,16 +61,16 @@ func newClient(send chan<- common.Message) (*Client, error) {
 
 func (self *Client) destroy() {
 	self.closeServerConn()
-	close(self.server.send)
+	// close(self.server.send)
 	self.exit.destroy()
 }
 
 func (self *Client) notifyErr(err error) {
 	if err != nil {
+		log.Printf("Error: %s\n", err)
 		self.frontend.send <- common.NewMessage(common.TErr{
 			Message: fmt.Sprintf("Error: %s", err),
 		})
-		log.Printf("Error: %s\n", err)
 	}
 }
 
@@ -136,9 +136,15 @@ func (self *Client) maintainConn() {
 		// block till connection breaks
 		<-ctx.Done()
 
-		msg := "server disconnected. trying reconnection in 5 seconds..."
-		self.notifyErr(fmt.Errorf(msg))
-		log.Println(msg)
+		select {
+		case <-self.exit.ctx.Done():
+			return
+		default:
+			msg := "server disconnected. trying reconnection in 5 seconds..."
+			log.Println(msg)
+			self.notifyErr(fmt.Errorf(msg))
+		}
+
 		select {
 		case <-self.exit.ctx.Done():
 			log.Println("terminating connection with server")

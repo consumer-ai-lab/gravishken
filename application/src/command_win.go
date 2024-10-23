@@ -66,11 +66,18 @@ type Runner struct {
 		hwnd        win.HWND
 	}
 	explorer_killed bool
+
+	exitCtx   context.Context
+	exitClose context.CancelFunc
 }
 
 func NewRunner(send chan<- types.Message) (*Runner, error) {
 	runner := &Runner{}
 	runner.send = send
+
+	ctx, close := context.WithCancel(context.Background())
+	runner.exitCtx = ctx
+	runner.exitClose = close
 
 	var err error
 	runner.paths.cmd, err = exec.LookPath(cmd)
@@ -131,10 +138,15 @@ func (self *Runner) SetupEnv() error {
 	self.fullscreenForegroundWindow()
 	self.webview_hwnd = win.GetForegroundWindow()
 	_ = win.GetWindowThreadProcessId(self.webview_hwnd, &self.this_pid)
+
+	// self.state.hwnd = 0 breaks the thing somhow
+	self.state.hwnd = self.webview_hwnd
+	go self.preventDistractions(self.exitCtx)
 	return err
 }
 
 func (self *Runner) RestoreEnv() error {
+	self.exitClose()
 	if self.explorer_killed {
 		self.startExplorer()
 	}
@@ -395,7 +407,7 @@ func (self *Runner) FocusOrOpenApp(typ types.AppType, file string) error {
 
 func (self *Runner) resetState() {
 	self.state.file = ""
-	self.state.hwnd = 0
+	self.state.hwnd = self.webview_hwnd
 	self.state.running_app = nil
 	self.state.running_typ = 0
 }
@@ -505,8 +517,9 @@ func (self *Runner) preventDistractions(ctx context.Context) {
 			return
 		default:
 			_ = hideActiveApps
-			// hideActiveApps()
-			killApps()
+			_ = killApps
+			hideActiveApps()
+			// killApps()
 		}
 	}
 }
@@ -519,8 +532,8 @@ func (self *Runner) open(exe string, file string) error {
 		return fmt.Errorf("file path unspecified")
 	}
 
-	ctx, close := context.WithCancel(context.Background())
-	defer close()
+	// ctx, close := context.WithCancel(context.Background())
+	// defer close()
 
 	// wait for app to open and assign the hwnd to self.state
 	go (func() {
@@ -530,7 +543,7 @@ func (self *Runner) open(exe string, file string) error {
 			title, _ := getWindowTitle(hwnd)
 			if strings.Contains(title, tmp_prefix) {
 				self.state.hwnd = hwnd
-				go self.preventDistractions(ctx)
+				// go self.preventDistractions(ctx)
 				break
 			}
 

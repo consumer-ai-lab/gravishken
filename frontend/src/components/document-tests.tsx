@@ -30,6 +30,13 @@ export default function DocumentTests({
     });
   };
 
+  const handleForceCloseApp = () => {
+    server.server.send_message({
+      Typ: types.Varient.QuitApp,
+      Val: {},
+    });
+  };
+
   const handleSubmitWork = async () => {
     let resp = await fetch(server.base_url + "/get-user");
     let user: types.User = await resp.json()
@@ -79,6 +86,14 @@ export default function DocumentTests({
               className="flex items-center space-x-2"
             >
               <span>Open Associated App</span>
+            </Button>
+
+            <Button
+              variant={"destructive"}
+              onClick={() => handleForceCloseApp()}
+              className="flex items-center space-x-2"
+            >
+              <span>Force Close App</span>
             </Button>
 
           </div>
