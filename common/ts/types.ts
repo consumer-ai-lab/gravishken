@@ -18,9 +18,10 @@ export enum Varient {
     ReloadUi = 7,
     StartTest = 8,
     TestFinished = 9,
-    OpenApp = 10,
-    QuitApp = 11,
-    Unknown = 12,
+    CheckApps = 10,
+    OpenApp = 11,
+    QuitApp = 12,
+    Unknown = 13,
 }
 export enum TestType {
     TypingTest = "typing",
@@ -64,6 +65,9 @@ export interface TStartTest {
 
 }
 export interface TTestFinished {
+
+}
+export interface TCheckApps {
 
 }
 export interface TOpenApp {

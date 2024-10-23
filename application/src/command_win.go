@@ -92,40 +92,46 @@ func NewRunner(send chan<- types.Message) (*Runner, error) {
 	if err != nil {
 		return nil, err
 	}
-	runner.paths.notepad, err = exec.LookPath(notepad)
+
+	runner.CheckApps()
+
+	return runner, err
+}
+
+func (self *Runner) CheckApps() {
+	var err error
+	self.paths.notepad, err = exec.LookPath(notepad)
 	if err != nil {
-		send <- types.NewMessage(types.TExeNotFound{
+		self.send <- types.NewMessage(types.TExeNotFound{
 			Name:   notepad,
 			ErrMsg: fmt.Sprintf("%s", err),
 		})
 		err = nil
 	}
-	runner.paths.word, err = findMicrosoftExe(word)
+	self.paths.word, err = findMicrosoftExe(word)
 	if err != nil {
-		send <- types.NewMessage(types.TExeNotFound{
+		self.send <- types.NewMessage(types.TExeNotFound{
 			Name:   word,
 			ErrMsg: fmt.Sprintf("%s", err),
 		})
 		err = nil
 	}
-	runner.paths.excel, err = findMicrosoftExe(excel)
+	self.paths.excel, err = findMicrosoftExe(excel)
 	if err != nil {
-		send <- types.NewMessage(types.TExeNotFound{
+		self.send <- types.NewMessage(types.TExeNotFound{
 			Name:   excel,
 			ErrMsg: fmt.Sprintf("%s", err),
 		})
 		err = nil
 	}
-	runner.paths.powerpoint, err = findMicrosoftExe(powerpoint)
+	self.paths.powerpoint, err = findMicrosoftExe(powerpoint)
 	if err != nil {
-		send <- types.NewMessage(types.TExeNotFound{
+		self.send <- types.NewMessage(types.TExeNotFound{
 			Name:   powerpoint,
 			ErrMsg: fmt.Sprintf("%s", err),
 		})
 		err = nil
 	}
-
-	return runner, err
 }
 
 func (self *Runner) SetupEnv() error {

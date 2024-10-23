@@ -37,28 +37,32 @@ func NewRunner(send chan<- types.Message) (*Runner, error) {
 		send: send,
 	}
 
+	runner.CheckApps()
+
+	return runner, nil
+}
+
+func (self *Runner) CheckApps() {
 	var err error
-	runner.paths.kill = "kill"
-	runner.paths.excel, err = exec.LookPath("libreoffice")
+	self.paths.kill = "kill"
+	self.paths.excel, err = exec.LookPath("libreoffice")
 	if err != nil {
-		send <- types.NewMessage(types.TExeNotFound{
+		self.send <- types.NewMessage(types.TExeNotFound{
 			Name:   "libreoffice",
 			ErrMsg: fmt.Sprintf("%s", err),
 		})
 		err = nil
 	}
-	runner.paths.notepad, err = exec.LookPath("gedit")
+	self.paths.notepad, err = exec.LookPath("gedit")
 	if err != nil {
-		send <- types.NewMessage(types.TExeNotFound{
+		self.send <- types.NewMessage(types.TExeNotFound{
 			Name:   "gedit",
 			ErrMsg: fmt.Sprintf("%s", err),
 		})
 		err = nil
 	}
-	runner.paths.powerpoint = runner.paths.excel
-	runner.paths.word = runner.paths.excel
-
-	return runner, nil
+	self.paths.powerpoint = self.paths.excel
+	self.paths.word = self.paths.excel
 }
 
 func (self *Runner) SetupEnv() error {
