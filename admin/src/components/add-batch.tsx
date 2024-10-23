@@ -53,6 +53,11 @@ export default function AddBatch() {
         selectedTests
       }, {
         withCredentials: true,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Origin': window.location.origin
+        }
       });
 
       toast({

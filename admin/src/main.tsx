@@ -1,13 +1,13 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { createHashRouter, RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import './index.css'
 import { Toaster } from "@/components/ui/toaster"
 import Dashboard from './components/dashboard'
 import Login from './components/login'
 import LandingPage from './components/landing-page'
 
-const router = createHashRouter([
+const router = createBrowserRouter([
   {
     path: "/dashboard",
     element: <Dashboard/>,

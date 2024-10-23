@@ -15,6 +15,11 @@ export default function Layout() {
       try {
         const response = await axios.get(`${import.meta.env.SERVER_URL}/admin/auth-status`, {
           withCredentials: true,
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Origin': window.location.origin
+          }
         });
 
 

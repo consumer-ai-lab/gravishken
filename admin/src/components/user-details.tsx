@@ -38,7 +38,12 @@ export default function UserDetails({ isAuthenticated }: UserDetailsProps) {
                         limit: itemsPerPage,
                         search: value
                     },
-                    withCredentials: true
+                    withCredentials: true,
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'Origin': window.location.origin
+                      }
                 });
                 console.log("Response", response.data);
 
@@ -64,7 +69,12 @@ export default function UserDetails({ isAuthenticated }: UserDetailsProps) {
             console.log("Userid: ", userId);
             await axios.delete(`${import.meta.env.SERVER_URL}/user/delete_user`, {
                 data: { userId: userId },
-                withCredentials: true
+                withCredentials: true,
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Origin': window.location.origin
+                  }
             });
 
             console.log("User deleted successfully!!");

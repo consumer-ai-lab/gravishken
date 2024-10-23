@@ -39,7 +39,9 @@ export default function AddUser() {
     try {
       const response = await axios.post(`${import.meta.env.SERVER_URL}/admin/add_users_from_csv`, formData, {
         headers: {
+          'Accept': 'multipart/form-data',
           'Content-Type': 'multipart/form-data',
+          'Origin': window.location.origin
         },
         withCredentials:true
       });

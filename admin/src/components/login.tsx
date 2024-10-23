@@ -17,6 +17,11 @@ export default function Login() {
             try {
                 const response = await axios.get(`${import.meta.env.SERVER_URL}/admin/auth-status`, {
                     withCredentials: true,
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'Origin': window.location.origin
+                      }
                 });
                 
                 if(response.data.isAuthenticated){
@@ -39,8 +44,10 @@ export default function Login() {
             }, {
                 withCredentials: true,
                 headers: {
+                    'Accept': 'application/json',
                     'Content-Type': 'application/json',
-                }
+                    'Origin': window.location.origin
+                  }
             });
 
             console.log('Login successful:', response.data);

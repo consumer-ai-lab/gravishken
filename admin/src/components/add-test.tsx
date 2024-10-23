@@ -31,7 +31,7 @@ export default function AddTest() {
     const fetchTestTypes = async () => {
       try {
         const response = await axios.get(`${import.meta.env.SERVER_URL}/test/test_types`);
-        setTestTypes(response.data.testTypes.map((type:any) => ({ value: type, label: `${type.charAt(0).toUpperCase() + type.slice(1)} Test` })));
+        setTestTypes(response.data.testTypes.map((type: any) => ({ value: type, label: `${type.charAt(0).toUpperCase() + type.slice(1)} Test` })));
         if (response.data.testTypes.length > 0) {
           setTestType(response.data.testTypes[0]);
         }
@@ -82,7 +82,9 @@ export default function AddTest() {
     try {
       const response = await axios.post(`${import.meta.env.SERVER_URL}/admin/add_test`, formData, {
         headers: {
+          'Accept': 'multipart/form-data',
           'Content-Type': 'multipart/form-data',
+          'Origin': window.location.origin
         },
         withCredentials: true
       },);
@@ -115,7 +117,7 @@ export default function AddTest() {
       <Card>
         <CardContent className="p-6 w-full">
           <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
+            <div className="space-y-2">
               <Label htmlFor="testName">Test Name</Label>
               <Input
                 type="text"
@@ -126,7 +128,7 @@ export default function AddTest() {
                 required
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="testType">Test Type</Label>
               <Select value={testType} onValueChange={setTestType}>
