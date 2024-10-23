@@ -2,7 +2,7 @@
 import { StrictMode, useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client';
 import {
-  createBrowserRouter,
+  createHashRouter,
   Outlet,
   RouterProvider,
   useNavigate,
@@ -99,7 +99,7 @@ function WebSocketHandler() {
   );
 }
 
-const router = createBrowserRouter([
+const router = createHashRouter([
   {
     path: "/",
     element: <WebSocketHandler />,
