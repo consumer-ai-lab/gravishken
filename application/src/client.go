@@ -17,6 +17,9 @@ import (
 
 var server_url string
 
+// https / wss
+var server_is_secure string
+
 type Client struct {
 	client http.Client
 	jwt    string
@@ -151,9 +154,14 @@ func (self *Client) connect(exit context.Context, cancel context.CancelFunc) err
 	if err != nil {
 		return err
 	}
-	// url.Scheme = "sws"
-	url.Scheme = "ws"
+	if server_is_secure == "true" {
+		url.Scheme = "wss"
+	} else {
+		url.Scheme = "ws"
+	}
 	url.Path = "/ws"
+
+	log.Println(url)
 
 	header := http.Header{}
 	header.Add("Authorization", "Bearer "+self.jwt)

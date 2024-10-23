@@ -38,6 +38,15 @@ func main() {
 		_ = godotenv.Overload(filepath.Join(datadir, ".env"))
 	}
 
+	url, ok := os.LookupEnv("SERVER_URL")
+	if ok {
+		server_url = url
+	}
+	secure, ok := os.LookupEnv("SERVER_SECURE")
+	if ok {
+		server_is_secure = secure
+	}
+
 	var command = &cobra.Command{
 		// default action
 		Run: func(cmd *cobra.Command, args []string) {

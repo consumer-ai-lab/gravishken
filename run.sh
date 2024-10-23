@@ -17,6 +17,7 @@ export URITA_ENABLED=0
 # export ENABLE_WEBUI=0
 # export SERVER_URL="https://solid-succotash-gwjp9pr7r59265g-6201.app.github.dev"
 export SERVER_URL="http://localhost:$SERVER_PORT"
+export SERVER_SECURE="false"
 
 # for urita
 # - [Can't find .so in the same directory as the executable?](https://serverfault.com/questions/279068/cant-find-so-in-the-same-directory-as-the-executable)
@@ -32,7 +33,7 @@ set-app-tags() {
 }
 
 set-app-vars() {
-  export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT -X main.server_url=$SERVER_URL"
+  export VARS="-X main.build_mode=$BUILD_MODE -X main.port=$APP_PORT -X main.server_url=$SERVER_URL -X main.server_is_secure=$SERVER_SECURE"
 }
 
 if command -v bun >/dev/null; then

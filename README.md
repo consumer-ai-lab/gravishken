@@ -33,6 +33,7 @@ sudo dnf install webkit2gtk3-devel libXtst-devel
   - the end user's system must have urita.dll in the same directory as the application
   - an additional `.env` file can be placed in the application directory to override variables
     - SERVER_URL: the uri of the server
+    - SERVER_SECURE: set to `true` if the server is secured with SSL/TLS
   - additional notes for `build-windows-installer` command
     - you can create a `.env` file in `./build/.env` which will be shipped to the user
     - a `.env` is also read from `~/AppData/Roaming/Gravishken`
