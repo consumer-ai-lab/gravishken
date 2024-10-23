@@ -61,7 +61,7 @@ func newClient(send chan<- common.Message) (*Client, error) {
 
 func (self *Client) destroy() {
 	self.closeServerConn()
-	close(self.server.send)
+	// close(self.server.send)
 	self.exit.destroy()
 }
 
@@ -141,8 +141,8 @@ func (self *Client) maintainConn() {
 			return
 		default:
 			msg := "server disconnected. trying reconnection in 5 seconds..."
-			self.notifyErr(fmt.Errorf(msg))
 			log.Println(msg)
+			self.notifyErr(fmt.Errorf(msg))
 		}
 
 		select {

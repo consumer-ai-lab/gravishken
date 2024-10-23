@@ -28,8 +28,8 @@ type App struct {
 }
 
 func (self *App) destroy() {
-	close(self.send)
 	self.client.destroy()
+	// close(self.send)
 
 	err := self.runner.RestoreEnv()
 	log.Println(err)
