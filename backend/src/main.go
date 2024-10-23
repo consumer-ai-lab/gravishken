@@ -32,19 +32,17 @@ import (
 var build_mode string
 
 func main() {
-	if build_mode == "DEV" {
-        if err := godotenv.Load(); err != nil {
-            log.Println("Warning: .env file not found. Using environment variables.")
-        }
-        
-        root, ok := os.LookupEnv("PROJECT_ROOT")
-        if !ok {
-            panic("'PROJECT_ROOT' not set")
-        }
-        ts_dir := filepath.Join(root, "common", "ts")
-        types.DumpTypes(ts_dir)
-    }
+	// NOTE: we need a .env with SERVER_URL for the admin panel to work correctly
+	_ = godotenv.Overload()
 
+	if build_mode == "DEV" {
+		root, ok := os.LookupEnv("PROJECT_ROOT")
+		if !ok {
+			panic("'PROJECT_ROOT' not set")
+		}
+		ts_dir := filepath.Join(root, "common", "ts")
+		types.DumpTypes(ts_dir)
+	}
 
 	if build_mode == "DEV" {
 		root, ok := os.LookupEnv("PROJECT_ROOT")
