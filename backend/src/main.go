@@ -32,12 +32,19 @@ import (
 var build_mode string
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalln("Error loading .env file")
-	}
-	log.Println("I am updated code..............")
-	log.Println("Loaded .env file")
+	if build_mode == "DEV" {
+        if err := godotenv.Load(); err != nil {
+            log.Println("Warning: .env file not found. Using environment variables.")
+        }
+        
+        root, ok := os.LookupEnv("PROJECT_ROOT")
+        if !ok {
+            panic("'PROJECT_ROOT' not set")
+        }
+        ts_dir := filepath.Join(root, "common", "ts")
+        types.DumpTypes(ts_dir)
+    }
+
 
 	if build_mode == "DEV" {
 		root, ok := os.LookupEnv("PROJECT_ROOT")

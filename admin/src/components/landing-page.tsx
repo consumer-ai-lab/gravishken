@@ -8,6 +8,8 @@ import { useNavigate } from "react-router-dom";
 export default function LandingPage() {
     const navigate = useNavigate();
 
+    function 
+
     return (
         <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800">
             <header className="bg-blue-700 text-white shadow-md">
