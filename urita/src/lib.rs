@@ -27,7 +27,8 @@ fn wry_open(url: String) -> wry::Result<()> {
     #[cfg(target_os = "windows")]
     let (datadir, builder) = {
         // NOTE: APPDATA is set on windows automatically
-        let datadir = Some(std::path::PathBuf::from(std::env::var("APPDATA").unwrap()));
+        let datadir = std::path::PathBuf::from(std::env::var("APPDATA").unwrap());
+        let datadir = Some(datadir.join("Gravishken"));
         let wv = WebViewBuilder::new(&window);
         (datadir, wv)
     };
