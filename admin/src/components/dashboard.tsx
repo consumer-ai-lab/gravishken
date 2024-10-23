@@ -7,7 +7,7 @@ import UserDetails from './user-details'
 import AddUser from './add-user'
 import AddBatch from './add-batch'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import api from '@/lib/api'
 
 export default function Dashboard() {
   const [activeSection, setActiveSection] = useState('userDetails');
@@ -17,9 +17,7 @@ export default function Dashboard() {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.SERVER_URL}/admin/auth-status`, {
-          withCredentials: true,
-        });
+        const response = await api.get(`${import.meta.env.SERVER_URL}/admin/auth-status`);
         
         setIsAuthenticated(response.data.isAuthenticated);
       } catch (err:any) {

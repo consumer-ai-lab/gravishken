@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import * as server from '@common/server';
 import * as types from '@common/types';
+import { toast } from '@/hooks/use-toast';
 
 const appMapping = {
   'docx': { icon: FileText, color: 'text-blue-600', appType: types.AppType.DOCX },
@@ -39,14 +40,21 @@ export default function DocumentTests({
         Type: testData.Type,
       },
     };
-    await fetch(server.base_url + "/submit-test", {
+    const res = await fetch(server.base_url + "/submit-test", {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(submission),
     })
-
+    if (res.status === 400) {
+      toast({
+        variant: "destructive",
+        title: "Failed to submit test",
+        description: "Please ateast open the test first!",
+      })
+      return;
+    }
     handleFinishTest()
   };
 
@@ -57,7 +65,7 @@ export default function DocumentTests({
     <Card className="h-full flex flex-col">
       <CardHeader>
         <CardTitle>
-          {testData.Type.replace(/([a-z])([A-Z])/g, '$1 $2')}
+          {testData.TestName}
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-grow">
@@ -75,10 +83,14 @@ export default function DocumentTests({
 
           </div>
         </div>
-        <div className='w-full h-[400px] overflow-hidden rounded-lg mb-2'>
-          <img src={testData.FilePath} alt={`${testData.Id} Test`} className="w-full object-cover" />
+        <div className='flex-grow overflow-auto'>
+          <img
+            src={testData.FilePath}
+            alt={`${testData.Id} Test`}
+            className="w-full h-full object-contain"
+          />
         </div>
-        <Button onClick={handleSubmitWork} className="w-full">
+        <Button onClick={handleSubmitWork} className="w-full mt-4">
           Submit Work
         </Button>
       </CardContent>

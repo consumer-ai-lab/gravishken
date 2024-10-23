@@ -43,7 +43,7 @@ function WebSocketHandler() {
       toast({
         title: "Notification",
         description: res.Message,
-        variant:"destructive"
+        variant:"default"
       })
     }).then(d => {
       disable.push(d);

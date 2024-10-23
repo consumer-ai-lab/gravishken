@@ -6,7 +6,7 @@ import { Loader2, Trash2, PencilIcon, Search } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import axios from 'axios';
+import api from '@/lib/api';
 import { useDebounce } from 'use-debounce';
 import { User } from '@common/types';
 
@@ -32,13 +32,12 @@ export default function UserDetails({ isAuthenticated }: UserDetailsProps) {
             if (!isAuthenticated) return;
             setIsLoading(true);
             try {
-                const response = await axios.get(`${import.meta.env.SERVER_URL}/user/paginated_users`, {
+                const response = await api.get(`${import.meta.env.SERVER_URL}/user/paginated_users`, {
                     params: {
                         page: currentPage,
                         limit: itemsPerPage,
                         search: value
                     },
-                    withCredentials: true
                 });
                 console.log("Response", response.data);
 
@@ -62,9 +61,8 @@ export default function UserDetails({ isAuthenticated }: UserDetailsProps) {
     async function handleDeleteUser(userId: string | undefined) {
         try {
             console.log("Userid: ", userId);
-            await axios.delete(`${import.meta.env.SERVER_URL}/user/delete_user`, {
+            await api.delete(`${import.meta.env.SERVER_URL}/user/delete_user`, {
                 data: { userId: userId },
-                withCredentials: true
             });
 
             console.log("User deleted successfully!!");

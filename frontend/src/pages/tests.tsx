@@ -49,6 +49,10 @@ export default function TestsPage() {
         });
     },[])
 
+    const handleFinishButtonPressed = () => {
+        setShowConfirmDialog(true);
+    }
+
     const handleFinishTest = async () => {
         if (selectedTestIndex !== null) {
             let res = await fetch(server.base_url + "/get-submitted-ids")
@@ -138,7 +142,7 @@ export default function TestsPage() {
                     <span className="font-semibold">{username}</span>
                 </div>
                 <div className="font-bold">Time Left: {formatTime(timeLeft)}</div>
-                <Button onClick={handleFinishTest} variant="destructive">Finish Test</Button>
+                <Button onClick={handleFinishButtonPressed} variant="destructive">Finish Test</Button>
             </div>
 
             <div ref={containerRef} className="flex flex-grow relative">
@@ -154,9 +158,9 @@ export default function TestsPage() {
                             onClick={() => !isTestActive && setSelectedTestIndex(index)}
                             variant={selectedTestIndex === index ? 'default' : 'outline'}
                             className={`w-full mb-2 justify-start text-left whitespace-normal ${isTestActive ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            disabled={isTestActive}
+                            disabled={completedTests.includes(test.Id) || isTestActive}
                         >
-                            <span className="truncate flex-grow">{test.Type.replace(/([a-z])([A-Z])/g, '$1 $2')}</span>
+                            <span className="truncate flex-grow">{test.TestName}</span>
                             {completedTests.includes(test.Id) && (
                                 <CheckCircle className="ml-2 text-green-500" size={16} />
                             )}
