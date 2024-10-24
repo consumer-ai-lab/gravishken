@@ -162,11 +162,14 @@ func DownloadRoutes(route *gin.Engine) {
 		}
 		defer resp.Body.Close()
 
+		log.Println(resp.Status)
+
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read response body"})
 			return
 		}
+		log.Println(string(body))
 
 		var release struct {
 			Assets []struct {
@@ -179,6 +182,7 @@ func DownloadRoutes(route *gin.Engine) {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse release data"})
 			return
 		}
+		log.Println(release)
 
 		var targetAsset struct {
 			Name string
@@ -189,6 +193,8 @@ func DownloadRoutes(route *gin.Engine) {
 		if targetOS == "windows" {
 			filename = "GravishkenSetup.exe"
 		}
+
+		log.Println(filename)
 
 		for _, asset := range release.Assets {
 			if asset.Name == filename {
