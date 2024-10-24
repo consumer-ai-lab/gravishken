@@ -93,6 +93,20 @@ func (c *Database) GetAllTests(ctx *gin.Context) ([]common.Test, error) {
 	return tests, nil
 }
 
+func SetAuthCookie(c *gin.Context, token string) {
+	c.SetCookie(
+		"auth_token",    // name
+		token,           // value
+		3600 * 24,      // max age (24 hours)
+		"/",            // path
+		"",             // domain (empty for same domain)
+		true,           // secure
+		true,           // httpOnly
+	)
+	
+	c.Header("Set-Cookie", c.Writer.Header().Get("Set-Cookie")+"; SameSite=None")
+}
+
 func (this *Database) AdminLoginHandler(ctx *gin.Context, adminModel *common.Admin) {
 	adminCollection := this.AdminCollection
 	token, err := AdminLogin(adminCollection, adminModel)
@@ -105,7 +119,10 @@ func (this *Database) AdminLoginHandler(ctx *gin.Context, adminModel *common.Adm
 	}
 
 	// Set the token in a cookie
-	ctx.SetCookie("auth_token", token, 3600*48, "/", "", false, true)
+	SetAuthCookie(ctx, token)
+
+	ctx.Header("Access-Control-Allow-Credentials", "true")
+	ctx.Header("Access-Control-Allow-Origin", "https://gravishken-rceom.vercel.app") 
 
 	ctx.JSON(200, gin.H{
 		"message": "Admin logged in successfully",
