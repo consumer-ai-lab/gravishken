@@ -30,7 +30,7 @@ export default function AddTest() {
   useEffect(() => {
     const fetchTestTypes = async () => {
       try {
-        const response = await api.get(`${import.meta.env.SERVER_URL}/test/test_types`);
+        const response = await api.get(`/test/test_types`);
         setTestTypes(response.data.testTypes.map((type: any) => ({ value: type, label: `${type.charAt(0).toUpperCase() + type.slice(1)} Test` })));
         if (response.data.testTypes.length > 0) {
           setTestType(response.data.testTypes[0]);
@@ -80,7 +80,7 @@ export default function AddTest() {
     }
 
     try {
-      const response = await api.post(`${import.meta.env.SERVER_URL}/admin/add_test`, formData, {
+      const response = await api.post(`/admin/add_test`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         }

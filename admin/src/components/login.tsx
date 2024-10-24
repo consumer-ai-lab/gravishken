@@ -15,7 +15,7 @@ export default function Login() {
     useEffect(() => {
         const checkAuthStatus = async () => {
             try {
-                const response = await api.get(`${import.meta.env.SERVER_URL}/admin/auth-status`);
+                const response = await api.get(`/admin/auth-status`);
                 
                 if(response.data.isAuthenticated){
                     navigate("/dashboard");
@@ -31,7 +31,7 @@ export default function Login() {
         e.preventDefault();
 
         try {
-            const response = await api.post(`${import.meta.env.SERVER_URL}/admin/login`, {
+            const response = await api.post(`/admin/login`, {
                 username,
                 password: userPassword
             });
