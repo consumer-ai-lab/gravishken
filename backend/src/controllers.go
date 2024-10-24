@@ -122,7 +122,9 @@ func (this *Database) AdminLoginHandler(ctx *gin.Context, adminModel *common.Adm
 	SetAuthCookie(ctx, token)
 
 	ctx.Header("Access-Control-Allow-Credentials", "true")
-	ctx.Header("Access-Control-Allow-Origin", os.Getenv("https://gravishken-rceom.vercel.app")) // Your frontend URL
+
+	ctx.Header("Access-Control-Allow-Origin", "https://gravishken.vercel.app") 
+
 
 	ctx.JSON(200, gin.H{
 		"message": "Admin logged in successfully",
