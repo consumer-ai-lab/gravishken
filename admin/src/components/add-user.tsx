@@ -38,7 +38,7 @@ export default function AddUser() {
     formData.append('file', file);
 
     try {
-      const response = await api.post(`${import.meta.env.SERVER_URL}/admin/add_users_from_csv`, formData, {
+      const response = await api.post(`/admin/add_users_from_csv`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

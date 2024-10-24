@@ -143,6 +143,8 @@ func UserJWTAuthMiddleware(userCollection *mongo.Collection) gin.HandlerFunc {
 	}
 }
 
+
+
 func AdminJWTAuthMiddleware(userCollection *mongo.Collection) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		log.Println("Entering AdminJWTAuthMiddleware")
@@ -178,3 +180,6 @@ func AdminJWTAuthMiddleware(userCollection *mongo.Collection) gin.HandlerFunc {
 		log.Println("Exiting AdminJWTAuthMiddleware")
 	}
 }
+
+
+

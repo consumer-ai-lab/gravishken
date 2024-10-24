@@ -108,7 +108,7 @@ func SetupRouter() *gin.Engine {
 		panic("invalid BUILD_MODE")
 	}
 
-	allowOrigins := getEnvOrDefault("CORS_ALLOW_ORIGINS", "http://localhost:6200")
+	allowOrigins := getEnvOrDefault("CORS_ALLOW_ORIGINS", "vishken-rceom.vercel.app")
 	allowMethods := getEnvOrDefault("CORS_ALLOW_METHODS", "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS")
 	allowHeaders := getEnvOrDefault("CORS_ALLOW_HEADERS", "Origin,Content-Length,Content-Type,Authorization")
 	allowCredentials := getEnvOrDefault("CORS_ALLOW_CREDENTIALS", "true") == "true"
