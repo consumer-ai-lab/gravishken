@@ -80,7 +80,7 @@ export default function AddTest() {
     }
 
     try {
-      const response = await api.post(`i/admin/add_test`, formData, {
+      const response = await api.post(`admin/add_test`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         }

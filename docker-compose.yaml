@@ -1,0 +1,16 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${SERVER_PORT:-6201}:${SERVER_PORT:-6201}"
+    environment:
+      - BUILD_MODE=${BUILD_MODE:-PROD}
+      - SERVER_PORT=${SERVER_PORT:-6201}
+    env_file:
+      - .env
+    volumes:
+      - ./backend/dist:/app/dist
+    restart: unless-stopped
+
