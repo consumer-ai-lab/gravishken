@@ -1,6 +1,9 @@
 # Gravishken
 Gravishken is an automated examination application designed for efficient and flexible evaluations of Microsoft Word and other Office tools. The system leverages Golang, React, Webview, and WebSockets to provide a seamless interface for users to initiate and monitor document-based examinations, manage test configurations, and submit results securely.
 
+### Demo Video
+Check out our [demo video](https://youtu.be/ZZtsz5mvB0s) to see Gravishken in action
+
 # Architecture Overview
 ![](./images/arch.svg)
 - Frontend (React Application): A React-based web application embedded within a native window using Webview. This user interface (UI) enables users to initiate examinations, view real-time results, and configure examination parameters.
