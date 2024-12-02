@@ -13,7 +13,7 @@ export default function Layout() {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const response = await api.get(`${import.meta.env.SERVER_URL}/admin/auth-status`, {
+        const response = await api.get(`/admin/auth-status`, {
         });
 
 

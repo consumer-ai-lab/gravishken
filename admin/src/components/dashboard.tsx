@@ -17,8 +17,7 @@ export default function Dashboard() {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const response = await api.get(`${import.meta.env.SERVER_URL}/admin/auth-status`);
-        
+        const response = await api.get(`/admin/auth-status`);
         setIsAuthenticated(response.data.isAuthenticated);
       } catch (err:any) {
         if(err.status === 401){

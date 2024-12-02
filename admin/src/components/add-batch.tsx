@@ -19,7 +19,7 @@ export default function AddBatch() {
   useEffect(() => {
     async function fetchTests() {
       try {
-        const response = await api.get(`${import.meta.env.SERVER_URL}/test/get_all_tests`);
+        const response = await api.get(`/test/get_all_tests`);
         console.log("Response: ", response)
         setAvailableTests(response.data.tests);
       } catch (error) {

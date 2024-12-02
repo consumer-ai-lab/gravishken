@@ -32,7 +32,7 @@ export default function UserDetails({ isAuthenticated }: UserDetailsProps) {
             if (!isAuthenticated) return;
             setIsLoading(true);
             try {
-                const response = await api.get(`${import.meta.env.SERVER_URL}/user/paginated_users`, {
+                const response = await api.get(`/user/paginated_users`, {
                     params: {
                         page: currentPage,
                         limit: itemsPerPage,
@@ -61,7 +61,7 @@ export default function UserDetails({ isAuthenticated }: UserDetailsProps) {
     async function handleDeleteUser(userId: string | undefined) {
         try {
             console.log("Userid: ", userId);
-            await api.delete(`${import.meta.env.SERVER_URL}/user/delete_user`, {
+            await api.delete(`/user/delete_user`, {
                 data: { userId: userId },
             });
 

@@ -31,6 +31,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
+
+
 func AdminRoutes(allControllers *Database, route *gin.Engine) {
 	unauthenticatedAdminRoutes := route.Group("/admin")
 
@@ -89,36 +91,51 @@ func AdminRoutes(allControllers *Database, route *gin.Engine) {
 	})
 
 	authenticatedAdminRoutes.POST("/add_users_from_csv", func(ctx *gin.Context) {
+		fmt.Println("1. Starting CSV upload handler")
+		
 		file, _, err := ctx.Request.FormFile("file")
+		fmt.Println("2. After FormFile:", err)
 		if err != nil {
+			fmt.Println("Error getting form file:", err)
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "File upload failed"})
 			return
 		}
 		defer file.Close()
-
+	
 		reader := csv.NewReader(file)
 		var users []common.User
-
-		if _, err := reader.Read(); err != nil {
+		fmt.Println("3. Created CSV reader")
+	
+		// Read header
+		header, err := reader.Read()
+		fmt.Println("4. After reading header:", err)
+		fmt.Println("Header content:", header)
+		if err != nil {
+			fmt.Println("Error reading header:", err)
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid CSV format"})
 			return
 		}
-
+	
+		recordCount := 0
 		for {
 			record, err := reader.Read()
 			if err == io.EOF {
+				fmt.Println("5. Reached end of file after", recordCount, "records")
 				break
 			}
 			if err != nil {
+				fmt.Println("Error reading record:", err)
 				ctx.JSON(http.StatusBadRequest, gin.H{"error": "Error reading CSV"})
 				return
 			}
-
+	
+			fmt.Printf("6. Processing record %d: %v\n", recordCount, record)
 			if len(record) != 5 {
+				fmt.Printf("Error: Record %d has %d fields instead of 5\n", recordCount, len(record))
 				ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid CSV format"})
 				return
 			}
-
+	
 			user := common.User{
 				Id:       primitive.NewObjectID(),
 				Username: record[0],
@@ -126,19 +143,29 @@ func AdminRoutes(allControllers *Database, route *gin.Engine) {
 				Batch:    record[3],
 			}
 			users = append(users, user)
+			fmt.Printf("7. Added user: %+v\n", user)
+			recordCount++
 		}
-
+	
+		fmt.Println("8. Converting users to interfaces")
 		userInterfaces := make([]interface{}, len(users))
 		for i, u := range users {
 			userInterfaces[i] = u
+			fmt.Printf("9. Converted user %d: %+v\n", i, u)
 		}
-
+	
+		fmt.Println("10. Total users to insert:", len(users))
+		fmt.Printf("11. First few users: %+v\n", users[:min(3, len(users))])
+	
 		insertedResult, err := allControllers.UserCollection.InsertMany(context.Background(), userInterfaces)
+		fmt.Println("12. After InsertMany:", err)
 		if err != nil {
+			fmt.Println("Error inserting users:", err)
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert users"})
 			return
 		}
-
+	
+		fmt.Printf("13. Successfully inserted %d users\n", len(insertedResult.InsertedIDs))
 		ctx.JSON(http.StatusOK, gin.H{
 			"message": fmt.Sprintf("Successfully added %d users", len(insertedResult.InsertedIDs)),
 		})
